@@ -43,8 +43,15 @@ public sealed class Logo : Image
 /// <summary>Station/product picture, or a gradient placeholder with a short tag ("PS5") when no image is set.</summary>
 public sealed class Thumb : Border
 {
-    private static readonly ImagePathConverter Loader = new() { DecodeWidth = 480 };
-    private readonly Image _image = new() { Stretch = Stretch.UniformToFill };
+    private static readonly ImagePathConverter Loader = new() { DecodeWidth = 720 };
+    private readonly Image _image = new() { Stretch = Stretch.Uniform, Margin = new Thickness(6) };
+    // Blurred copy that fills the empty sides, so the whole picture stays visible and sharp in the middle.
+    private readonly Image _backdrop = new()
+    {
+        Stretch = Stretch.UniformToFill,
+        Opacity = 0.45,
+        Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 24, RenderingBias = System.Windows.Media.Effects.RenderingBias.Performance },
+    };
     private readonly TextBlock _tag = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.Bold };
 
     public static readonly DependencyProperty ImagePathProperty = DependencyProperty.Register(
@@ -63,14 +70,29 @@ public sealed class Thumb : Border
         ClipToBounds = true;
         var grid = new Grid();
         grid.Children.Add(_tag);
+        grid.Children.Add(_backdrop);
         grid.Children.Add(_image);
         Child = grid;
         SetResourceReference(BackgroundProperty, "Bg.ImageArea");
         _tag.SetResourceReference(TextBlock.ForegroundProperty, "Text.Tag");
         _tag.SetResourceReference(TextBlock.FontFamilyProperty, "Font.UI");
         RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.HighQuality);
-        SizeChanged += (_, _) => Clip = RoundedRect(new Rect(RenderSize), CornerRadius);
+        RenderOptions.SetBitmapScalingMode(_backdrop, BitmapScalingMode.LowQuality);
+        SizeChanged += (_, e) =>
+        {
+            Clip = RoundedRect(new Rect(RenderSize), CornerRadius);
+            UpdateStretch(e.NewSize.Height);
+        };
         Update();
+    }
+
+    /// <summary>Tiny thumbnails (list rows) are filled edge to edge; bigger ones show the whole picture.</summary>
+    private void UpdateStretch(double height)
+    {
+        bool small = height is > 0 and < 50;
+        _image.Stretch = small ? Stretch.UniformToFill : Stretch.Uniform;
+        _image.Margin = small ? new Thickness(0) : new Thickness(6);
+        _backdrop.Visibility = small || _image.Source is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     /// <summary>Clip to the rounded corners so pictures don't poke out of rounded cards.</summary>
@@ -99,7 +121,10 @@ public sealed class Thumb : Border
     {
         var src = Loader.Convert(ImagePath, typeof(ImageSource), null, System.Globalization.CultureInfo.InvariantCulture) as ImageSource;
         _image.Source = src;
+        _backdrop.Source = src;
         _image.Visibility = src is null ? Visibility.Collapsed : Visibility.Visible;
+        _backdrop.Visibility = _image.Visibility;
+        UpdateStretch(ActualHeight);
         _tag.Visibility = src is null ? Visibility.Visible : Visibility.Collapsed;
         _tag.Text = TagText;
         _tag.FontSize = TagSize;

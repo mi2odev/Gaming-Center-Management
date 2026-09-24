@@ -29,7 +29,7 @@
                                 <Grid>
                                     <StackPanel>
                                         <Border CornerRadius="10,10,0,0" ClipToBounds="True">
-                                            <parts:Thumb Height="80" ImagePath="{Binding ImagePath}" TagText="{Binding CategoryTag}" TagSize="11" CornerRadius="10,10,0,0"/>
+                                            <parts:Thumb Height="118" ImagePath="{Binding ImagePath}" TagText="{Binding CategoryTag}" TagSize="11" CornerRadius="10,10,0,0"/>
                                         </Border>
                                         <StackPanel Margin="12,10,12,12">
                                             <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
