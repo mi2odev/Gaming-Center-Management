@@ -473,6 +473,8 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty] private string _minimumChargeText = "0";
     [ObservableProperty] private string _roundingStepText = "1";
     [ObservableProperty] private string _defaultRateText = "";
+    [ObservableProperty] private string _extraControllerText = "";
+    [ObservableProperty] private string _maxExtraControllersText = "";
     [ObservableProperty] private string _warnText = "";
     [ObservableProperty] private string _longText = "";
     [ObservableProperty] private string _backupHourText = "";
@@ -509,6 +511,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         MinimumChargeText = m.MinimumChargeMinutes.ToString();
         RoundingStepText = Money.Number(m.MoneyRoundingStep);
         DefaultRateText = Money.Number(m.DefaultHourlyRate).Replace(",", "");
+        ExtraControllerText = Money.Number(m.DefaultExtraControllerRate).Replace(",", "");
+        MaxExtraControllersText = m.DefaultMaxExtraControllers.ToString();
         WarnText = m.WarnBeforeEndMinutes.ToString();
         LongText = m.LongSessionAlertHours.ToString();
         BackupHourText = m.AutoBackupHour.ToString();
@@ -555,6 +559,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         if (!Money.TryParse(DefaultRateText, out var rate)) { Toasts.Error("Default hourly price is not a number."); return; }
         if (!int.TryParse(WarnText, out var warn) || !int.TryParse(LongText, out var lng)) { Toasts.Error("Warning thresholds must be whole numbers."); return; }
         if (!int.TryParse(BackupHourText, out var hour) || !int.TryParse(KeepText, out var keep)) { Toasts.Error("Backup hour and count must be whole numbers."); return; }
+        if (!Money.TryParse(ExtraControllerText, out var extraCtrl)) { Toasts.Error("Extra controller price is not a number."); return; }
+        if (!int.TryParse(MaxExtraControllersText, out var maxExtra)) { Toasts.Error("Extra controllers allowed must be a whole number."); return; }
+        m.DefaultExtraControllerRate = extraCtrl;
+        m.DefaultMaxExtraControllers = maxExtra;
         if (!int.TryParse(ReceiptWidthText, out var width)) { Toasts.Error("Receipt width must be a whole number of millimetres."); return; }
         m.MinimumChargeMinutes = min;
         m.MoneyRoundingStep = step;

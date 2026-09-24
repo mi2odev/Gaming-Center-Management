@@ -1,5 +1,6 @@
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
+using GamingCenter.Domain.Billing;
 using GamingCenter.Domain.Entities;
 using GamingCenter.Domain.Enums;
 using GamingCenter.Infrastructure.Data;
@@ -7,13 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GamingCenter.Infrastructure.Services;
 
-public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFactory, IClock clock, ICurrentUser currentUser)
+public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFactory, IClock clock, ICurrentUser currentUser, ISettingsService settings)
     : ServiceBase(dbFactory, clock, currentUser), IStationService
 {
-    private static StationDto ToDto(GamingStation s) => new(
+    private StationDto ToDto(GamingStation s) => new(
         s.Id, s.Name, s.Number, s.StationTypeId, s.StationType?.Name ?? "", s.StationType?.Tag ?? "",
         s.Brand, s.Model, s.ImagePath, s.HourlyRate, s.Description, s.Location, s.ControllerCount,
-        s.MaxControllers, s.ExtraControllerRate, s.State, s.ReservedFor, s.ReservedAt, s.IsActive);
+        s.MaxControllers, s.ExtraControllerRate, s.State, s.ReservedFor, s.ReservedAt, s.IsActive,
+        ControllerPricing.Resolve(s.ControllerCount, s.MaxControllers, s.ExtraControllerRate,
+            settings.Current.DefaultExtraControllerRate, settings.Current.DefaultMaxExtraControllers));
 
     public async Task<IReadOnlyList<StationDto>> GetAllAsync(bool includeInactive = true, CancellationToken ct = default)
     {

@@ -66,11 +66,11 @@ public sealed class SessionService(
             HourlyRate = station.HourlyRate,
             StartedByUserId = CurrentUserId,
         };
-        if (ControllerPricing.IsPriced(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate))
+        if (PlanFor(station) is { } plan)
         {
-            int n = ValidControllers(station, request.Controllers ?? station.ControllerCount!.Value);
+            int n = ValidControllers(station, plan, request.Controllers ?? plan.Included);
             session.Controllers = n;
-            session.HourlyRate = ControllerPricing.RateFor(station.HourlyRate, station.ControllerCount, station.ExtraControllerRate, n);
+            session.HourlyRate = plan.RateFor(station.HourlyRate, n);
         }
         else session.Controllers = station.ControllerCount;
         session.ApplyRules(settings.Current.BillingRules);
@@ -169,14 +169,14 @@ public sealed class SessionService(
         {
             if (s.Status == SessionStatus.AwaitingPayment) throw new BusinessException("Time is up. Extend the session before changing controllers.");
             var station = await db.Stations.FirstOrDefaultAsync(x => x.Id == s.StationId, ct) ?? throw new BusinessException("Station not found.");
-            if (!ControllerPricing.IsPriced(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate))
-                throw new BusinessException($"{station.Name} does not have controller pricing. Set it up on the Gaming Stations page.");
-            int n = ValidControllers(station, controllers);
+            if (PlanFor(station) is not { } plan)
+                throw new BusinessException($"{station.Name} has no included controllers. Set \"Controllers included\" on the Gaming Stations page.");
+            int n = ValidControllers(station, plan, controllers);
             if (n == s.Controllers) return;
 
-            // The price locked for this session stays the base; only the controller supplement follows the station setup.
-            decimal baseRate = s.HourlyRate - Math.Max(0, (s.Controllers ?? station.ControllerCount!.Value) - station.ControllerCount!.Value) * station.ExtraControllerRate;
-            decimal newRate = ControllerPricing.RateFor(baseRate, station.ControllerCount, station.ExtraControllerRate, n);
+            // The rate locked for this session stays the base; only the controller supplement changes.
+            decimal baseRate = s.HourlyRate - Math.Max(0, (s.Controllers ?? plan.Included) - plan.Included) * plan.ExtraPerController;
+            decimal newRate = plan.RateFor(baseRate, n);
             s.RateChanges.Add(new SessionRateChange
             {
                 At = Clock.Now, OldRate = s.HourlyRate, NewRate = newRate,
@@ -186,11 +186,14 @@ public sealed class SessionService(
             s.Controllers = n;
         }, ct);
 
-    private static int ValidControllers(GamingStation station, int controllers)
+    private ControllerPlan? PlanFor(GamingStation station) =>
+        ControllerPricing.Resolve(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate,
+            settings.Current.DefaultExtraControllerRate, settings.Current.DefaultMaxExtraControllers);
+
+    private static int ValidControllers(GamingStation station, ControllerPlan plan, int controllers)
     {
-        int max = station.MaxControllers ?? station.ControllerCount ?? 1;
-        if (controllers < 1 || controllers > max)
-            throw new BusinessException($"{station.Name} takes 1 to {max} controllers.");
+        if (controllers < 1 || controllers > plan.Max)
+            throw new BusinessException($"{station.Name} takes 1 to {plan.Max} controllers.");
         return controllers;
     }
 

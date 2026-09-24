@@ -27,10 +27,13 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
     private readonly NotificationCenter _notifications;
     private readonly IServiceProvider _services;
     private readonly ToastService _toasts;
+    private readonly ISettingsService _settings;
 
     public SessionDrawerViewModel(SessionDrawerArgs args, LiveSessionStore store, ISessionService sessions, IProductService products,
-        TickService ticks, DialogService dialogs, NotificationCenter notifications, IServiceProvider services, ToastService toasts)
+        TickService ticks, DialogService dialogs, NotificationCenter notifications, IServiceProvider services, ToastService toasts,
+        ISettingsService settings)
     {
+        _settings = settings;
         _sessionId = args.SessionId;
         FocusCatalog = args.FocusCatalog;
         _store = store;
@@ -144,11 +147,12 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         };
 
         var st = s.Station;
-        CanChangeControllers = st is not null && s.Status != SessionStatus.AwaitingPayment
-            && Domain.Billing.ControllerPricing.IsPriced(st.ControllerCount, st.MaxControllers, st.ExtraControllerRate);
+        var plan = st is null ? null : Domain.Billing.ControllerPricing.Resolve(st.ControllerCount, st.MaxControllers, st.ExtraControllerRate,
+            _settings.Current.DefaultExtraControllerRate, _settings.Current.DefaultMaxExtraControllers);
+        CanChangeControllers = plan is not null && s.Status != SessionStatus.AwaitingPayment;
         ControllersText = s.Controllers is { } n ? $"{n} controller{(n == 1 ? "" : "s")}" : "";
-        ControllersNote = CanChangeControllers
-            ? $"{st!.ControllerCount} included · +{Money.Number(st.ExtraControllerRate)}/h each extra · max {st.MaxControllers}"
+        ControllersNote = plan is not null
+            ? $"{plan.Included} included · +{Money.Number(plan.ExtraPerController)}/h each extra · max {plan.Max}"
               + (s.RateChanges.Count > 0 ? $" · changed {s.RateChanges.Count}×, earlier time keeps its rate" : "")
             : "";
 
@@ -237,7 +241,7 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
 
     private async Task ChangeControllersAsync(int delta)
     {
-        int current = Session.Controllers ?? Session.Station?.ControllerCount ?? 1;
+        int current = Session.Controllers ?? Session.Station?.ControllerCount ?? 2;
         if (await RunAsync(async () => _store.Upsert(await _sessions.ChangeControllersAsync(_sessionId, current + delta))))
             _toasts.Info($"{Session.StationName}: {Session.Controllers} controllers", $"Now {Money.Rate(Session.HourlyRate)} from {DateTime.Now:HH:mm}");
     }

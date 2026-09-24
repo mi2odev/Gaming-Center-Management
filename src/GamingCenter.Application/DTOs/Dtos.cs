@@ -33,16 +33,18 @@ public sealed record StationDto(
     StationState State,
     string? ReservedFor,
     DateTime? ReservedAt,
-    bool IsActive)
+    bool IsActive,
+    Domain.Billing.ControllerPlan? Plan = null)
 {
     /// <summary>Short label for image placeholders: model if short, else the type tag.</summary>
     public string Tag => !string.IsNullOrWhiteSpace(Model) && Model.Length <= 5 ? Model.ToUpperInvariant() : TypeTag;
 
     /// <summary>True when the operator chooses how many controllers (and the price changes with it).</summary>
-    public bool HasControllerPricing => Domain.Billing.ControllerPricing.IsPriced(ControllerCount, MaxControllers, ExtraControllerRate);
+    /// <summary>Plan uses the station's own extra price/maximum, or the defaults from Settings.</summary>
+    public bool HasControllerPricing => Plan is not null;
 
     public decimal RateFor(int? controllers) =>
-        Domain.Billing.ControllerPricing.RateFor(HourlyRate, ControllerCount, ExtraControllerRate, controllers);
+        Plan is { } p && controllers is { } n ? p.RateFor(HourlyRate, n) : HourlyRate;
 }
 
 public sealed record SaveStationRequest(

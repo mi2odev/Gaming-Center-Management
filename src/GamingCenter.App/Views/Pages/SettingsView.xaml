@@ -132,6 +132,14 @@
                     </Border>
                     <TextBlock Text="Example: unit 15 minutes at 400/h charges 100 per started quarter hour (15 min = 100, 30 min = 200, 1 h = 400). Exact time charges to the second."
                                Style="{StaticResource T.Faint}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                    <TextBlock Text="Controllers" Style="{StaticResource SectionTitle}" Margin="0,28,0,0"/>
+                    <TextBlock Text="Stations with &quot;Controllers included&quot; (e.g. 2) let the operator add controllers when starting or during a session. Each extra controller adds this price per hour, unless the station sets its own price in Gaming Stations. 0 turns it off."
+                               Style="{StaticResource SectionSub}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="12"/><ColumnDefinition Width="220"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <StackPanel><TextBlock Text="Extra per controller / h" Style="{StaticResource T.Label}"/><TextBox Text="{Binding ExtraControllerText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{Binding Model.CurrencySymbol}"/></StackPanel>
+                        <StackPanel Grid.Column="2"><TextBlock Text="Extra controllers allowed" Style="{StaticResource T.Label}"/><TextBox Text="{Binding MaxExtraControllersText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}"/></StackPanel>
+                    </Grid>
                 </StackPanel>
 
                 <!-- Receipts -->

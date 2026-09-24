@@ -103,13 +103,14 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         ControllerOptions.Clear();
         if (value is { HasControllerPricing: true })
         {
-            int inc = value.ControllerCount!.Value;
-            for (int n = 1; n <= (value.MaxControllers ?? inc); n++)
+            var plan = value.Plan!;
+            // Show the included count and each extra option: "2 · included", "3 · +100", "4 · +200".
+            for (int n = plan.Included; n <= plan.Max; n++)
             {
-                var r = value.RateFor(n);
-                ControllerOptions.Add(new ControllerOption(n, n <= inc ? $"{n}" : $"{n}", r == value.HourlyRate ? "base" : "+" + Money.Number(r - value.HourlyRate)));
+                var extra = value.RateFor(n) - value.HourlyRate;
+                ControllerOptions.Add(new ControllerOption(n, $"{n}", extra <= 0 ? "included" : $"+{Money.Number(extra)}/h"));
             }
-            Controllers = inc;
+            Controllers = plan.Included;
         }
         OnPropertyChanged(nameof(HasControllerPricing));
         OnPropertyChanged(nameof(RateNumber));
