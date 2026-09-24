@@ -104,7 +104,7 @@ Only one copy of the app runs at a time on a machine, so timers and alerts never
 
 **Split payment (+):** when several people share a bill, type what the first person pays, then press **+ Add another payment** for each other person, choosing Cash, Card or Other on each line. The panel shows "Paid so far" and "Still to pay". Change is only given back in cash. If it still doesn't reach the total, tick *Pay the rest later*. Receipts list each payment, and the Sales Cash/Card/Other totals count each part under its own method.
 
-**Pictures:** in *Gaming Stations* (station editor) and *Products* (product editor), click **Upload picture…**, click the image box, or drag a JPG/PNG from Explorer onto it. Pictures are resized and stored locally, then shown on the dashboard cards, lists and product catalog.
+**Pictures:** in *Gaming Stations* (station editor) and *Products* (product editor), click **Upload picture…**, click the image box, or drag a picture onto it: a JPG/PNG file from Explorer, or a picture straight from Chrome/Edge (even without internet when the browser provides the image; otherwise it is downloaded from its link). Pictures are resized and stored locally, then shown on the dashboard cards, lists and product catalog.
 
 Right-click a card to pause/resume, add a product, end and bill, reserve, clear a reservation, or set/clear maintenance. The **List** view (top right) shows the same with inline Pause / + Product / End / Start buttons. **Ctrl+K** searches stations, products, customers and receipts. **Esc** closes the top dialog.
 
