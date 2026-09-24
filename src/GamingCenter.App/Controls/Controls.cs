@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -154,23 +155,39 @@ public static class Ui
     public static ICommand? GetImageDropCommand(DependencyObject d) => (ICommand?)d.GetValue(ImageDropCommandProperty);
     public static void SetImageDropCommand(DependencyObject d, ICommand? value) => d.SetValue(ImageDropCommandProperty, value);
 
-    private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tif", ".tiff"];
-
-    private static string? DroppedImage(DragEventArgs e) =>
-        e.Data.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } files
-        && ImageExtensions.Contains(System.IO.Path.GetExtension(files[0]).ToLowerInvariant()) ? files[0] : null;
-
     private static void OnImageDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = DroppedImage(e) is null ? DragDropEffects.None : DragDropEffects.Copy;
+        e.Effects = ImageDrop.CanAccept(e.Data) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
-    private static void OnImageDrop(object sender, DragEventArgs e)
+    private static async void OnImageDrop(object sender, DragEventArgs e)
     {
-        if (sender is DependencyObject d && DroppedImage(e) is { } file && GetImageDropCommand(d) is { } cmd && cmd.CanExecute(file))
-            cmd.Execute(file);
         e.Handled = true;
+        if (sender is not DependencyObject d || GetImageDropCommand(d) is not { } cmd) return;
+        var toasts = App.Services?.GetService(typeof(Services.ToastService)) as Services.ToastService;
+        try
+        {
+            var result = ImageDrop.Read(e.Data);
+            if (result is null)
+            {
+                toasts?.Warning("No picture found", "Drag the picture itself (not the page), or save it first and drop the file.");
+                return;
+            }
+            var file = result.File;
+            if (file is null && result.Url is { } url)
+            {
+                toasts?.Info("Downloading picture…");
+                file = await ImageDrop.DownloadAsync(url);
+            }
+            if (file is not null && cmd.CanExecute(file)) cmd.Execute(file);
+        }
+        catch (Exception ex)
+        {
+            toasts?.Error("Could not use this picture", ex is HttpRequestException or TaskCanceledException
+                ? "No internet or the website did not answer. Save the picture, then drop the file."
+                : ex.Message);
+        }
     }
 
     /// <summary>Selects all text when a TextBox gets keyboard focus (fast numeric entry).</summary>
