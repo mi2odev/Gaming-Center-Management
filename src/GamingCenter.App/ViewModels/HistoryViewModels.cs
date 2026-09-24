@@ -28,6 +28,8 @@ public sealed class ReceiptPreview(ReceiptDto r)
     public IReadOnlyList<ReceiptLine> Items => r.Lines;
     public bool HasItems => r.Lines.Count > 0;
     public string Total => Money.Format(r.Total);
+    public bool HasDiscount => r.Discount > 0;
+    public string Discount => "−" + Money.Number(r.Discount);
     public string Method => r.Method.ToString();
     public bool IsSplit => r.Parts.Count > 1;
     public bool IsSingle => r.Parts.Count <= 1;

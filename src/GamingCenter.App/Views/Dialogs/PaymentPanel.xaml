@@ -67,7 +67,7 @@
                         <TextBlock.Style>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource T.MonoStrong}">
                                 <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
-                                <Style.Triggers><DataTrigger Binding="{Binding ChangeIsNegative}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Danger}"/></DataTrigger></Style.Triggers>
+                                <Style.Triggers><DataTrigger Binding="{Binding IsDiscount}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Warning}"/></DataTrigger></Style.Triggers>
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
@@ -75,10 +75,10 @@
                 </DockPanel>
             </StackPanel>
 
-            <Button Content="+ Add another payment (split between people or cash + card)" Style="{StaticResource Btn.Secondary}" MinHeight="36" Margin="0,12,0,0"
+            <Button Content="Add another payment" c:Ui.Icon="{StaticResource I.Plus}" Style="{StaticResource Btn.Secondary}" MinHeight="36" Margin="0,12,0,0"
                     HorizontalAlignment="Stretch" Command="{Binding AddPaymentCommand}" ToolTip="Someone else pays part of the bill"/>
 
-            <Button Content="Customer can't pay it all → put the missing amount on credit" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,10,0,0"
+            <Button Content="Owe it instead → put the rest on credit" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,10,0,0" ToolTip="The customer will pay the difference another day"
                     Command="{Binding PutMissingOnCreditCommand}" Visibility="{Binding CanOfferCredit, Converter={StaticResource BoolToVis}}"/>
 
             <CheckBox Content="Pay the rest later (credit)" IsChecked="{Binding PayLater}" Margin="0,18,0,0" FontSize="13" Foreground="{DynamicResource Warning}"/>

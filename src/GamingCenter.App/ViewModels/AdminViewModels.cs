@@ -315,6 +315,7 @@ public sealed partial class ReportsViewModel : PageViewModel
             parts.Add($"Most-used station {top.Name} ({Durations.Short(top.PlayTime)})");
         if (d.TotalRevenue > 0)
             parts.Add(string.Join(" · ", d.MethodTotals.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value / d.TotalRevenue:P0}")));
+        if (d.Discounts > 0) parts.Add($"Discounts given {Money.Format(d.Discounts)}");
         if (d.CreditGiven > 0 || d.CreditCollected > 0)
             parts.Add($"Credit given {Money.Format(d.CreditGiven)} · paid back {Money.Format(d.CreditCollected)}");
         Insights = string.Join(" · ", parts);

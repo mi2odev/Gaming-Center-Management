@@ -186,6 +186,15 @@ public sealed class SessionService(
             s.Controllers = n;
         }, ct);
 
+    /// <summary>A discount lowers what is due; it is recorded separately so reports show it.</summary>
+    private static void ApplyDiscount(GamingSession s, decimal gross, decimal discount)
+    {
+        if (discount < 0) throw new BusinessException("Discount cannot be negative.");
+        if (discount > gross) throw new BusinessException("Discount cannot be more than the bill.");
+        s.DiscountTotal = discount;
+        s.Total = gross - discount;
+    }
+
     private ControllerPlan? PlanFor(GamingStation station) =>
         ControllerPricing.Resolve(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate,
             settings.Current.DefaultExtraControllerRate, settings.Current.DefaultMaxExtraControllers);
@@ -289,7 +298,7 @@ public sealed class SessionService(
         s.PlayedSeconds = (long)s.PlayedTime(end0).TotalSeconds;
         s.GamingTotal = s.GamingCost(end0);
         s.ProductsTotal = s.ProductsCost();
-        s.Total = s.GamingTotal + s.ProductsTotal;
+        ApplyDiscount(s, s.GamingTotal + s.ProductsTotal, request.Discount);
         s.Status = SessionStatus.Completed;
         s.EndedByUserId = CurrentUserId;
 
@@ -366,7 +375,7 @@ public sealed class SessionService(
         }
 
         s.ProductsTotal = s.ProductsCost();
-        s.Total = s.ProductsTotal;
+        ApplyDiscount(s, s.ProductsTotal, request.Discount);
         var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, request.Parts, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
@@ -489,6 +498,7 @@ public sealed class SessionService(
             PaidAt = now,
             GamingAmount = s.GamingTotal,
             ProductsAmount = s.ProductsTotal,
+            DiscountAmount = s.DiscountTotal,
             TotalAmount = total,
             // Main method = the biggest part (used where a single method is shown).
             Method = lines.Count > 0 ? lines.GroupBy(p => p.Method).OrderByDescending(g => g.Sum(p => p.Amount)).First().Key : method,

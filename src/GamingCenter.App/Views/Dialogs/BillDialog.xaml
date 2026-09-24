@@ -52,6 +52,8 @@
                     <StackPanel>
                         <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding GamingText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}"/><TextBlock Text="Gaming" Style="{StaticResource T.Muted}" FontSize="13"/></DockPanel>
                         <DockPanel Margin="0,6,0,0"><TextBlock DockPanel.Dock="Right" Text="{Binding ProductsText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}"/><TextBlock Text="Products" Style="{StaticResource T.Muted}" FontSize="13"/></DockPanel>
+                        <TextBlock Text="{Binding DiscountText}" Style="{StaticResource T.Base}" FontSize="12" Foreground="{DynamicResource Warning}" Margin="0,6,0,0"
+                                   Visibility="{Binding IsDiscount, Converter={StaticResource BoolToVis}}"/>
                         <Border BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Margin="0,10,0,0" Padding="0,8,0,0">
                             <DockPanel>
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding TotalText}" Style="{StaticResource T.MonoStrong}" FontSize="30"/>

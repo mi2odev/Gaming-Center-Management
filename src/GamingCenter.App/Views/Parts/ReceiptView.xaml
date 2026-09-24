@@ -47,6 +47,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle Style="{StaticResource Rule}" Visibility="{Binding HasItems, Converter={StaticResource BoolToVis}}"/>
+            <DockPanel Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding Discount}" Style="{StaticResource P}"/><TextBlock Text="Discount" Style="{StaticResource P}"/></DockPanel>
             <DockPanel>
                 <TextBlock DockPanel.Dock="Right" Text="{Binding Total}" Style="{StaticResource P}" FontWeight="Bold" FontSize="14"/>
                 <TextBlock Text="TOTAL" Style="{StaticResource P}" FontWeight="Bold" FontSize="14"/>

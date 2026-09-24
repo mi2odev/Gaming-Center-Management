@@ -162,6 +162,8 @@ public sealed class Payment : Entity
     public DateTime PaidAt { get; set; }
     public decimal GamingAmount { get; set; }
     public decimal ProductsAmount { get; set; }
+    /// <summary>Discount given (customer paid less and it was accepted). TotalAmount is after discount.</summary>
+    public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public PaymentMethod Method { get; set; }
     public decimal AmountReceived { get; set; }

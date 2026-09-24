@@ -108,7 +108,8 @@ public sealed record CompleteSessionRequest(
     decimal AmountReceived,
     int? CustomerId,
     decimal? PayNow = null,
-    IReadOnlyList<PaymentPartRequest>? Parts = null);
+    IReadOnlyList<PaymentPartRequest>? Parts = null,
+    decimal Discount = 0);
 
 /// <summary>One part of a split payment (e.g. first friend pays 50 cash).</summary>
 public sealed record PaymentPartRequest(PaymentMethod Method, decimal Amount);
@@ -116,7 +117,7 @@ public sealed record PaymentPartRequest(PaymentMethod Method, decimal Amount);
 public sealed record CartLine(int ProductId, int Quantity);
 
 public sealed record CounterSaleRequest(IReadOnlyList<CartLine> Lines, PaymentMethod Method, decimal AmountReceived, int? CustomerId, decimal? PayNow = null,
-    IReadOnlyList<PaymentPartRequest>? Parts = null);
+    IReadOnlyList<PaymentPartRequest>? Parts = null, decimal Discount = 0);
 
 /// <summary>A customer with money owed. Balance &gt; 0 means the customer owes the center.</summary>
 public sealed record CreditBalanceDto(int CustomerId, string Name, string? Phone, decimal Balance, DateTime? LastCreditAt, DateTime? LastRepaymentAt, int OpenBills);
@@ -138,7 +139,8 @@ public sealed record HistoryRow(
     decimal Total,
     PaymentMethod? Method,
     DateTime? PaidAt,
-    string? Operator);
+    string? Operator,
+    decimal Discount = 0);
 
 public sealed record ReceiptLine(string Name, int Quantity, decimal UnitPrice, decimal LineTotal);
 
@@ -161,6 +163,7 @@ public sealed record ReceiptDto(
     decimal GamingTotal,
     IReadOnlyList<ReceiptLine> Lines,
     decimal ProductsTotal,
+    decimal Discount,
     decimal Total,
     PaymentMethod Method,
     decimal AmountReceived,
@@ -202,11 +205,12 @@ public sealed record DashboardStats(
     TimeSpan MostUsedStationTime,
     string? MostSoldProduct,
     int MostSoldProductUnits,
-    IReadOnlyList<ProductDto> LowStock);
+    IReadOnlyList<ProductDto> LowStock,
+    decimal Discounts = 0);
 
-public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products)
+public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products, decimal Discounts = 0)
 {
-    public decimal Total => Gaming + Products;
+    public decimal Total => Gaming + Products - Discounts;
 }
 
 public sealed record StationRevenue(string Name, decimal Revenue, TimeSpan PlayTime, int Sessions);
@@ -230,7 +234,8 @@ public sealed record ReportData(
     IReadOnlyDictionary<PaymentMethod, decimal> MethodTotals,
     int? BusiestHour,
     decimal CreditGiven = 0,
-    decimal CreditCollected = 0);
+    decimal CreditCollected = 0,
+    decimal Discounts = 0);
 
 public enum SearchKind { Station, Product, Customer, Session }
 
