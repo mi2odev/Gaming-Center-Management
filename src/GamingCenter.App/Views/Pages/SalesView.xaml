@@ -1,0 +1,80 @@
+<UserControl x:Class="GamingCenter.App.Views.Pages.SalesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <DockPanel Margin="32,24,32,0">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCommand}"/>
+                    <Button Content="New counter sale" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Cart}" Command="{Binding NewSaleCommand}"/>
+                </StackPanel>
+                <parts:PeriodPicker/>
+            </DockPanel>
+
+            <UniformGrid DockPanel.Dock="Top" Rows="1" Columns="4" Margin="-7,0,-7,20">
+                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="{Binding CountText}" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding TotalText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Cash" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding CashText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Card" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding CardText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Other" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding OtherText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
+            </UniformGrid>
+
+            <Grid DockPanel.Dock="Top" Margin="14,0,14,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="120"/><ColumnDefinition/>
+                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="76"/><ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="RECEIPT" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="1" Text="PAID AT" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="2" Text="STATION" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="3" Text="CUSTOMER" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="4" Text="GAMING" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="5" Text="PRODUCTS" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="TOTAL" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="7" Text="METHOD" Style="{StaticResource T.ColumnHeader}" Margin="16,0,0,0"/>
+                <TextBlock Grid.Column="8" Text="OPERATOR" Style="{StaticResource T.ColumnHeader}"/>
+            </Grid>
+            <Grid>
+                <TextBlock Text="No payments in this period." Style="{StaticResource T.Muted}" HorizontalAlignment="Center" Margin="0,40,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+                <ListBox Style="{StaticResource RowList}" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="46">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="120"/><ColumnDefinition/>
+                                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="76"/><ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Receipt}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Time}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Station}" Style="{StaticResource T.Base}" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="{Binding Customer}" Style="{StaticResource T.Muted}" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="{Binding Gaming}" Style="{StaticResource T.Mono}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="{Binding Products}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="{Binding Total}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="7" Text="{Binding Method}" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                <TextBlock Grid.Column="8" Text="{Binding Operator}" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </DockPanel>
+
+        <Border Grid.Column="1" Width="380" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0">
+            <DockPanel Margin="28">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                    <Button DockPanel.Dock="Right" Content="Print / PDF" Style="{StaticResource Btn.Link}" c:Ui.Icon="{StaticResource I.Printer}" Command="{Binding PrintReceiptCommand}"/>
+                    <TextBlock Text="Receipt" Style="{StaticResource T.Section}"/>
+                </DockPanel>
+                <Grid>
+                    <TextBlock Text="Select a payment to see its receipt." Style="{StaticResource T.Muted}" TextWrapping="Wrap" Visibility="{Binding Receipt, Converter={StaticResource NoValueToVis}}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding Receipt, Converter={StaticResource HasValueToVis}}">
+                        <parts:ReceiptView DataContext="{Binding Receipt}"/>
+                    </ScrollViewer>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,99 @@
+<UserControl x:Class="GamingCenter.App.Views.Pages.SessionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <!-- Design 1j -->
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <DockPanel Margin="32,24,32,0">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Grid Width="240" Margin="0,0,12,0">
+                        <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=300}" c:Ui.Placeholder="Station, customer, receipt #…" Padding="34,0,12,0"/>
+                        <c:Icon Data="{StaticResource I.Search}" Width="15" Height="15" Foreground="{DynamicResource Text.Faint}" HorizontalAlignment="Left" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Command="{Binding ExportCommand}"/>
+                </StackPanel>
+                <parts:PeriodPicker/>
+            </DockPanel>
+
+            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+                <WrapPanel.Resources>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource T.Muted}"><Setter Property="Margin" Value="0,0,24,0"/></Style>
+                    <Style x:Key="SumVal" TargetType="Run"><Setter Property="FontFamily" Value="{DynamicResource Font.Mono}"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="FontSize" Value="13"/><Setter Property="Foreground" Value="{DynamicResource Text}"/></Style>
+                </WrapPanel.Resources>
+                <TextBlock Text="{Binding CountText}"/>
+                <TextBlock>Gaming <Run Text="{Binding GamingText, Mode=OneWay}" Style="{StaticResource SumVal}"/></TextBlock>
+                <TextBlock>Products <Run Text="{Binding ProductsText, Mode=OneWay}" Style="{StaticResource SumVal}"/></TextBlock>
+                <TextBlock>Total <Run Text="{Binding TotalText, Mode=OneWay}" Style="{StaticResource SumVal}"/></TextBlock>
+                <TextBlock>Avg duration <Run Text="{Binding AvgText, Mode=OneWay}" Style="{StaticResource SumVal}"/></TextBlock>
+            </WrapPanel>
+
+            <Grid DockPanel.Dock="Top" Margin="14,0,14,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition/><ColumnDefinition Width="150"/><ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="RECEIPT" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="1" Text="STATION" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="2" Text="CUSTOMER" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="3" Text="START → END" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="4" Text="DURATION" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="5" Text="GAMING" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="PRODUCTS" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="7" Text="TOTAL" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="8" Text="PAID" Style="{StaticResource T.ColumnHeader}" Margin="16,0,0,0"/>
+            </Grid>
+            <Grid>
+                <TextBlock Text="No sessions in this period." Style="{StaticResource T.Muted}" HorizontalAlignment="Center" Margin="0,40,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+                <ListBox Style="{StaticResource RowList}" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid x:Name="G" Height="46">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition/><ColumnDefinition Width="150"/><ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="80"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Receipt}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Station}" Style="{StaticResource T.Base}" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Customer}" Style="{StaticResource T.Muted}" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"><Run Text="{Binding Date, Mode=OneWay}" Foreground="{DynamicResource Text.Faint}"/> <Run Text="{Binding Time, Mode=OneWay}"/></TextBlock>
+                                <TextBlock Grid.Column="4" Text="{Binding Duration}" Style="{StaticResource T.Mono}" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="{Binding Gaming}" Style="{StaticResource T.Mono}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="{Binding Products}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="7" Text="{Binding Total}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="8" Text="{Binding Paid}" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsCancelled}" Value="True"><Setter TargetName="G" Property="Opacity" Value="0.45"/></DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </DockPanel>
+
+        <!-- Receipt preview -->
+        <Border Grid.Column="1" Width="400" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0">
+            <DockPanel Margin="28">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="Print" Style="{StaticResource Btn.Link}" c:Ui.Icon="{StaticResource I.Printer}" Margin="0,0,14,0" Command="{Binding PrintReceiptCommand}"/>
+                        <Button Content="PDF" Style="{StaticResource Btn.Link}" ToolTip="Pick &quot;Microsoft Print to PDF&quot;" Command="{Binding PdfReceiptCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="Receipt" Style="{StaticResource T.Section}"/>
+                </DockPanel>
+                <Grid>
+                    <TextBlock Text="Select a paid session to see its receipt." Style="{StaticResource T.Muted}" TextWrapping="Wrap" Visibility="{Binding Receipt, Converter={StaticResource NoValueToVis}}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding Receipt, Converter={StaticResource HasValueToVis}}">
+                        <StackPanel>
+                            <parts:ReceiptView DataContext="{Binding Receipt}"/>
+                            <TextBlock Text="{Binding Receipt.Note}" Style="{StaticResource T.Muted}" TextWrapping="Wrap" TextTrimming="None" LineHeight="19" Margin="0,18,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

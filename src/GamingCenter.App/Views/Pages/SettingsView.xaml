@@ -1,0 +1,232 @@
+<UserControl x:Class="GamingCenter.App.Views.Pages.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <!-- Design 1l -->
+    <UserControl.Resources>
+        <Style x:Key="SectionTitle" TargetType="TextBlock" BasedOn="{StaticResource T.H15}"/>
+        <Style x:Key="SectionSub" TargetType="TextBlock" BasedOn="{StaticResource T.Muted}">
+            <Setter Property="Margin" Value="0,3,0,14"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="Row" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Bg.Card}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style x:Key="RowTitle" TargetType="TextBlock" BasedOn="{StaticResource T.Base}">
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        <Style x:Key="RowSub" TargetType="TextBlock" BasedOn="{StaticResource T.Faint}">
+            <Setter Property="Foreground" Value="{DynamicResource Text.Muted}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="SmallInput" TargetType="TextBox" BasedOn="{StaticResource Input.Mono}">
+            <Setter Property="Width" Value="110"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Background" Value="{DynamicResource Bg.Sidebar}"/>
+        </Style>
+        <Style x:Key="SettingsNav" TargetType="RadioButton">
+            <Setter Property="GroupName" Value="SettingsNav"/>
+            <Setter Property="FontFamily" Value="{DynamicResource Font.UI}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.Muted}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" CornerRadius="7" Padding="12,9" Background="Transparent"><ContentPresenter/></Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Bg.Selected}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{DynamicResource Text}"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1" Padding="32,12">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Revert" Style="{StaticResource Btn.Secondary}" Margin="0,0,10,0" Command="{Binding RevertCommand}"/>
+                    <Button Content="Save" Style="{StaticResource Btn.Primary}" Command="{Binding SaveCommand}"/>
+                </StackPanel>
+                <TextBlock Text="Changes apply after Save. Billing rules apply to sessions started afterwards." Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+        <Border DockPanel.Dock="Left" Width="220" Padding="20,24" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
+            <StackPanel>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="General" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=General}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="Billing" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Billing}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="Receipts &amp; printer" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Receipts}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="Warnings" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Warnings}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="Appearance &amp; language" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Appearance}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="Backup" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Backup}"/>
+                <Button Content="Users &amp; roles →" Style="{StaticResource Btn.Link}" FontSize="13" Padding="12,9" HorizontalAlignment="Left" Command="{Binding GoUsersCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="40,32" MaxWidth="980" HorizontalAlignment="Left" Width="900">
+
+                <!-- General -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=General}">
+                    <TextBlock Text="Gaming center" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Shown in the window title, the login screen and on receipts." Style="{StaticResource SectionSub}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <StackPanel Grid.ColumnSpan="3"><TextBlock Text="Name" Style="{StaticResource T.Label}"/><TextBox Text="{Binding Model.CenterName, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                        <StackPanel Grid.Row="1" Margin="0,12,0,0"><TextBlock Text="Address" Style="{StaticResource T.Label}"/><TextBox Text="{Binding Model.Address, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,12,0,0"><TextBlock Text="Phone" Style="{StaticResource T.Label}"/><TextBox Text="{Binding Model.Phone, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}"/></StackPanel>
+                        <StackPanel Grid.Row="2" Margin="0,12,0,0"><TextBlock Text="Currency symbol" Style="{StaticResource T.Label}"/><TextBox Text="{Binding Model.CurrencySymbol, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,12,0,0"><TextBlock Text="Currency code" Style="{StaticResource T.Label}"/><TextBox Text="{Binding Model.CurrencyCode, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                    </Grid>
+                    <TextBlock Text="Logo" Style="{StaticResource SectionTitle}" Margin="0,28,0,0"/>
+                    <TextBlock Text="Used in the sidebar and on the login screen. The mi2o logo is used when none is set." Style="{StaticResource SectionSub}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="{DynamicResource Bg.Card}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,16,0">
+                            <parts:Logo LogoPath="{Binding Model.LogoPath}" Height="70" Width="110"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <Button Content="Choose logo…" Style="{StaticResource Btn.Secondary}" Command="{Binding ChooseLogoCommand}"/>
+                            <Button Content="Use default logo" Style="{StaticResource Btn.Link}" HorizontalAlignment="Left" Margin="0,10,0,0" Command="{Binding ResetLogoCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Billing -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Billing}">
+                    <TextBlock Text="Billing unit" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="How play time is rounded before pricing. Applies to new sessions." Style="{StaticResource SectionSub}"/>
+                    <ListBox Style="{StaticResource OptionList}" ItemsSource="{Binding Units}" SelectedValuePath="Seconds" SelectedValue="{Binding BillingUnit}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="{Binding Example}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <StackPanel><TextBlock Text="Rounding" Style="{StaticResource T.Label}"/><ComboBox ItemsSource="{Binding RoundingModes}" SelectedItem="{Binding Rounding}"/></StackPanel>
+                        <StackPanel Grid.Column="2"><TextBlock Text="Minimum charge" Style="{StaticResource T.Label}"/><TextBox Text="{Binding MinimumChargeText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="min"/></StackPanel>
+                        <StackPanel Grid.Column="4"><TextBlock Text="Round final amount to" Style="{StaticResource T.Label}"/><TextBox Text="{Binding RoundingStepText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{Binding Model.CurrencySymbol}"/></StackPanel>
+                        <StackPanel Grid.Column="6"><TextBlock Text="Default price for new types" Style="{StaticResource T.Label}"/><TextBox Text="{Binding DefaultRateText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="/h"/></StackPanel>
+                    </Grid>
+                    <Border Style="{StaticResource Notice.Info}" Margin="0,16,0,0">
+                        <TextBlock Text="{Binding Preview}" Style="{StaticResource T.Muted}" TextWrapping="Wrap"/>
+                    </Border>
+                    <TextBlock Text="Example: unit 15 minutes at 400/h charges 100 per started quarter hour (15 min = 100, 30 min = 200, 1 h = 400). Exact time charges to the second."
+                               Style="{StaticResource T.Faint}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                </StackPanel>
+
+                <!-- Receipts -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Receipts}">
+                    <TextBlock Text="Receipts &amp; printer" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Choose a thermal receipt printer to print without a dialog. Use &quot;Microsoft Print to PDF&quot; to save receipts as PDF." Style="{StaticResource SectionSub}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition Width="200"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Receipt printer" Style="{StaticResource T.Label}"/>
+                            <ComboBox ItemsSource="{Binding Printers}" SelectedItem="{Binding Model.ReceiptPrinterName}" c:Ui.Placeholder="Ask every time"/>
+                            <Button Content="Ask every time instead" Style="{StaticResource Btn.Link}" HorizontalAlignment="Left" Margin="0,8,0,0" Command="{Binding ClearPrinterCommand}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2"><TextBlock Text="Paper width" Style="{StaticResource T.Label}"/><TextBox Text="{Binding ReceiptWidthText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="mm"/></StackPanel>
+                    </Grid>
+                    <TextBlock Text="Footer text" Style="{StaticResource T.Label}" Margin="0,12,0,6"/>
+                    <TextBox Text="{Binding Model.ReceiptFooter, UpdateSourceTrigger=PropertyChanged}"/>
+                    <CheckBox Content="Print receipt by default after payment" IsChecked="{Binding Model.PrintReceiptByDefault}" Margin="0,16,0,0"/>
+                    <CheckBox Content="Show customer name on receipts" IsChecked="{Binding Model.ShowCustomerOnReceipt}" Margin="0,12,0,0"/>
+                </StackPanel>
+
+                <!-- Warnings -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Warnings}">
+                    <TextBlock Text="Fixed sessions" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Behaviour when duration or budget runs out." Style="{StaticResource SectionSub}"/>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel>
+                            <TextBox DockPanel.Dock="Right" Text="{Binding WarnText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SmallInput}" c:Ui.Suffix="min"/>
+                            <StackPanel><TextBlock Text="Warn operator before end" Style="{StaticResource RowTitle}"/><TextBlock Text="Toast and card highlight. 0 turns it off." Style="{StaticResource RowSub}"/></StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel>
+                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding Model.AutoEndWhenTimeExpires}" VerticalAlignment="Center"/>
+                            <StackPanel><TextBlock Text="Auto-end session when time expires" Style="{StaticResource RowTitle}"/><TextBlock Text="Off: session keeps running and is flagged, operator extends or ends it. On: play stops and the station waits for payment." Style="{StaticResource RowSub}"/></StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel>
+                            <TextBox DockPanel.Dock="Right" Text="{Binding LongText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SmallInput}" c:Ui.Suffix="h"/>
+                            <StackPanel><TextBlock Text="Long session alert" Style="{StaticResource RowTitle}"/><TextBlock Text="Notify when any session exceeds this many hours. 0 turns it off." Style="{StaticResource RowSub}"/></StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel>
+                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding Model.LowStockNotifications}" VerticalAlignment="Center"/>
+                            <StackPanel><TextBlock Text="Low stock alerts" Style="{StaticResource RowTitle}"/><TextBlock Text="Once per product when a sale takes it to its minimum level." Style="{StaticResource RowSub}"/></StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Appearance -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Appearance}">
+                    <TextBlock Text="Theme" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Dark is recommended for the gaming room." Style="{StaticResource SectionSub}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource OptionCard}" GroupName="Theme" Width="180" Margin="0,0,10,0" IsChecked="{Binding ThemeName, Converter={StaticResource Equals}, ConverterParameter=Dark}">
+                            <TextBlock Text="Dark" FontWeight="SemiBold"/>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource OptionCard}" GroupName="Theme" Width="180" IsChecked="{Binding ThemeName, Converter={StaticResource Equals}, ConverterParameter=Light}">
+                            <TextBlock Text="Light" FontWeight="SemiBold"/>
+                        </RadioButton>
+                    </StackPanel>
+                    <TextBlock Text="Language" Style="{StaticResource SectionTitle}" Margin="0,28,0,0"/>
+                    <TextBlock Text="English in version 1. Text is kept in one place so French and Arabic can be added later." Style="{StaticResource SectionSub}"/>
+                    <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Model.Language}" Width="200" HorizontalAlignment="Left"/>
+                </StackPanel>
+
+                <!-- Backup -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Backup}">
+                    <TextBlock Text="Backup" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Local SQLite copies. Restore always asks for confirmation and keeps a safety copy." Style="{StaticResource SectionSub}"/>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel>
+                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding Model.AutoBackupEnabled}" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource RowTitle}"><Run Text="Automatic daily backup at "/><Run Text="{Binding BackupHourText, Mode=OneWay}"/><Run Text=":00"/></TextBlock>
+                                <TextBlock Text="{Binding BackupInfo}" Style="{StaticResource T.Mono}" FontSize="11" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Grid Margin="0,4,0,14">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="12"/><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <StackPanel><TextBlock Text="Hour (0–23)" Style="{StaticResource T.Label}"/><TextBox Text="{Binding BackupHourText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}"/></StackPanel>
+                        <StackPanel Grid.Column="2"><TextBlock Text="Backups to keep" Style="{StaticResource T.Label}"/><TextBox Text="{Binding KeepText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}"/></StackPanel>
+                    </Grid>
+                    <WrapPanel>
+                        <Button Content="Back up now" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Database}" Margin="0,0,10,10" Command="{Binding BackupNowCommand}"/>
+                        <Button Content="Change folder" Style="{StaticResource Btn.Secondary}" Margin="0,0,10,10" Command="{Binding ChangeFolderCommand}"/>
+                        <Button Content="Restore from backup…" Style="{StaticResource Btn.Secondary}" Foreground="{DynamicResource Text.Muted}" Margin="0,0,10,10" Command="{Binding RestoreCommand}"/>
+                        <Button Content="Open data folder" Style="{StaticResource Btn.Link}" Margin="6,0,0,10" Command="{Binding OpenDataFolderCommand}"/>
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource T.Faint}" TextWrapping="Wrap" Margin="0,6,0,0"><Run Text="Database: "/><Run Text="{Binding DataFolder, Mode=OneWay}" FontFamily="{DynamicResource Font.Mono}"/></TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

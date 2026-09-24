@@ -1,0 +1,62 @@
+<UserControl x:Class="GamingCenter.App.Views.Dialogs.CounterSaleDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts"
+             xmlns:d="clr-namespace:GamingCenter.App.Views.Dialogs">
+    <!-- Counter sale: catalog + cart + payment, same visual language as 1f/1g -->
+    <Border Style="{StaticResource DialogCard}" Width="1180" Height="660">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Margin="28,26">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+                    <TextBlock Text="Counter sale" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+                </DockPanel>
+                <parts:ProductCatalog DataContext="{Binding Catalog}"/>
+            </DockPanel>
+            <Border Grid.Column="1" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0" Padding="24,26">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Cart" Style="{StaticResource T.Section}" Margin="0,0,0,14"/>
+                    <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Padding="0,12,0,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding TotalText}" Style="{StaticResource T.MonoStrong}" FontSize="24"/>
+                            <TextBlock Text="Total" Style="{StaticResource T.H15}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+                    <Grid>
+                        <TextBlock Text="Click products to add them." Style="{StaticResource T.Faint}" Visibility="{Binding IsCartEmpty, Converter={StaticResource BoolToVis}}"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Cart}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,12">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}"/>
+                                            <DockPanel Margin="0,6,0,0">
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding TotalText}" Style="{StaticResource T.Mono}" VerticalAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="−" Style="{StaticResource Btn.Qty}" Command="{Binding DataContext.DecreaseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    <TextBlock Text="{Binding Quantity}" Style="{StaticResource T.Mono}" Width="30" TextAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Button Content="+" Style="{StaticResource Btn.Qty}" Command="{Binding DataContext.IncreaseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </DockPanel>
+            </Border>
+            <Border Grid.Column="2" Background="{DynamicResource Bg.App}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0" CornerRadius="0,16,16,0" Padding="28,26">
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" Content="Cancel" Style="{StaticResource Btn.Secondary}" Height="42" Margin="0,12,0,0" Foreground="{DynamicResource Text.Muted}" Command="{Binding CancelCommand}" IsCancel="True"/>
+                    <d:PaymentPanel/>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

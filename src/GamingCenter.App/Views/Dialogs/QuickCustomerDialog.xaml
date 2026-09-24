@@ -1,0 +1,22 @@
+<UserControl x:Class="GamingCenter.App.Views.Dialogs.QuickCustomerDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <Border Style="{StaticResource DialogCard}" Width="480">
+        <StackPanel Margin="26,24">
+            <TextBlock Text="New customer" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock Text="Name" Style="{StaticResource T.Label}" Margin="0,18,0,6"/>
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" c:Ui.FocusOnLoad="True"/>
+            <TextBlock Text="Phone" Style="{StaticResource T.Label}" Margin="0,14,0,6"/>
+            <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="0550 00 00 00"/>
+            <TextBlock Text="Notes" Style="{StaticResource T.Label}" Margin="0,14,0,6"/>
+            <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Multiline}"/>
+            <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,10,0,0"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Content="Cancel" Style="{StaticResource Btn.Secondary}" Command="{Binding CancelCommand}" Margin="0,0,10,0" IsCancel="True"/>
+                <Button Content="Save customer" Style="{StaticResource Btn.Primary}" Command="{Binding SaveCommand}" IsDefault="True"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

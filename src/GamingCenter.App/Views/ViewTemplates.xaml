@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:GamingCenter.App.ViewModels"
+                    xmlns:p="clr-namespace:GamingCenter.App.Views.Pages"
+                    xmlns:d="clr-namespace:GamingCenter.App.Views.Dialogs">
+    <!-- Pages -->
+    <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><p:DashboardView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:StationsViewModel}"><p:StationsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ProductsViewModel}"><p:ProductsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SessionsViewModel}"><p:SessionsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SalesViewModel}"><p:SalesView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CustomersViewModel}"><p:CustomersView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><p:ReportsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:UsersViewModel}"><p:UsersView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><p:SettingsView/></DataTemplate>
+
+    <!-- Dialogs -->
+    <DataTemplate DataType="{x:Type vm:ConfirmViewModel}"><d:ConfirmDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:PromptViewModel}"><d:PromptDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ReserveViewModel}"><d:ReserveDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:QuickCustomerViewModel}"><d:QuickCustomerDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:StartSessionViewModel}"><d:StartSessionDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SessionDrawerViewModel}"><d:SessionDrawer/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ExtendSessionViewModel}"><d:ExtendSessionDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:BillViewModel}"><d:BillDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CounterSaleViewModel}"><d:CounterSaleDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:StationTypesViewModel}"><d:StationTypesDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ProductEditorViewModel}"><d:ProductEditorDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ReceiveStockViewModel}"><d:ReceiveStockDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CategoriesViewModel}"><d:CategoriesDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ChangePasswordViewModel}"><d:ChangePasswordDialog/></DataTemplate>
+</ResourceDictionary>

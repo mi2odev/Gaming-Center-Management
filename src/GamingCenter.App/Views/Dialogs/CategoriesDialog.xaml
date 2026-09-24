@@ -1,0 +1,57 @@
+<UserControl x:Class="GamingCenter.App.Views.Dialogs.CategoriesDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <Border Style="{StaticResource DialogCard}" Width="520" MaxHeight="680">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Style="{StaticResource DialogHeader}">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" Width="34" Height="34" MinHeight="0" c:Ui.Icon="{StaticResource I.X}" Command="{Binding CancelCommand}"/>
+                    <TextBlock Text="Product categories" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Style="{StaticResource DialogFooter}">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Primary}" Command="{Binding SaveCommand}" Margin="10,0,0,0">
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock"><Setter Property="Text" Value="Save"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding EditId}" Value="{x:Null}"><Setter Property="Text" Value="Add category"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+                        <Button DockPanel.Dock="Right" Content="New" Style="{StaticResource Btn.Link}" Margin="12,0,0,0" Command="{Binding NewCommand}"
+                                Visibility="{Binding EditId, Converter={StaticResource HasValueToVis}}"/>
+                        <CheckBox DockPanel.Dock="Right" Content="Active" IsChecked="{Binding IsActive}" Margin="12,0,0,0"/>
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="Category name, e.g. Ice cream"/>
+                    </DockPanel>
+                    <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="26,10">
+                <ItemsControl ItemsSource="{Binding Categories}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,10">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <Button Content="Edit" Style="{StaticResource Btn.Link}" Margin="0,0,14,0" Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <Button Content="Delete" Style="{StaticResource Btn.Link}" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource T.Base}">
+                                        <Run Text="{Binding Name, Mode=OneWay}" FontWeight="Medium"/>
+                                        <Run Text="  "/>
+                                        <Run Text="{Binding ProductCount, Mode=OneWay}" Foreground="{DynamicResource Text.Muted}" FontSize="12"/><Run Text=" products" Foreground="{DynamicResource Text.Muted}" FontSize="12"/>
+                                    </TextBlock>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

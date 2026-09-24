@@ -1,0 +1,21 @@
+<UserControl x:Class="GamingCenter.App.Views.Parts.PeriodPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Binds to Period ("Today", "Yesterday", "Week", "Month", "Custom"), CustomFrom, CustomTo, IsCustom -->
+    <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource SegmentHost}">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Style="{StaticResource Segment}" GroupName="P" Content="Today" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Today}"/>
+                <RadioButton Style="{StaticResource Segment}" GroupName="P" Content="Yesterday" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Yesterday}"/>
+                <RadioButton Style="{StaticResource Segment}" GroupName="P" Content="This week" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Week}"/>
+                <RadioButton Style="{StaticResource Segment}" GroupName="P" Content="This month" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Month}"/>
+                <RadioButton Style="{StaticResource Segment}" GroupName="P" Content="Custom…" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Custom}"/>
+            </StackPanel>
+        </Border>
+        <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Visibility="{Binding IsCustom, Converter={StaticResource BoolToVis}}">
+            <DatePicker SelectedDate="{Binding CustomFrom}" Width="130"/>
+            <TextBlock Text="→" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="8,0"/>
+            <DatePicker SelectedDate="{Binding CustomTo}" Width="130"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>
