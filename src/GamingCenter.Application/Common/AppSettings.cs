@@ -20,6 +20,10 @@ public sealed class AppSettings
     public int MinimumChargeMinutes { get; set; }
     public decimal MoneyRoundingStep { get; set; } = 1m;
     public decimal DefaultHourlyRate { get; set; } = 300m;
+    /// <summary>Price per extra controller per hour for stations that don't set their own.</summary>
+    public decimal DefaultExtraControllerRate { get; set; } = 100m;
+    /// <summary>How many controllers above the included ones can be added (when the station has no maximum).</summary>
+    public int DefaultMaxExtraControllers { get; set; } = 2;
 
     // Receipts
     public string ReceiptFooter { get; set; } = "Thank you — see you soon";

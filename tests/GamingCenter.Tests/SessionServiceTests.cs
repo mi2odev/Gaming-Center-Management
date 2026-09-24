@@ -46,7 +46,7 @@ public sealed class TestDb : IDisposable
         Settings = new SettingsService(Factory, Clock, User);
         Settings.LoadAsync().GetAwaiter().GetResult();
         Sessions = new SessionService(Factory, Clock, User, Settings);
-        Stations = new StationService(Factory, Clock, User);
+        Stations = new StationService(Factory, Clock, User, Settings);
         Products = new ProductService(Factory, Clock, User);
         Customers = new CustomerService(Factory, Clock, User);
         Credits = new CreditService(Factory, Clock, User);
@@ -439,5 +439,21 @@ public class SessionServiceTests : IDisposable
         Assert.Equal(50m, pay.CollectedBy(PaymentMethod.Card));
         var rows = await _t.Reports.GetPaymentsAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1));
         Assert.Equal("Cash 100 + Card 50 + credit", rows[0].MethodsText);
+    }
+
+    [Fact]
+    public async Task Stations_without_own_extra_price_use_the_settings_default()
+    {
+        // Station created before controller pricing: 2 included, no extra price, no maximum.
+        var types = await _t.Stations.GetTypesAsync();
+        var st = await _t.Stations.SaveAsync(new SaveStationRequest(null, "PS5 #99", 99, types.First(t => t.Name == "PlayStation").Id,
+            "Sony", "PS5", null, 300m, null, "Room A", 2, StationState.Available, true));
+        Assert.True(st.HasControllerPricing);          // default: +100/h, up to 2 extra
+        Assert.Equal(4, st.Plan!.Max);
+        Assert.Equal(500m, st.RateFor(4));
+
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null, Controllers: 4));
+        Assert.Equal(500m, s.HourlyRate);
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.ChangeControllersAsync(s.Id, 5));
     }
 }

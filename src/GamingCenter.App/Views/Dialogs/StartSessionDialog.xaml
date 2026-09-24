@@ -43,12 +43,15 @@
 
                 <!-- Controllers (stations priced per controller) -->
                 <StackPanel Visibility="{Binding HasControllerPricing, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Style="{StaticResource T.Label}" FontSize="12" Margin="0,20,0,8"><Run Text="Controllers"/> <Run Text="· price per hour changes with the number of controllers" Foreground="{DynamicResource Text.Faint}"/></TextBlock>
+                    <TextBlock Style="{StaticResource T.Label}" FontSize="12" Margin="0,20,0,8"><Run Text="Controllers"/> <Run Text="· extra controllers add to the hourly price" Foreground="{DynamicResource Text.Faint}"/></TextBlock>
                     <ListBox Style="{StaticResource OptionList}" ItemsSource="{Binding ControllerOptions}" SelectedValuePath="Count" SelectedValue="{Binding Controllers}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Count}" FontFamily="{DynamicResource Font.Mono}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <c:Icon Data="{StaticResource I.Gamepad}" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding Count}" FontFamily="{DynamicResource Font.Mono}" FontSize="18" FontWeight="SemiBold"/>
+                                    </StackPanel>
                                     <TextBlock Text="{Binding PriceNote}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </DataTemplate>

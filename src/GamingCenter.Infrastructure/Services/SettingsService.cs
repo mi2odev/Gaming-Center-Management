@@ -71,6 +71,8 @@ public sealed class SettingsService(IDbContextFactory<GamingCenterDbContext> dbF
         if (s.LongSessionAlertHours is < 0 or > 48) throw new BusinessException("Long session alert must be between 0 and 48 hours.");
         if (s.AutoBackupHour is < 0 or > 23) throw new BusinessException("Backup hour must be between 0 and 23.");
         if (s.BackupsToKeep is < 1 or > 365) throw new BusinessException("Backups to keep must be between 1 and 365.");
+        if (s.DefaultExtraControllerRate < 0) throw new BusinessException("Extra controller price cannot be negative.");
+        if (s.DefaultMaxExtraControllers is < 0 or > 8) throw new BusinessException("Extra controllers allowed must be between 0 and 8.");
         if (s.ReceiptWidthMm is < 48 or > 210) throw new BusinessException("Receipt width must be between 48 and 210 mm.");
     }
 
