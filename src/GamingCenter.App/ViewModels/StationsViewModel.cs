@@ -226,9 +226,12 @@ public sealed partial class StationsViewModel : PageViewModel
     private async Task ChooseImage()
     {
         var file = _files.OpenImage();
-        if (file is null) return;
-        await TryAsync(async () => EditImage = await _images.ImportAsync(file, "stations"));
+        if (file is not null) await ImportImage(file);
     }
+
+    [RelayCommand]
+    private async Task ImportImage(string file) =>
+        await TryAsync(async () => EditImage = await _images.ImportAsync(file, "stations"), "Picture added", "Click \"Save changes\" to keep it.");
 
     [RelayCommand]
     private void RemoveImage() => EditImage = null;

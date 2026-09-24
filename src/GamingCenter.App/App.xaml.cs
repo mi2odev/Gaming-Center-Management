@@ -110,6 +110,7 @@ public partial class App : System.Windows.Application
         s.AddTransient<SessionsViewModel>();
         s.AddTransient<ProductsViewModel>();
         s.AddTransient<CustomersViewModel>();
+        s.AddTransient<CreditsViewModel>();
         s.AddTransient<SalesViewModel>();
         s.AddTransient<ReportsViewModel>();
         s.AddTransient<UsersViewModel>();

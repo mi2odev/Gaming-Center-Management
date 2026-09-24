@@ -3,7 +3,7 @@ using GamingCenter.App.Services;
 
 namespace GamingCenter.App.ViewModels;
 
-public enum Page { Dashboard, Stations, Sessions, Products, Customers, Sales, Reports, Users, Settings }
+public enum Page { Dashboard, Stations, Sessions, Products, Customers, Credits, Sales, Reports, Users, Settings }
 
 /// <summary>Base for sidebar pages. Errors from services are shown as toasts rather than crashing.</summary>
 public abstract partial class PageViewModel(ToastService toasts) : ObservableObject

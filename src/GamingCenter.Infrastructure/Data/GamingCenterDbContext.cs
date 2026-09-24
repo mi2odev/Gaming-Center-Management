@@ -18,6 +18,7 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
     public DbSet<SessionProduct> SessionProducts => Set<SessionProduct>();
     public DbSet<SessionRateChange> SessionRateChanges => Set<SessionRateChange>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
     public DbSet<ApplicationSetting> Settings => Set<ApplicationSetting>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -120,6 +121,17 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
             e.HasIndex(x => x.ReceiptNumber).IsUnique();
             e.HasIndex(x => x.PaidAt);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            e.Ignore(x => x.PaidNow);
+        });
+
+        b.Entity<CreditTransaction>(e =>
+        {
+            e.HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Payment).WithMany().HasForeignKey(x => x.PaymentId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            e.Property(x => x.Note).HasMaxLength(256);
+            e.HasIndex(x => new { x.CustomerId, x.At });
+            e.HasIndex(x => x.At);
         });
 
         b.Entity<ApplicationSetting>(e =>

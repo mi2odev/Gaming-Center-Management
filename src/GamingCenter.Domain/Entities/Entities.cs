@@ -166,6 +166,29 @@ public sealed class Payment : Entity
     public PaymentMethod Method { get; set; }
     public decimal AmountReceived { get; set; }
     public decimal ChangeGiven { get; set; }
+    /// <summary>Part of the total not paid now and added to the customer's credit (debt).</summary>
+    public decimal CreditAmount { get; set; }
+    public int? UserId { get; set; }
+    public User? User { get; set; }
+
+    public decimal PaidNow => TotalAmount - CreditAmount;
+}
+
+/// <summary>
+/// Customer credit ledger. Positive = the customer owes more (unpaid bill or manual entry),
+/// negative = the customer paid back. Balance = sum of amounts. Rows are never deleted.
+/// </summary>
+public sealed class CreditTransaction : Entity
+{
+    public int CustomerId { get; set; }
+    public Customer? Customer { get; set; }
+    public DateTime At { get; set; }
+    public decimal Amount { get; set; }
+    public CreditKind Kind { get; set; }
+    public int? PaymentId { get; set; }
+    public Payment? Payment { get; set; }
+    public PaymentMethod? Method { get; set; }
+    public string? Note { get; set; }
     public int? UserId { get; set; }
     public User? User { get; set; }
 }

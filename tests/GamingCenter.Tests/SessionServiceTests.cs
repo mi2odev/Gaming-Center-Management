@@ -32,6 +32,7 @@ public sealed class TestDb : IDisposable
     public ProductService Products { get; }
     public ReportService Reports { get; }
     public CustomerService Customers { get; }
+    public CreditService Credits { get; }
 
     public TestDb()
     {
@@ -48,6 +49,7 @@ public sealed class TestDb : IDisposable
         Stations = new StationService(Factory, Clock, User);
         Products = new ProductService(Factory, Clock, User);
         Customers = new CustomerService(Factory, Clock, User);
+        Credits = new CreditService(Factory, Clock, User);
         Reports = new ReportService(Factory, Clock, User, Settings, Products);
     }
 
@@ -325,5 +327,59 @@ public class SessionServiceTests : IDisposable
         var s = await _t.Sessions.StartAsync(new StartSessionRequest(pc.Id, null, SessionMode.Open, null, null, Controllers: 4));
         Assert.Equal(250m, s.HourlyRate);
         await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.ChangeControllersAsync(s.Id, 2));
+    }
+
+    [Fact]
+    public async Task Partial_payment_puts_the_rest_on_customer_credit()
+    {
+        var st = await _t.Station("PS5 #01");
+        var yacine = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Yacine B.", "0550000000", null));
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null));
+        _t.Clock.Now = _t.Clock.Now.AddHours(2); // 600 DA
+
+        // No customer → refused, session still open
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 200m, null, PayNow: 200m)));
+        Assert.Single(await _t.Sessions.GetLiveSessionsAsync());
+
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 200m, yacine.Id, PayNow: 200m));
+        Assert.Equal(600m, pay.TotalAmount);
+        Assert.Equal(400m, pay.CreditAmount);
+        Assert.Equal(0m, pay.ChangeGiven);
+        Assert.Equal(400m, await _t.Credits.GetBalanceAsync(yacine.Id));
+        Assert.Equal(400m, await _t.Credits.GetTotalOutstandingAsync());
+
+        var receipt = await _t.Reports.GetReceiptAsync(s.Id);
+        Assert.Equal(400m, receipt!.CreditAmount);
+        Assert.Equal(400m, receipt.CustomerBalance);
+
+        // Next visit: pays back part, then the rest
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Credits.RecordRepaymentAsync(yacine.Id, 500m, PaymentMethod.Cash, null));
+        await _t.Credits.RecordRepaymentAsync(yacine.Id, 150m, PaymentMethod.Cash, null);
+        Assert.Equal(250m, await _t.Credits.GetBalanceAsync(yacine.Id));
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Customers.DeleteAsync(yacine.Id));
+        await _t.Credits.RecordRepaymentAsync(yacine.Id, 250m, PaymentMethod.Card, "paid in full");
+
+        var history = await _t.Credits.GetHistoryAsync(yacine.Id);
+        Assert.Equal(3, history.Count);
+        Assert.Equal(0m, history[0].BalanceAfter);
+        Assert.Empty(await _t.Credits.GetBalancesAsync());
+        Assert.Single(await _t.Credits.GetBalancesAsync(includeSettled: true));
+
+        var report = await _t.Reports.GetReportAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1), false);
+        Assert.Equal(400m, report.CreditGiven);
+        Assert.Equal(400m, report.CreditCollected);
+    }
+
+    [Fact]
+    public async Task Full_credit_counter_sale_and_manual_debt()
+    {
+        var nabil = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Nabil T.", null, null));
+        var cola = await _t.Product("Coca-Cola 33cl");
+        var pay = await _t.Sessions.CounterSaleAsync(new CounterSaleRequest([new CartLine(cola.Id, 2)], PaymentMethod.Cash, 0, nabil.Id, PayNow: 0));
+        Assert.Equal(300m, pay.CreditAmount);
+        await _t.Credits.AddManualAsync(nabil.Id, 1000m, "Old debt from notebook");
+        Assert.Equal(1300m, await _t.Credits.GetBalanceAsync(nabil.Id));
+        var customers = await _t.Customers.GetAllAsync();
+        Assert.Equal(1300m, customers.Single(c => c.Id == nabil.Id).Balance);
     }
 }

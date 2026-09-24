@@ -101,6 +101,8 @@ public sealed class PrintService(ISettingsService settings)
         doc.Blocks.Add(Row("TOTAL", Money.Format(r.Total), bold: true, size: 13));
         doc.Blocks.Add(Row(r.Method.ToString(), Money.Number(r.AmountReceived)));
         if (r.Change > 0) doc.Blocks.Add(Row("Change", Money.Number(r.Change)));
+        if (r.CreditAmount > 0) doc.Blocks.Add(Row("ON CREDIT (unpaid)", Money.Number(r.CreditAmount), bold: true));
+        if (r.CreditAmount > 0 && r.CustomerBalance > 0) doc.Blocks.Add(Row("Total owed now", Money.Format(r.CustomerBalance)));
         if (!string.IsNullOrWhiteSpace(r.CustomerName)) doc.Blocks.Add(Row("Customer", r.CustomerName));
         if (!string.IsNullOrWhiteSpace(r.Footer)) doc.Blocks.Add(Center(r.Footer, 10, margin: 10));
         return doc;

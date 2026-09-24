@@ -1,0 +1,30 @@
+<UserControl x:Class="GamingCenter.App.Views.Dialogs.ManualCreditDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts"
+             xmlns:cm="clr-namespace:GamingCenter.Application.Common;assembly=GamingCenter.Application">
+    <Border Style="{StaticResource DialogCard}" Width="520">
+        <StackPanel Margin="26,24">
+            <TextBlock Text="Add or correct a debt" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock Text="For money owed from before the app (e.g. a notebook) or to correct a balance. Everything is kept in the history." Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+            <TextBlock Text="Customer" Style="{StaticResource T.Label}" Margin="0,18,0,6"/>
+            <parts:CustomerPicker DataContext="{Binding Customer}"/>
+            <Grid Margin="0,14,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="200"/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Amount" Style="{StaticResource T.Label}"/>
+                    <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="2" Content="Reduce / forgive instead of adding" IsChecked="{Binding Reduce}" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
+            </Grid>
+            <TextBlock Text="Reason" Style="{StaticResource T.Label}" Margin="0,14,0,6"/>
+            <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="e.g. Old debt from notebook"/>
+            <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,10,0,0"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Content="Cancel" Style="{StaticResource Btn.Secondary}" Command="{Binding CancelCommand}" Margin="0,0,10,0" IsCancel="True"/>
+                <Button Content="Save" Style="{StaticResource Btn.Primary}" Command="{Binding SaveCommand}"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

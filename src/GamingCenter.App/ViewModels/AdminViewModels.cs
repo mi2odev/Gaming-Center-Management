@@ -19,6 +19,8 @@ public sealed record CustomerRow(CustomerDto Customer)
     public string Sessions => Customer.TotalSessions.ToString();
     public string Spent => Money.Format(Customer.TotalSpent);
     public string LastVisit => Customer.LastVisit?.ToString("dd/MM/yyyy") ?? "—";
+    public string Owes => Customer.Balance > 0 ? Money.Format(Customer.Balance) : "—";
+    public bool HasDebt => Customer.Balance > 0;
     public string Initials => string.Concat(Customer.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
 }
 
@@ -30,8 +32,11 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
     private readonly FileDialogService _files;
     private List<CustomerDto> _all = [];
 
-    public CustomersViewModel(ICustomerService customers, DialogService dialogs, CurrentUserService user, FileDialogService files, ToastService toasts) : base(toasts)
+    private readonly ShellNavigator _nav;
+
+    public CustomersViewModel(ICustomerService customers, DialogService dialogs, CurrentUserService user, FileDialogService files, ShellNavigator nav, ToastService toasts) : base(toasts)
     {
+        _nav = nav;
         _customers = customers;
         _dialogs = dialogs;
         _user = user;
@@ -97,7 +102,8 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
         EditName = c.Name;
         EditPhone = c.Phone ?? "";
         EditNotes = c.Notes ?? "";
-        EditStats = $"{c.TotalSessions} visits · {Money.Format(c.TotalSpent)} spent · customer since {c.CreatedAt:dd/MM/yyyy}";
+        EditStats = $"{c.TotalSessions} visits · {Money.Format(c.TotalSpent)} spent · customer since {c.CreatedAt:dd/MM/yyyy}"
+            + (c.Balance > 0 ? $" · owes {Money.Format(c.Balance)}" : "");
         EditError = null;
         IsEditing = true;
         OnPropertyChanged(nameof(EditorTitle));
@@ -122,6 +128,12 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
     {
         IsEditing = false;
         Selected = null;
+    }
+
+    [RelayCommand]
+    private void OpenCredit()
+    {
+        if (EditId is { } id) _nav.Navigate(Page.Credits, id);
     }
 
     [RelayCommand]
@@ -158,7 +170,7 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
         if (path is null) return;
         await TryAsync(() => CsvWriter.WriteAsync(path, _all, [
             new("Id", c => c.Id), new("Name", c => c.Name), new("Phone", c => c.Phone), new("Notes", c => c.Notes),
-            new("Sessions", c => c.TotalSessions), new("Total spent", c => c.TotalSpent), new("Last visit", c => c.LastVisit),
+            new("Sessions", c => c.TotalSessions), new("Total spent", c => c.TotalSpent), new("Owes", c => c.Balance), new("Last visit", c => c.LastVisit),
         ]), "Export complete", path);
     }
 }
@@ -303,6 +315,8 @@ public sealed partial class ReportsViewModel : PageViewModel
             parts.Add($"Most-used station {top.Name} ({Durations.Short(top.PlayTime)})");
         if (d.TotalRevenue > 0)
             parts.Add(string.Join(" · ", d.MethodTotals.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value / d.TotalRevenue:P0}")));
+        if (d.CreditGiven > 0 || d.CreditCollected > 0)
+            parts.Add($"Credit given {Money.Format(d.CreditGiven)} · paid back {Money.Format(d.CreditCollected)}");
         Insights = string.Join(" · ", parts);
         IsEmpty = d.TotalRevenue == 0 && d.Sessions == 0;
     }

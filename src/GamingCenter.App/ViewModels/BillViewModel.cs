@@ -21,6 +21,7 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     {
         PrintReceipt = settings.Current.PrintReceiptByDefault;
         Customer = new CustomerPickerViewModel(customers, dialogs);
+        Customer.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(CustomerPickerViewModel.Selected)) UpdateChange(); };
     }
 
     public CustomerPickerViewModel Customer { get; }
@@ -33,7 +34,40 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     [ObservableProperty] private string _changeText = "0";
     [ObservableProperty] private bool _changeIsNegative;
     [ObservableProperty] private bool _printReceipt;
-    [ObservableProperty] private bool _attachCustomer;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CustomerRequired))]
+    private bool _attachCustomer;
+
+    /// <summary>Customer pays part (or nothing) now; the rest goes on their credit.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ConfirmText), nameof(ShowAmountField), nameof(AmountLabel), nameof(CustomerRequired))]
+    private bool _payLater;
+
+    [ObservableProperty] private string _creditText = "";
+    [ObservableProperty] private bool _canOfferCredit;
+
+    public bool ShowAmountField => IsCash || PayLater;
+    public string AmountLabel => PayLater ? "Paying now" : "Received";
+    public bool CustomerRequired => PayLater || AttachCustomer;
+
+    partial void OnPayLaterChanged(bool value)
+    {
+        if (value)
+        {
+            AttachCustomer = true;
+            // Keep what was typed if it is a real partial amount, otherwise start from zero.
+            if (!Money.TryParse(ReceivedText, out var r) || r >= Total) ReceivedText = "0";
+        }
+        else ReceivedText = Money.Number(Total).Replace(",", "");
+        UpdateChange();
+    }
+
+    partial void OnMethodChanged(PaymentMethod value)
+    {
+        OnPropertyChanged(nameof(ShowAmountField));
+        UpdateChange();
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ConfirmText), nameof(TotalText))]
@@ -41,7 +75,9 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
 
     public bool IsCash => Method == PaymentMethod.Cash;
     public string TotalText => Money.Format(Total);
-    public string ConfirmText => $"Confirm payment · {Money.Format(Total)}";
+    public string ConfirmText => PayLater
+        ? $"Confirm · {Money.Format(PayNowAmount())} now · {Money.Format(Total - PayNowAmount())} on credit"
+        : $"Confirm payment · {Money.Format(Total)}";
     public ObservableCollection<Preset> CashPresets { get; } = [];
 
     partial void OnReceivedTextChanged(string value) => UpdateChange();
@@ -61,16 +97,55 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
 
     private void UpdateChange()
     {
+        OnPropertyChanged(nameof(ConfirmText));
+        if (PayLater)
+        {
+            var credit = Total - PayNowAmount();
+            ChangeIsNegative = false;
+            ChangeText = Money.Format(0);
+            CreditText = $"{Money.Format(credit)} will be added to {(Customer.Selected?.Name ?? "the customer")}'s credit"
+                + (Customer.Selected is { Balance: > 0 } c ? $" (already owes {Money.Format(c.Balance)}, new total {Money.Format(c.Balance + credit)})" : "");
+            CanOfferCredit = false;
+            return;
+        }
+        CreditText = "";
         if (!Money.TryParse(ReceivedText, out var received)) received = string.IsNullOrWhiteSpace(ReceivedText) ? Total : 0;
         var change = received - Total;
-        ChangeIsNegative = change < 0;
-        ChangeText = ChangeIsNegative ? $"Missing {Money.Format(-change)}" : Money.Format(change);
+        ChangeIsNegative = IsCash && change < 0;
+        ChangeText = ChangeIsNegative ? $"Missing {Money.Format(-change)}" : Money.Format(Math.Max(0, change));
+        CanOfferCredit = ChangeIsNegative;
     }
 
-    protected decimal ReceivedAmount() =>
-        Money.TryParse(ReceivedText, out var r) ? r : Total;
+    /// <summary>Amount paid now in pay-later mode (never above the total).</summary>
+    protected decimal PayNowAmount() =>
+        Money.TryParse(ReceivedText, out var r) ? Math.Clamp(r, 0, Total) : 0;
 
-    protected int? ChosenCustomerId(int? existing) => AttachCustomer ? Customer.SelectedId : existing;
+    protected decimal ReceivedAmount() =>
+        PayLater ? PayNowAmount() : Money.TryParse(ReceivedText, out var r) ? r : Total;
+
+    protected decimal? PayNowOrNull() => PayLater ? PayNowAmount() : null;
+
+    protected int? ChosenCustomerId(int? existing) => PayLater || AttachCustomer ? Customer.SelectedId : existing;
+
+    /// <summary>Checks that a customer is chosen when part of the bill stays unpaid.</summary>
+    protected bool ValidateCredit()
+    {
+        if (PayLater && Customer.SelectedId is null)
+        {
+            Error = "Choose or create the customer who will owe the rest (type the name in the customer box).";
+            return false;
+        }
+        return true;
+    }
+
+    [RelayCommand]
+    private void PutMissingOnCredit()
+    {
+        var typed = ReceivedText;
+        PayLater = true;
+        ReceivedText = typed;
+        UpdateChange();
+    }
 }
 
 /// <summary>Final bill and payment for a gaming session (design 1g).</summary>
@@ -153,17 +228,22 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
     [RelayCommand]
     private async Task Confirm()
     {
+        if (!ValidateCredit()) return;
         Payment? payment = null;
         bool ok = await RunAsync(async () =>
         {
             payment = await _sessions.CompleteAsync(new CompleteSessionRequest(
-                _session.Id, _end, Method, Method == PaymentMethod.Cash ? ReceivedAmount() : Total, ChosenCustomerId(null)));
+                _session.Id, _end, Method, Method == PaymentMethod.Cash || PayLater ? ReceivedAmount() : Total, ChosenCustomerId(null), PayNowOrNull()));
         });
         if (!ok || payment is null) return;
 
         _store.Remove(_session.Id);
-        _toasts.Success($"Payment confirmed · {Money.Format(payment.TotalAmount)}",
-            payment.ChangeGiven > 0 ? $"Give change: {Money.Format(payment.ChangeGiven)} · {StationName} is available" : $"{StationName} is available");
+        if (payment.CreditAmount > 0)
+            _toasts.Warning($"{Money.Format(payment.CreditAmount)} on credit · {Customer.Selected?.Name}",
+                $"Paid now {Money.Format(payment.PaidNow)}. See the Credits page. {StationName} is available.");
+        else
+            _toasts.Success($"Payment confirmed · {Money.Format(payment.TotalAmount)}",
+                payment.ChangeGiven > 0 ? $"Give change: {Money.Format(payment.ChangeGiven)} · {StationName} is available" : $"{StationName} is available");
         if (PrintReceipt) await PrintAsync(_session.Id);
         Close(true);
     }
@@ -255,7 +335,7 @@ public sealed partial class CounterSaleViewModel : PaymentDialogViewModel
     private void Sync()
     {
         Total = Cart.Sum(l => l.Total);
-        ReceivedText = Money.Number(Total).Replace(",", "");
+        if (!PayLater) ReceivedText = Money.Number(Total).Replace(",", "");
         Catalog.SetQuantities(Cart.ToDictionary(l => l.Product.Id, l => l.Quantity));
         OnPropertyChanged(nameof(IsCartEmpty));
     }
@@ -264,14 +344,16 @@ public sealed partial class CounterSaleViewModel : PaymentDialogViewModel
     private async Task Confirm()
     {
         if (Cart.Count == 0) { Error = "Add at least one product."; return; }
+        if (!ValidateCredit()) return;
         Payment? payment = null;
         bool ok = await RunAsync(async () =>
             payment = await _sessions.CounterSaleAsync(new CounterSaleRequest(
                 Cart.Select(l => new CartLine(l.Product.Id, l.Quantity)).ToList(),
-                Method, Method == PaymentMethod.Cash ? ReceivedAmount() : Total, ChosenCustomerId(null))));
+                Method, Method == PaymentMethod.Cash || PayLater ? ReceivedAmount() : Total, ChosenCustomerId(null), PayNowOrNull())));
         if (!ok || payment is null) return;
 
-        _toasts.Success($"Sale recorded · {Money.Format(payment.TotalAmount)}",
+        if (payment.CreditAmount > 0) _toasts.Warning($"{Money.Format(payment.CreditAmount)} on credit · {Customer.Selected?.Name}", "See the Credits page.");
+        else _toasts.Success($"Sale recorded · {Money.Format(payment.TotalAmount)}",
             payment.ChangeGiven > 0 ? $"Give change: {Money.Format(payment.ChangeGiven)}" : $"Receipt #{payment.ReceiptNumber}");
         foreach (var l in Cart)
             _notifications.CheckStock(l.Product.Name, l.Product.Stock - l.Quantity, l.Product.MinStock);

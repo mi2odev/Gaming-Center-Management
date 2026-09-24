@@ -98,6 +98,10 @@ Only one copy of the app runs at a time on a machine, so timers and alerts never
 3. Click a running card → session drawer: live timer, running total, pause history, items (− / +), and a product catalog. Click a product to add it; stock goes down at once.
 4. **End session & bill** → final bill → Cash / Card / Other → amount received (change is computed) → **Confirm payment**. The session closes, the payment and receipt are stored, a receipt prints if enabled, and the station is available again.
 
+**Customer can't pay everything?** On the bill, tick **Pay the rest later (credit)**, type what they pay now (0 is fine), and pick or create the customer (just type their name). The unpaid part is saved on their name. If you typed less cash than the total, a link offers to put the missing amount on credit. The **Credits** page lists everyone who owes money, how much, and since when. Select a customer to see their history and **Record payment** when they pay back (all or part). The customer box shows "owes …" whenever that customer is picked again, so you remember at their next visit. Admins can also add old debts from a notebook. Customers with a balance cannot be deleted.
+
+**Pictures:** in *Gaming Stations* (station editor) and *Products* (product editor), click **Upload picture…**, click the image box, or drag a JPG/PNG from Explorer onto it. Pictures are resized and stored locally, then shown on the dashboard cards, lists and product catalog.
+
 Right-click a card to pause/resume, add a product, end and bill, reserve, clear a reservation, or set/clear maintenance. The **List** view (top right) shows the same with inline Pause / + Product / End / Start buttons. **Ctrl+K** searches stations, products, customers and receipts. **Esc** closes the top dialog.
 
 ### Session modes and billing
@@ -164,7 +168,7 @@ GamingCenter.sln
 - **Future multi-computer version:** the UI depends only on the `Application` interfaces. A networked version can swap `Infrastructure` for a server- or API-backed implementation (or point EF at a server database) without touching view models.
 
 ### Entities
-`User`, `GamingStationType`, `GamingStation`, `PriceHistory`, `Customer`, `ProductCategory`, `Product`, `StockMovement`, `GamingSession` (also used for counter sales, with no station), `SessionPause`, `SessionProduct` (name, price and cost are copied at sale time), `Payment` (one per session, and it is the receipt: number `yyyy-MMdd-NNN`), `ApplicationSetting` (key/value).
+`CreditTransaction` (customer credit ledger: unpaid bills +, repayments −), `User`, `GamingStationType`, `GamingStation`, `PriceHistory`, `Customer`, `ProductCategory`, `Product`, `StockMovement`, `GamingSession` (also used for counter sales, with no station), `SessionPause`, `SessionProduct` (name, price and cost are copied at sale time), `Payment` (one per session, and it is the receipt: number `yyyy-MMdd-NNN`), `ApplicationSetting` (key/value).
 Roles are an enum on `User`. Daily reports are computed on demand rather than stored, so they can never go stale.
 
 ### Not in version 1

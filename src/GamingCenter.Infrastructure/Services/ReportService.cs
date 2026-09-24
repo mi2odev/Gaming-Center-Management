@@ -110,7 +110,9 @@ public sealed class ReportService(
             RateNote(s),
             s.GamingTotal,
             s.Products.OrderBy(p => p.AddedAt).Select(p => new ReceiptLine(p.ProductName, p.Quantity, p.UnitPrice, p.LineTotal)).ToList(),
-            s.ProductsTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.User?.DisplayName,
+            s.ProductsTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.CreditAmount,
+            s.CustomerId is { } cid ? (await db.CreditTransactions.AsNoTracking().Where(t => t.CustomerId == cid).Select(t => t.Amount).ToListAsync(ct)).Sum() : 0,
+            pay.User?.DisplayName,
             s.Pauses.OrderBy(p => p.StartTime).Select(p => (p.StartTime, p.EndTime)).ToList(),
             cfg.ReceiptFooter);
     }
@@ -136,7 +138,7 @@ public sealed class ReportService(
             .OrderByDescending(p => p.PaidAt)
             .ToListAsync(ct);
         return list.Select(p => new PaymentRow(p.Id, p.SessionId, p.ReceiptNumber, p.PaidAt, p.Session!.StationName,
-            p.Session.Customer?.Name ?? "Walk-in", p.GamingAmount, p.ProductsAmount, p.TotalAmount, p.Method, p.User?.DisplayName)).ToList();
+            p.Session.Customer?.Name ?? "Walk-in", p.GamingAmount, p.ProductsAmount, p.TotalAmount, p.Method, p.User?.DisplayName, p.CreditAmount)).ToList();
     }
 
     public async Task<ReportData> GetReportAsync(DateTime from, DateTime to, bool groupByMonth, CancellationToken ct = default)
@@ -183,6 +185,10 @@ public sealed class ReportService(
 
         var modeCounts = gaming.GroupBy(s => s.Mode).ToDictionary(g => g.Key, g => g.Count());
         var methodTotals = payments.GroupBy(p => p.Method).ToDictionary(g => g.Key, g => g.Sum(p => p.TotalAmount));
+        var creditRows = await db.CreditTransactions.AsNoTracking()
+            .Where(t => t.At >= from && t.At < to).Select(t => new { t.Amount, t.Kind }).ToListAsync(ct);
+        decimal creditGiven = creditRows.Where(t => t.Amount > 0).Sum(t => t.Amount);
+        decimal creditCollected = -creditRows.Where(t => t.Kind == CreditKind.Repayment).Sum(t => t.Amount);
         int? busiestHour = gaming.Count == 0 ? null : gaming.GroupBy(s => s.StartTime.Hour).OrderByDescending(g => g.Count()).First().Key;
 
         return new ReportData(
@@ -194,7 +200,7 @@ public sealed class ReportService(
             gaming.Count,
             gaming.Count == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(gaming.Average(s => s.PlayedSeconds)),
             previous.Sum(),
-            perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour);
+            perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour, creditGiven, creditCollected);
     }
 }
 

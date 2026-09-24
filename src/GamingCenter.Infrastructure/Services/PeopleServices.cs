@@ -109,11 +109,13 @@ public sealed class CustomerService(IDbContextFactory<GamingCenterDbContext> dbF
             .Select(s => new { CustomerId = s.CustomerId!.Value, s.Total, s.StartTime })
             .ToListAsync(ct);
         var stats = visits.GroupBy(v => v.CustomerId).ToDictionary(g => g.Key, g => (Count: g.Count(), Total: g.Sum(x => x.Total), Last: g.Max(x => x.StartTime)));
+        var credit = await db.CreditTransactions.AsNoTracking().Where(t => ids.Contains(t.CustomerId)).Select(t => new { t.CustomerId, t.Amount }).ToListAsync(ct);
+        var balances = credit.GroupBy(t => t.CustomerId).ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
 
         return customers.Select(c =>
         {
             var s = stats.GetValueOrDefault(c.Id);
-            return new CustomerDto(c.Id, c.Name, c.Phone, c.Notes, s.Count, s.Total, s.Count > 0 ? s.Last : null, c.CreatedAt);
+            return new CustomerDto(c.Id, c.Name, c.Phone, c.Notes, s.Count, s.Total, s.Count > 0 ? s.Last : null, c.CreatedAt, balances.GetValueOrDefault(c.Id));
         }).ToList();
     }
 
@@ -148,6 +150,8 @@ public sealed class CustomerService(IDbContextFactory<GamingCenterDbContext> dbF
         RequireAdmin();
         await using var db = await OpenAsync(ct);
         var c = await db.Customers.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct) ?? throw new BusinessException("Customer not found.");
+        var owed = (await db.CreditTransactions.Where(t => t.CustomerId == id).Select(t => t.Amount).ToListAsync(ct)).Sum();
+        if (owed != 0) throw new BusinessException($"{c.Name} still has a credit balance of {owed:0.##}. Settle it first.");
         c.IsDeleted = true;
         await db.SaveChangesAsync(ct);
     }

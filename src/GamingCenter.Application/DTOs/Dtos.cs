@@ -93,7 +93,7 @@ public sealed record SaveProductRequest(
     string? ImagePath,
     bool IsActive);
 
-public sealed record CustomerDto(int Id, string Name, string? Phone, string? Notes, int TotalSessions, decimal TotalSpent, DateTime? LastVisit, DateTime CreatedAt);
+public sealed record CustomerDto(int Id, string Name, string? Phone, string? Notes, int TotalSessions, decimal TotalSpent, DateTime? LastVisit, DateTime CreatedAt, decimal Balance = 0);
 
 public sealed record SaveCustomerRequest(int? Id, string Name, string? Phone, string? Notes);
 
@@ -104,11 +104,17 @@ public sealed record CompleteSessionRequest(
     DateTime EndTime,
     PaymentMethod Method,
     decimal AmountReceived,
-    int? CustomerId);
+    int? CustomerId,
+    decimal? PayNow = null);
 
 public sealed record CartLine(int ProductId, int Quantity);
 
-public sealed record CounterSaleRequest(IReadOnlyList<CartLine> Lines, PaymentMethod Method, decimal AmountReceived, int? CustomerId);
+public sealed record CounterSaleRequest(IReadOnlyList<CartLine> Lines, PaymentMethod Method, decimal AmountReceived, int? CustomerId, decimal? PayNow = null);
+
+/// <summary>A customer with money owed. Balance &gt; 0 means the customer owes the center.</summary>
+public sealed record CreditBalanceDto(int CustomerId, string Name, string? Phone, decimal Balance, DateTime? LastCreditAt, DateTime? LastRepaymentAt, int OpenBills);
+
+public sealed record CreditEntryDto(int Id, DateTime At, CreditKind Kind, decimal Amount, decimal BalanceAfter, string? ReceiptNumber, int? SessionId, PaymentMethod? Method, string? Note, string? User);
 
 public sealed record HistoryRow(
     int SessionId,
@@ -152,6 +158,8 @@ public sealed record ReceiptDto(
     PaymentMethod Method,
     decimal AmountReceived,
     decimal Change,
+    decimal CreditAmount,
+    decimal CustomerBalance,
     string? Operator,
     IReadOnlyList<(DateTime Start, DateTime? End)> Pauses,
     string Footer);
@@ -167,7 +175,8 @@ public sealed record PaymentRow(
     decimal ProductsAmount,
     decimal TotalAmount,
     PaymentMethod Method,
-    string? Operator);
+    string? Operator,
+    decimal CreditAmount = 0);
 
 public sealed record DashboardStats(
     decimal Revenue,
@@ -207,7 +216,9 @@ public sealed record ReportData(
     IReadOnlyList<ProductSales> TopProducts,
     IReadOnlyDictionary<SessionMode, int> ModeCounts,
     IReadOnlyDictionary<PaymentMethod, decimal> MethodTotals,
-    int? BusiestHour);
+    int? BusiestHour,
+    decimal CreditGiven = 0,
+    decimal CreditCollected = 0);
 
 public enum SearchKind { Station, Product, Customer, Session }
 

@@ -13,6 +13,7 @@
     <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><p:ReportsView/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:UsersViewModel}"><p:UsersView/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><p:SettingsView/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CreditsViewModel}"><p:CreditsView/></DataTemplate>
 
     <!-- Dialogs -->
     <DataTemplate DataType="{x:Type vm:ConfirmViewModel}"><d:ConfirmDialog/></DataTemplate>
@@ -28,5 +29,7 @@
     <DataTemplate DataType="{x:Type vm:ProductEditorViewModel}"><d:ProductEditorDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:ReceiveStockViewModel}"><d:ReceiveStockDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:CategoriesViewModel}"><d:CategoriesDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:RepaymentViewModel}"><d:RepaymentDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ManualCreditViewModel}"><d:ManualCreditDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:ChangePasswordViewModel}"><d:ChangePasswordDialog/></DataTemplate>
 </ResourceDictionary>

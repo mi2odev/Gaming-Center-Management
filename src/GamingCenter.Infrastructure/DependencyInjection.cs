@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddSingleton<ISessionService, SessionService>();
         services.AddSingleton<IProductService, ProductService>();
         services.AddSingleton<ICustomerService, CustomerService>();
+        services.AddSingleton<ICreditService, CreditService>();
         services.AddSingleton<IReportService, ReportService>();
         services.AddSingleton<ISearchService, SearchService>();
         services.AddSingleton<IBackupService, BackupService>();

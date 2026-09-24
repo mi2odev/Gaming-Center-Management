@@ -98,6 +98,19 @@ public interface ICustomerService
     Task DeleteAsync(int id, CancellationToken ct = default);
 }
 
+public interface ICreditService
+{
+    /// <summary>Customers with a non-zero balance (or all customers with any credit history).</summary>
+    Task<IReadOnlyList<CreditBalanceDto>> GetBalancesAsync(bool includeSettled = false, CancellationToken ct = default);
+    Task<IReadOnlyList<CreditEntryDto>> GetHistoryAsync(int customerId, CancellationToken ct = default);
+    Task<decimal> GetBalanceAsync(int customerId, CancellationToken ct = default);
+    Task<decimal> GetTotalOutstandingAsync(CancellationToken ct = default);
+    /// <summary>Customer pays back part or all of what they owe.</summary>
+    Task<CreditEntryDto> RecordRepaymentAsync(int customerId, decimal amount, PaymentMethod method, string? note, CancellationToken ct = default);
+    /// <summary>Admin: add a debt by hand (e.g. from before the app). Negative amount forgives debt.</summary>
+    Task<CreditEntryDto> AddManualAsync(int customerId, decimal amount, string note, CancellationToken ct = default);
+}
+
 public interface IReportService
 {
     Task<DashboardStats> GetDashboardStatsAsync(DateTime day, CancellationToken ct = default);
