@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>body{margin:0;background:#07080B;font-family:Sora,system-ui,sans-serif;color:#E8EAF0}a{color:#3DDC97}a:hover{color:#6FEBB5}input::placeholder{color:#5B6270}</style></helmet>
+
+<section id="t1" style="padding:40px 44px 32px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:10px;margin:0 0 8px"><a href="#t1" style="font:600 10px 'JetBrains Mono',monospace;padding:3px 7px;background:#E8EAF0;color:#0E1014;border-radius:4px;text-decoration:none">1</a><span style="font:600 13px Sora;color:#E8EAF0">mi2o Gaming Center · dark, neutral professional · 1920×1080 (plus 1366×768 check)</span></div>
+<p style="max-width:900px;margin:0 0 28px;font:12px/1.6 Sora;color:#8A93A6">Assumptions: dark theme, English, DA currency, logo kept as identity only (mint used as the single action color; status colors green/red/amber/grey/blue for paused). Type: Sora for UI, JetBrains Mono for timers and money. Three dashboard directions first (<a href="#1a">1a</a> card grid, <a href="#1b">1b</a> floor view by room, <a href="#1c">1c</a> operator list), then the remaining screens built on the <a href="#1a">1a</a> shell.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+
+<div id="1a" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1a" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1a</a>Dashboard — card grid with today strip</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">AM</div><div><div style="font:500 13px Sora">Amine</div><div style="font:11px Sora;color:#8A93A6">Operator</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 32px;border-bottom:1px solid #252A35">
+<div style="font:600 18px Sora">Dashboard</div>
+<div style="flex:1"></div>
+<div style="width:360px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;gap:8px;color:#5B6270;font:13px Sora"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search stations, products, customers, receipts…<span style="margin-left:auto;font:11px 'JetBrains Mono',monospace;color:#5B6270;border:1px solid #252A35;padding:1px 6px;border-radius:4px">Ctrl K</span></div>
+<div style="font:13px 'JetBrains Mono',monospace;color:#8A93A6">Wed 24 Sep · 19:42</div>
+<div style="position:relative;width:38px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;color:#8A93A6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#F0555A"></span></div>
+<div style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center;gap:8px">+ Start session</div>
+</header>
+<div style="flex:1;overflow:hidden;padding:24px 32px 32px;display:flex;flex-direction:column;gap:22px">
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px">
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Today's revenue</div><div style="font:600 26px 'JetBrains Mono',monospace;margin-top:6px">24,850 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#3DDC97;margin-top:4px">+12% vs yesterday</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Gaming</div><div style="font:600 26px 'JetBrains Mono',monospace;margin-top:6px">18,400 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">37 sessions · avg 1h 42m</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Products</div><div style="font:600 26px 'JetBrains Mono',monospace;margin-top:6px">6,450 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">Est. profit 2,850 DA</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Active sessions</div><div style="font:600 26px 'JetBrains Mono',monospace;margin-top:6px">8 <span style="font:500 13px Sora;color:#8A93A6">/ 15</span></div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">4 available · 1 reserved</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Most used today</div><div style="font:600 20px Sora;margin-top:8px">PS5 #01</div><div style="font:12px Sora;color:#8A93A6;margin-top:6px">6h 12m · Cola top seller</div></div>
+<div style="background:#181C24;border:1px solid #3A2A22;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#F2B84B">Low stock</div><div style="font:600 26px 'JetBrains Mono',monospace;margin-top:6px;color:#F2B84B">3</div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">Cola 8 · Chips 4 · Water 6</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="font:600 14px Sora;margin-right:8px">Stations</div>
+<div style="padding:6px 12px;border-radius:999px;background:#1D2230;font:500 12px Sora">All · 15</div>
+<div style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#3DDC97"></span>Available · 4</div>
+<div style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#F0555A"></span>Occupied · 8</div>
+<div style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#F2B84B"></span>Reserved · 1</div>
+<div style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#5B6270"></span>Offline · 2</div>
+<div style="flex:1"></div>
+<div style="font:12px Sora;color:#8A93A6">Sort: Room · Type · Status</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+<sc-for list="{{ stations }}" as="s" hint-placeholder-count="15">
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+<div style="height:104px;background:linear-gradient(180deg,#1F2430,#161A22);display:flex;align-items:center;justify-content:center;position:relative">
+<span style="font:700 26px Sora;color:#343A48;letter-spacing:.12em">{{ s.tag }}</span>
+<span style="position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:6px;background:rgba(14,16,20,.85);padding:4px 9px;border-radius:999px;font:600 11px Sora;color:{{ s.color }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.color }}"></span>{{ s.statusLabel }}</span>
+<span style="position:absolute;top:10px;right:10px;font:11px 'JetBrains Mono',monospace;color:#8A93A6;background:rgba(14,16,20,.85);padding:4px 8px;border-radius:999px">{{ s.rateLabel }}</span>
+</div>
+<div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px">
+<div><div style="font:600 15px Sora">{{ s.name }}</div><div style="font:12px Sora;color:#8A93A6;margin-top:2px">{{ s.type }} · {{ s.room }}</div></div>
+<div style="font:600 30px/1 'JetBrains Mono',monospace;color:{{ s.timerColor }};margin-top:4px">{{ s.timer }}</div>
+<sc-if value="{{ s.hasProgress }}" hint-placeholder-val="{{ false }}"><div style="height:4px;border-radius:2px;background:#252A35;overflow:hidden"><div style="height:100%;width:{{ s.progress }};background:{{ s.color }}"></div></div></sc-if>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:12px Sora;color:#8A93A6">{{ s.line }}</span><span style="font:600 15px 'JetBrains Mono',monospace">{{ s.cost }}</span></div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1b" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1b" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1b</a>Dashboard — floor view grouped by room, live rail on the right</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">AM</div><div><div style="font:500 13px Sora">Amine</div><div style="font:11px Sora;color:#8A93A6">Operator</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 32px;border-bottom:1px solid #252A35">
+<div style="font:600 18px Sora">Floor</div>
+<div style="display:flex;gap:4px;background:#181C24;border:1px solid #252A35;border-radius:8px;padding:3px"><div style="padding:6px 12px;border-radius:6px;background:#252A35;font:500 12px Sora">Rooms</div><div style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Grid</div><div style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">List</div></div>
+<div style="flex:1"></div>
+<div style="width:360px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;gap:8px;color:#5B6270;font:13px Sora">Search…</div>
+<div style="font:13px 'JetBrains Mono',monospace;color:#8A93A6">Wed 24 Sep · 19:42</div>
+<div style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center">+ Start session</div>
+</header>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;padding:24px 32px;display:flex;flex-direction:column;gap:28px;overflow:hidden">
+<sc-for list="{{ rooms }}" as="r" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font:600 14px Sora">{{ r.name }}</div><div style="font:12px Sora;color:#8A93A6">{{ r.summary }}</div></div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<sc-for list="{{ r.stations }}" as="s" hint-placeholder-count="4">
+<div style="background:#181C24;border:1px solid #252A35;border-left:3px solid {{ s.color }};border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:center">
+<div style="width:52px;height:52px;border-radius:8px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:700 13px Sora;color:#5B6270;letter-spacing:.08em;flex:none">{{ s.tag }}</div>
+<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 14px Sora">{{ s.name }}</span><span style="font:600 11px Sora;color:{{ s.color }}">{{ s.statusLabel }}</span></div><div style="font:600 22px/1.2 'JetBrains Mono',monospace;color:{{ s.timerColor }};margin-top:4px">{{ s.timer }}</div><div style="display:flex;justify-content:space-between;font:11px Sora;color:#8A93A6;margin-top:4px"><span>{{ s.line }}</span><span style="font:600 12px 'JetBrains Mono',monospace;color:#E8EAF0">{{ s.cost }}</span></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<aside style="width:380px;flex:none;border-left:1px solid #252A35;background:#12151B;padding:24px;display:flex;flex-direction:column;gap:24px;overflow:hidden">
+<div><div style="font:12px Sora;color:#8A93A6">Today</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><span style="font:600 32px 'JetBrains Mono',monospace">24,850</span><span style="font:13px Sora;color:#8A93A6">DA</span></div><div style="display:flex;gap:16px;margin-top:10px;font:12px Sora;color:#8A93A6"><span>Gaming <b style="color:#E8EAF0;font-weight:600">18,400</b></span><span>Products <b style="color:#E8EAF0;font-weight:600">6,450</b></span><span>Sessions <b style="color:#E8EAF0;font-weight:600">37</b></span></div></div>
+<div style="height:1px;background:#252A35"></div>
+<div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font:600 13px Sora"><span>Ending soon</span><span style="color:#8A93A6;font-weight:400">3</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #252A35"><div><div style="font:500 13px Sora">PS5 #02</div><div style="font:11px Sora;color:#8A93A6">Fixed 2h · Yacine B.</div></div><div style="font:600 15px 'JetBrains Mono',monospace;color:#F2B84B">00:09:12</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #252A35"><div><div style="font:500 13px Sora">PS4 #01</div><div style="font:11px Sora;color:#8A93A6">Budget 500 DA</div></div><div style="font:600 15px 'JetBrains Mono',monospace">00:42:21</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #252A35"><div><div style="font:500 13px Sora">PC #03</div><div style="font:11px Sora;color:#8A93A6">Fixed 1h</div></div><div style="font:600 15px 'JetBrains Mono',monospace">00:51:03</div></div></div>
+<div style="display:flex;flex-direction:column;gap:10px"><div style="font:600 13px Sora">Alerts</div>
+<div style="padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #3A2A22;font:12px/1.5 Sora"><span style="color:#F2B84B;font-weight:600">Low stock</span> · Cola 8 · Chips 4 · Water 6</div>
+<div style="padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #252A35;font:12px/1.5 Sora"><span style="color:#8A93A6">Long session</span> · PS5 VIP #01 running for 4h 05m</div>
+<div style="padding:10px 12px;background:#181C24;border-radius:8px;border:1px solid #252A35;font:12px/1.5 Sora"><span style="color:#8A93A6">Reservation</span> · PS4 #02 reserved for 20:00</div></div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1c" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1c" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1c</a>Dashboard — operator list with inline actions, no stats</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:72px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px">
+<img src="assets/mi2o-logo.png" style="height:40px;width:auto;margin-bottom:18px" alt="mi2o">
+<div style="width:44px;height:44px;border-radius:10px;background:#1D2230;display:flex;align-items:center;justify-content:center;font:600 11px Sora">Dash</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Stns</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Sess</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Prod</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Cust</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Sales</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Rpts</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Users</div>
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:500 11px Sora;color:#8A93A6">Set</div>
+<div style="flex:1"></div>
+<div style="width:36px;height:36px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">AM</div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:72px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35">
+<div style="font:600 18px Sora;margin-right:12px">Stations</div>
+<div style="padding:8px 14px;border-radius:8px;background:#1D2230;font:500 13px Sora">All 15</div>
+<div style="padding:8px 14px;border-radius:8px;font:500 13px Sora;color:#F0555A">Occupied 8</div>
+<div style="padding:8px 14px;border-radius:8px;font:500 13px Sora;color:#3DDC97">Available 4</div>
+<div style="padding:8px 14px;border-radius:8px;font:500 13px Sora;color:#F2B84B">Reserved 1</div>
+<div style="padding:8px 14px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Offline 2</div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:20px;font:12px Sora;color:#8A93A6;margin-right:12px"><span>Today <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">24,850 DA</b></span><span>Sessions <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">37</b></span></div>
+<div style="font:13px 'JetBrains Mono',monospace;color:#8A93A6">19:42</div>
+<div style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center">+ Start session</div>
+</header>
+<div style="flex:1;overflow:hidden;padding:16px 32px 24px;display:flex;flex-direction:column;gap:6px">
+<div style="display:grid;grid-template-columns:24px 220px 170px 1fr 180px 220px 140px 280px;gap:16px;padding:8px 16px;font:500 11px Sora;color:#5B6270;text-transform:uppercase;letter-spacing:.06em"><span></span><span>Station</span><span>Type · Room</span><span>Customer / mode</span><span>Timer</span><span>Progress</span><span style="text-align:right">Cost</span><span style="text-align:right">Actions</span></div>
+<sc-for list="{{ stations }}" as="s" hint-placeholder-count="15">
+<div style="display:grid;grid-template-columns:24px 220px 170px 1fr 180px 220px 140px 280px;gap:16px;align-items:center;padding:0 16px;height:54px;background:#181C24;border:1px solid #252A35;border-radius:10px">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ s.color }};justify-self:center"></span>
+<div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:6px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:700 10px Sora;color:#5B6270;flex:none">{{ s.tag }}</span><span style="font:600 14px Sora">{{ s.name }}</span></div>
+<span style="font:12px Sora;color:#8A93A6">{{ s.type }} · {{ s.room }}</span>
+<span style="font:13px Sora;color:#8A93A6">{{ s.line }}</span>
+<span style="font:600 22px 'JetBrains Mono',monospace;color:{{ s.timerColor }}">{{ s.timer }}</span>
+<div><sc-if value="{{ s.hasProgress }}" hint-placeholder-val="{{ false }}"><div style="height:5px;border-radius:3px;background:#252A35;overflow:hidden"><div style="height:100%;width:{{ s.progress }};background:{{ s.color }}"></div></div></sc-if></div>
+<span style="font:600 15px 'JetBrains Mono',monospace;text-align:right">{{ s.cost }}</span>
+<div style="display:flex;gap:6px;justify-content:flex-end">
+<sc-if value="{{ s.isActive }}" hint-placeholder-val="{{ false }}"><span style="padding:7px 12px;border-radius:6px;border:1px solid #252A35;font:500 12px Sora">Pause</span><span style="padding:7px 12px;border-radius:6px;border:1px solid #252A35;font:500 12px Sora">+ Product</span><span style="padding:7px 12px;border-radius:6px;background:#2A1A1C;color:#F0555A;font:600 12px Sora">End</span></sc-if>
+<sc-if value="{{ s.isAvailable }}" hint-placeholder-val="{{ false }}"><span style="padding:7px 14px;border-radius:6px;background:#3DDC97;color:#06251A;font:600 12px Sora">Start</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1d" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1d" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1d</a><a href="#1a">1a</a> at 1366×768 — sidebar collapses, 4 columns, stats compress</div>
+<div style="width:1366px;height:768px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:64px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px">
+<img src="assets/mi2o-logo.png" style="height:34px;width:auto;margin-bottom:12px" alt="mi2o">
+<div style="width:40px;height:40px;border-radius:8px;background:#1D2230;display:flex;align-items:center;justify-content:center;font:600 10px Sora">Dash</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Stns</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Sess</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Prod</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Cust</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Sales</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Rpts</div>
+<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:500 10px Sora;color:#8A93A6">Set</div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:52px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #252A35">
+<div style="font:600 15px Sora">Dashboard</div><div style="flex:1"></div>
+<div style="width:260px;height:32px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 10px;color:#5B6270;font:12px Sora">Search…</div>
+<div style="font:12px 'JetBrains Mono',monospace;color:#8A93A6">19:42</div>
+<div style="height:32px;padding:0 12px;border-radius:7px;background:#3DDC97;color:#06251A;font:600 12px Sora;display:flex;align-items:center">+ Start</div>
+</header>
+<div style="flex:1;overflow:hidden;padding:14px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:10px">
+<div style="flex:1;background:#181C24;border:1px solid #252A35;border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px"><span style="font:11px Sora;color:#8A93A6">Revenue</span><span style="font:600 18px 'JetBrains Mono',monospace">24,850 DA</span></div>
+<div style="flex:1;background:#181C24;border:1px solid #252A35;border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px"><span style="font:11px Sora;color:#8A93A6">Gaming</span><span style="font:600 18px 'JetBrains Mono',monospace">18,400</span></div>
+<div style="flex:1;background:#181C24;border:1px solid #252A35;border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px"><span style="font:11px Sora;color:#8A93A6">Products</span><span style="font:600 18px 'JetBrains Mono',monospace">6,450</span></div>
+<div style="flex:1;background:#181C24;border:1px solid #252A35;border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px"><span style="font:11px Sora;color:#8A93A6">Active</span><span style="font:600 18px 'JetBrains Mono',monospace">8 / 15</span></div>
+<div style="flex:1;background:#181C24;border:1px solid #3A2A22;border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px"><span style="font:11px Sora;color:#F2B84B">Low stock</span><span style="font:600 18px 'JetBrains Mono',monospace;color:#F2B84B">3</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<sc-for list="{{ stationsSmall }}" as="s" hint-placeholder-count="8">
+<div style="background:#181C24;border:1px solid #252A35;border-radius:10px;overflow:hidden">
+<div style="height:64px;background:linear-gradient(180deg,#1F2430,#161A22);display:flex;align-items:center;justify-content:center;position:relative"><span style="font:700 20px Sora;color:#343A48;letter-spacing:.12em">{{ s.tag }}</span><span style="position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:5px;background:rgba(14,16,20,.85);padding:3px 8px;border-radius:999px;font:600 10px Sora;color:{{ s.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ s.color }}"></span>{{ s.statusLabel }}</span><span style="position:absolute;top:8px;right:8px;font:10px 'JetBrains Mono',monospace;color:#8A93A6;background:rgba(14,16,20,.85);padding:3px 7px;border-radius:999px">{{ s.rateLabel }}</span></div>
+<div style="padding:10px 12px 12px;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 13px Sora">{{ s.name }}</span><span style="font:11px Sora;color:#8A93A6">{{ s.room }}</span></div><div style="font:600 24px/1 'JetBrains Mono',monospace;color:{{ s.timerColor }}">{{ s.timer }}</div><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:11px Sora;color:#8A93A6">{{ s.line }}</span><span style="font:600 13px 'JetBrains Mono',monospace">{{ s.cost }}</span></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1e" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1e" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1e</a>Start session — three pricing modes, fixed budget selected</div>
+<div style="width:1920px;height:1080px;position:relative;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<div style="position:absolute;inset:0;display:flex;opacity:.35;filter:blur(1px)">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35"></aside>
+<main style="flex:1;padding:88px 32px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;align-content:start"><sc-for list="{{ stations }}" as="s" hint-placeholder-count="15"><div style="height:250px;background:#181C24;border:1px solid #252A35;border-radius:12px"></div></sc-for></main>
+</div>
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+<div style="width:620px;background:#12151B;border:1px solid #2C3240;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:14px;padding:22px 26px;border-bottom:1px solid #252A35"><div style="width:52px;height:52px;border-radius:10px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:700 13px Sora;color:#5B6270;letter-spacing:.08em">PS5</div><div style="flex:1"><div style="font:600 18px Sora">PS5 #03</div><div style="font:12px Sora;color:#8A93A6;margin-top:2px">PlayStation 5 · Room A · 2 controllers</div></div><div style="text-align:right"><div style="font:600 18px 'JetBrains Mono',monospace">300 DA<span style="font:400 12px Sora;color:#8A93A6">/h</span></div><div style="font:11px Sora;color:#8A93A6">billed per minute</div></div></div>
+<div style="padding:22px 26px;display:flex;flex-direction:column;gap:20px">
+<div><div style="font:500 12px Sora;color:#8A93A6;margin-bottom:8px">Customer <span style="color:#5B6270">(optional)</span></div><div style="height:42px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 14px;justify-content:space-between"><span style="font:13px Sora;color:#5B6270">Walk-in — type a name or phone to attach a customer</span><span style="font:11px Sora;color:#3DDC97">+ New</span></div></div>
+<div><div style="font:500 12px Sora;color:#8A93A6;margin-bottom:8px">Session mode</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+<div style="padding:14px;border-radius:10px;background:#181C24;border:1px solid #252A35"><div style="font:600 14px Sora">Play freely</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:4px">Pay for actual time. Timer counts up.</div></div>
+<div style="padding:14px;border-radius:10px;background:#181C24;border:1px solid #252A35"><div style="font:600 14px Sora">Fixed duration</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:4px">Choose hours. Alert when time is up.</div></div>
+<div style="padding:14px;border-radius:10px;background:#12211C;border:1px solid #3DDC97"><div style="font:600 14px Sora;color:#3DDC97">Fixed budget</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:4px">Customer sets an amount. Play time is computed.</div></div>
+</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><div style="font:500 12px Sora;color:#8A93A6;margin-bottom:8px">Budget</div><div style="height:52px;border-radius:8px;background:#181C24;border:1px solid #3DDC97;display:flex;align-items:center;padding:0 14px;justify-content:space-between"><span style="font:600 22px 'JetBrains Mono',monospace">500</span><span style="font:12px Sora;color:#8A93A6">DA</span></div><div style="display:flex;gap:6px;margin-top:8px"><span style="padding:5px 10px;border-radius:6px;border:1px solid #252A35;font:12px 'JetBrains Mono',monospace;color:#8A93A6">200</span><span style="padding:5px 10px;border-radius:6px;border:1px solid #252A35;font:12px 'JetBrains Mono',monospace;color:#8A93A6">300</span><span style="padding:5px 10px;border-radius:6px;background:#1D2230;font:12px 'JetBrains Mono',monospace">500</span><span style="padding:5px 10px;border-radius:6px;border:1px solid #252A35;font:12px 'JetBrains Mono',monospace;color:#8A93A6">1000</span></div></div>
+<div><div style="font:500 12px Sora;color:#8A93A6;margin-bottom:8px">Maximum play time</div><div style="height:52px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 14px;justify-content:space-between"><span style="font:600 22px 'JetBrains Mono',monospace">01:40:00</span><span style="font:11px Sora;color:#8A93A6">500 ÷ 300/h</span></div><div style="font:11px Sora;color:#8A93A6;margin-top:10px">Warning at 10 min remaining · session will not auto-stop</div></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:18px 26px;border-top:1px solid #252A35"><span style="font:12px Sora;color:#8A93A6">Starts now · 19:42</span><div style="flex:1"></div><span style="padding:11px 18px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora">Cancel</span><span style="padding:11px 22px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora">Start session</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1f" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1f" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1f</a>Active session — drawer with timer, pause history and product catalog</div>
+<div style="width:1920px;height:1080px;position:relative;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<div style="position:absolute;inset:0;display:flex;opacity:.35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35"></aside>
+<main style="flex:1;padding:88px 32px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;align-content:start"><sc-for list="{{ stations }}" as="s" hint-placeholder-count="15"><div style="height:250px;background:#181C24;border:1px solid #252A35;border-radius:12px"></div></sc-for></main>
+</div>
+<div style="position:absolute;top:0;right:0;bottom:0;width:1040px;background:#12151B;border-left:1px solid #2C3240;box-shadow:-30px 0 80px rgba(0,0,0,.5);display:flex">
+<div style="width:400px;flex:none;border-right:1px solid #252A35;display:flex;flex-direction:column">
+<div style="padding:26px 28px 20px;border-bottom:1px solid #252A35"><div style="display:flex;align-items:center;gap:8px;font:600 11px Sora;color:#F0555A"><span style="width:7px;height:7px;border-radius:50%;background:#F0555A"></span>OCCUPIED · OPEN SESSION</div><div style="font:600 22px Sora;margin-top:8px">PS5 #01</div><div style="font:12px Sora;color:#8A93A6;margin-top:2px">Walk-in · started 18:20 · 300 DA/h locked</div></div>
+<div style="padding:28px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid #252A35"><div style="font:12px Sora;color:#8A93A6">Play time</div><div style="font:600 52px/1 'JetBrains Mono',monospace">01:24:35</div><div style="display:flex;justify-content:space-between;margin-top:14px"><span style="font:12px Sora;color:#8A93A6">Gaming cost so far</span><span style="font:600 18px 'JetBrains Mono',monospace">423 DA</span></div><div style="display:flex;justify-content:space-between"><span style="font:12px Sora;color:#8A93A6">Consumption</span><span style="font:600 18px 'JetBrains Mono',monospace">450 DA</span></div><div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:12px;border-top:1px dashed #252A35"><span style="font:600 13px Sora">Running total</span><span style="font:600 22px 'JetBrains Mono',monospace;color:#3DDC97">873 DA</span></div></div>
+<div style="padding:22px 28px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #252A35"><div style="font:600 12px Sora;color:#8A93A6">Pauses</div><div style="display:flex;justify-content:space-between;font:12px 'JetBrains Mono',monospace"><span style="color:#8A93A6">18:45 → 19:00</span><span>15m 00s</span></div><div style="font:11px Sora;color:#5B6270">Wall clock 01:39:35 · paused 15m · play 01:24:35</div></div>
+<div style="padding:22px 28px;display:flex;flex-direction:column;gap:10px"><div style="font:600 12px Sora;color:#8A93A6">Items</div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:13px Sora">Coca-Cola 33cl <span style="color:#8A93A6">× 2</span></span><div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">−</span><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">+</span><span style="font:500 13px 'JetBrains Mono',monospace;width:70px;text-align:right">300 DA</span></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:13px Sora">Chips <span style="color:#8A93A6">× 1</span></span><div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">−</span><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">+</span><span style="font:500 13px 'JetBrains Mono',monospace;width:70px;text-align:right">100 DA</span></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:13px Sora">Water 50cl <span style="color:#8A93A6">× 1</span></span><div style="display:flex;align-items:center;gap:10px"><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">−</span><span style="width:22px;height:22px;border-radius:5px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;font:12px Sora;color:#8A93A6">+</span><span style="font:500 13px 'JetBrains Mono',monospace;width:70px;text-align:right">50 DA</span></div></div></div>
+<div style="flex:1"></div>
+<div style="padding:20px 28px;border-top:1px solid #252A35;display:grid;grid-template-columns:1fr 1fr;gap:10px"><span style="padding:12px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center">Pause</span><span style="padding:12px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center">Extend / change mode</span><span style="grid-column:1/-1;padding:13px;border-radius:8px;background:#F0555A;color:#fff;font:600 13px Sora;text-align:center">End session &amp; bill</span></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;min-width:0">
+<div style="display:flex;align-items:center;gap:10px;padding:26px 28px 16px"><div style="font:600 16px Sora;margin-right:8px">Add consumption</div><span style="padding:6px 12px;border-radius:999px;background:#1D2230;font:500 12px Sora">All</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Drinks</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Energy</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Snacks</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Food</span><div style="flex:1"></div><span style="width:34px;height:34px;border-radius:8px;border:1px solid #252A35;display:flex;align-items:center;justify-content:center;color:#8A93A6;font:16px Sora">×</span></div>
+<div style="padding:0 28px 28px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-content:start;overflow:hidden">
+<sc-for list="{{ products }}" as="p" hint-placeholder-count="12">
+<div style="background:#181C24;border:1px solid #252A35;border-radius:10px;overflow:hidden;position:relative"><div style="height:80px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:600 11px Sora;color:#5B6270;letter-spacing:.06em">{{ p.cat }}</div><div style="padding:10px 12px 12px"><div style="font:500 13px Sora">{{ p.name }}</div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px"><span style="font:600 14px 'JetBrains Mono',monospace">{{ p.price }}</span><span style="font:11px Sora;color:{{ p.stockColor }}">{{ p.stockLabel }}</span></div></div>
+<sc-if value="{{ p.inCart }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:8px;right:8px;min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:#3DDC97;color:#06251A;font:600 12px 'JetBrains Mono',monospace;display:flex;align-items:center;justify-content:center">{{ p.qty }}</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1g" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1g" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1g</a>Final bill &amp; payment</div>
+<div style="width:1920px;height:1080px;position:relative;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<div style="position:absolute;inset:0;display:flex;opacity:.35;filter:blur(1px)">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35"></aside>
+<main style="flex:1;padding:88px 32px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;align-content:start"><sc-for list="{{ stations }}" as="s" hint-placeholder-count="15"><div style="height:250px;background:#181C24;border:1px solid #252A35;border-radius:12px"></div></sc-for></main>
+</div>
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+<div style="width:940px;background:#12151B;border:1px solid #2C3240;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6);display:flex;overflow:hidden">
+<div style="flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:18px;border-right:1px solid #252A35">
+<div><div style="font:600 11px Sora;color:#8A93A6;letter-spacing:.08em">CUSTOMER BILL · #2026-0924-037</div><div style="font:600 22px Sora;margin-top:6px">PS5 #04</div><div style="font:12px Sora;color:#8A93A6;margin-top:2px">Session 18:20 → 20:13 · Walk-in · Open mode</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font:600 12px Sora;color:#8A93A6">Gaming</div><div style="display:flex;justify-content:space-between;font:13px Sora"><span>1h 53m 42s <span style="color:#8A93A6">@ 200 DA/h · per-minute</span></span><span style="font:600 'JetBrains Mono',monospace">379 DA</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font:600 12px Sora;color:#8A93A6">Consumption</div>
+<div style="display:flex;justify-content:space-between;font:13px Sora"><span>Coca-Cola 33cl <span style="color:#8A93A6">× 2</span></span><span style="font:'JetBrains Mono',monospace">300 DA</span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora"><span>Chips <span style="color:#8A93A6">× 1</span></span><span style="font:'JetBrains Mono',monospace">100 DA</span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora"><span>Water 50cl <span style="color:#8A93A6">× 1</span></span><span style="font:'JetBrains Mono',monospace">50 DA</span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora;color:#8A93A6;padding-top:6px;border-top:1px dashed #252A35"><span>Consumption total</span><span style="font:600 'JetBrains Mono',monospace;color:#E8EAF0">450 DA</span></div></div>
+<div style="flex:1"></div>
+<div style="background:#181C24;border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font:13px Sora;color:#8A93A6"><span>Gaming</span><span style="font:'JetBrains Mono',monospace">379 DA</span></div><div style="display:flex;justify-content:space-between;font:13px Sora;color:#8A93A6"><span>Products</span><span style="font:'JetBrains Mono',monospace">450 DA</span></div><div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:8px;border-top:1px solid #252A35;margin-top:4px"><span style="font:600 15px Sora">Total</span><span style="font:600 30px 'JetBrains Mono',monospace">829 DA</span></div></div>
+</div>
+<div style="width:380px;flex:none;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#0E1014">
+<div style="font:600 14px Sora">Payment</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><span style="padding:14px;border-radius:8px;background:#12211C;border:1px solid #3DDC97;color:#3DDC97;font:600 13px Sora;text-align:center">Cash</span><span style="padding:14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center">Card</span><span style="padding:14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center">Other</span></div>
+<div><div style="font:500 12px Sora;color:#8A93A6;margin-bottom:8px">Received</div><div style="height:52px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 14px;justify-content:space-between"><span style="font:600 22px 'JetBrains Mono',monospace">1000</span><span style="font:12px Sora;color:#8A93A6">DA</span></div><div style="display:flex;justify-content:space-between;margin-top:10px;font:13px Sora"><span style="color:#8A93A6">Change</span><span style="font:600 16px 'JetBrains Mono',monospace;color:#3DDC97">171 DA</span></div></div>
+<div style="display:flex;align-items:center;gap:10px;font:12px Sora;color:#8A93A6"><span style="width:16px;height:16px;border-radius:4px;background:#3DDC97;display:flex;align-items:center;justify-content:center;color:#06251A;font-size:11px">✓</span>Print thermal receipt</div>
+<div style="display:flex;align-items:center;gap:10px;font:12px Sora;color:#8A93A6"><span style="width:16px;height:16px;border-radius:4px;border:1px solid #252A35"></span>Attach to customer</div>
+<div style="flex:1"></div>
+<div style="font:11px/1.5 Sora;color:#5B6270">On confirm: payment recorded, stock already deducted, session closed, PS5 #04 becomes Available. Runs in one transaction.</div>
+<span style="padding:15px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 14px Sora;text-align:center">Confirm payment · 829 DA</span>
+<span style="padding:11px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center;color:#8A93A6">Back to session</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1h" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1h" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1h</a>Gaming Stations admin — table plus edit panel (price change notice)</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">KB</div><div><div style="font:500 13px Sora">Karim</div><div style="font:11px Sora;color:#3DDC97">Admin</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35"><div style="font:600 18px Sora">Gaming Stations</div><span style="font:12px Sora;color:#8A93A6">15 stations · 2 disabled</span><div style="flex:1"></div><div style="width:280px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;color:#5B6270;font:13px Sora">Filter by name, type, room…</div><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Manage types</span><span style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center">+ Add station</span></header>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;padding:24px 32px;display:flex;flex-direction:column;gap:4px;overflow:hidden">
+<div style="display:grid;grid-template-columns:56px 1fr 160px 120px 130px 120px 130px 200px;gap:14px;padding:6px 14px;font:500 11px Sora;color:#5B6270;text-transform:uppercase;letter-spacing:.06em"><span>Image</span><span>Name</span><span>Type</span><span>Model</span><span>Price / h</span><span>Status</span><span>Location</span><span style="text-align:right">Actions</span></div>
+<sc-for list="{{ stations }}" as="s" hint-placeholder-count="15">
+<div style="display:grid;grid-template-columns:56px 1fr 160px 120px 130px 120px 130px 200px;gap:14px;align-items:center;padding:0 14px;height:50px;border-bottom:1px solid #1D2230;background:{{ s.rowBg }}"><span style="width:40px;height:32px;border-radius:5px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:700 9px Sora;color:#5B6270">{{ s.tag }}</span><span style="font:500 13px Sora">{{ s.name }}</span><span style="font:12px Sora;color:#8A93A6">{{ s.type }}</span><span style="font:12px Sora;color:#8A93A6">{{ s.model }}</span><span style="font:500 13px 'JetBrains Mono',monospace">{{ s.rateLabel }}</span><span style="display:flex;align-items:center;gap:6px;font:500 12px Sora;color:{{ s.color }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.color }}"></span>{{ s.adminStatus }}</span><span style="font:12px Sora;color:#8A93A6">{{ s.room }}</span><span style="display:flex;gap:14px;justify-content:flex-end;font:500 12px Sora;color:#8A93A6"><span>Edit</span><span>Price</span><span>{{ s.toggleLabel }}</span></span></div>
+</sc-for>
+</div>
+<aside style="width:420px;flex:none;border-left:1px solid #252A35;background:#12151B;padding:24px 28px;display:flex;flex-direction:column;gap:16px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font:600 15px Sora">Edit station</div><span style="font:12px Sora;color:#8A93A6">PS5 #02</span></div>
+<div style="height:120px;border-radius:10px;background:#1F2430;border:1px dashed #3A4050;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:12px Sora;color:#8A93A6"><span style="font:700 22px Sora;color:#343A48;letter-spacing:.1em">PS5</span>Drop image or click to replace · resized to 800px</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="grid-column:1/-1"><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Name</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora">PS5 #02</div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Type</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora;justify-content:space-between">PlayStation<span style="color:#5B6270">▾</span></div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Model</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora">PS5</div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Hourly price</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #F2B84B;display:flex;align-items:center;padding:0 12px;font:600 13px 'JetBrains Mono',monospace;justify-content:space-between">350<span style="font:400 11px Sora;color:#8A93A6">DA</span></div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Controllers</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px 'JetBrains Mono',monospace">2</div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Location</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora">Room A</div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Status</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora;justify-content:space-between">Active<span style="color:#5B6270">▾</span></div></div>
+<div style="grid-column:1/-1"><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Description</div><div style="height:60px;border-radius:7px;background:#181C24;border:1px solid #252A35;padding:10px 12px;font:13px Sora;color:#8A93A6">Standard PS5 station, 4K TV</div></div>
+</div>
+<div style="padding:12px 14px;border-radius:8px;background:#221C14;border:1px solid #3A2A22;font:12px/1.5 Sora;color:#F2B84B">Price 300 → 350 DA/h. Applies to new sessions only. PS5 #02's running session keeps 300 DA/h. Change is logged in price history.</div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:10px"><span style="flex:1;padding:12px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;text-align:center">Cancel</span><span style="flex:1;padding:12px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;text-align:center">Save changes</span></div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1i" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1i" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1i</a>Products &amp; stock</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">KB</div><div><div style="font:500 13px Sora">Karim</div><div style="font:11px Sora;color:#3DDC97">Admin</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35"><div style="font:600 18px Sora">Products</div><span style="font:12px Sora;color:#8A93A6">12 products · 5 categories</span><div style="flex:1"></div><div style="width:280px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;color:#5B6270;font:13px Sora">Search products…</div><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Categories</span><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Receive stock</span><span style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center">+ Add product</span></header>
+<div style="flex:1;padding:24px 32px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Product revenue today</div><div style="font:600 24px 'JetBrains Mono',monospace;margin-top:6px">6,450 DA</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Estimated profit today</div><div style="font:600 24px 'JetBrains Mono',monospace;margin-top:6px;color:#3DDC97">2,850 DA</div></div>
+<div style="background:#181C24;border:1px solid #252A35;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#8A93A6">Stock value (purchase)</div><div style="font:600 24px 'JetBrains Mono',monospace;margin-top:6px">38,920 DA</div></div>
+<div style="background:#181C24;border:1px solid #3A2A22;border-radius:12px;padding:16px 18px"><div style="font:12px Sora;color:#F2B84B">Below minimum</div><div style="font:600 24px 'JetBrains Mono',monospace;margin-top:6px;color:#F2B84B">3 products</div></div>
+</div>
+<div style="display:flex;gap:8px"><span style="padding:6px 12px;border-radius:999px;background:#1D2230;font:500 12px Sora">All</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Drinks</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Energy Drinks</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Snacks</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Food</span><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#8A93A6">Other</span><div style="flex:1"></div><span style="padding:6px 12px;border-radius:999px;font:500 12px Sora;color:#F2B84B;border:1px solid #3A2A22">Low stock only</span></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:grid;grid-template-columns:56px 1fr 150px 120px 120px 110px 260px 150px;gap:14px;padding:6px 14px;font:500 11px Sora;color:#5B6270;text-transform:uppercase;letter-spacing:.06em"><span></span><span>Product</span><span>Category</span><span>Purchase</span><span>Selling</span><span>Margin</span><span>Stock / minimum</span><span style="text-align:right">Actions</span></div>
+<sc-for list="{{ products }}" as="p" hint-placeholder-count="12">
+<div style="display:grid;grid-template-columns:56px 1fr 150px 120px 120px 110px 260px 150px;gap:14px;align-items:center;padding:0 14px;height:52px;border-bottom:1px solid #1D2230"><span style="width:40px;height:34px;border-radius:5px;background:#1F2430;display:flex;align-items:center;justify-content:center;font:600 9px Sora;color:#5B6270">{{ p.cat }}</span><span style="font:500 13px Sora">{{ p.name }}</span><span style="font:12px Sora;color:#8A93A6">{{ p.catFull }}</span><span style="font:13px 'JetBrains Mono',monospace;color:#8A93A6">{{ p.buy }}</span><span style="font:500 13px 'JetBrains Mono',monospace">{{ p.price }}</span><span style="font:13px 'JetBrains Mono',monospace;color:#3DDC97">{{ p.margin }}</span><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:5px;border-radius:3px;background:#252A35;overflow:hidden"><div style="height:100%;width:{{ p.stockPct }};background:{{ p.stockColor }}"></div></div><span style="font:500 12px 'JetBrains Mono',monospace;color:{{ p.stockColor }};width:70px;text-align:right">{{ p.stock }} / {{ p.min }}</span></div><span style="display:flex;gap:14px;justify-content:flex-end;font:500 12px Sora;color:#8A93A6"><span>Edit</span><span>+ Stock</span><span>Disable</span></span></div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1j" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1j" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1j</a>Session history — filters, table, receipt preview</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">AM</div><div><div style="font:500 13px Sora">Amine</div><div style="font:11px Sora;color:#8A93A6">Operator</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35"><div style="font:600 18px Sora">Sessions</div><div style="display:flex;gap:4px;background:#181C24;border:1px solid #252A35;border-radius:8px;padding:3px;margin-left:12px"><span style="padding:6px 12px;border-radius:6px;background:#252A35;font:500 12px Sora">Today</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Yesterday</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">This week</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">This month</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Custom…</span></div><div style="flex:1"></div><div style="width:280px;height:38px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;color:#5B6270;font:13px Sora">Station, customer, receipt #…</div><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Export CSV</span></header>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;padding:24px 32px;display:flex;flex-direction:column;gap:16px;overflow:hidden">
+<div style="display:flex;gap:24px;font:12px Sora;color:#8A93A6"><span>37 sessions</span><span>Gaming <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">18,400 DA</b></span><span>Products <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">6,450 DA</b></span><span>Total <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">24,850 DA</b></span><span>Avg duration <b style="color:#E8EAF0;font:600 13px 'JetBrains Mono',monospace">1h 42m</b></span></div>
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="display:grid;grid-template-columns:110px 130px 1fr 130px 100px 110px 110px 110px 90px;gap:12px;padding:6px 14px;font:500 11px Sora;color:#5B6270;text-transform:uppercase;letter-spacing:.06em"><span>Receipt</span><span>Station</span><span>Customer</span><span>Start → End</span><span>Duration</span><span style="text-align:right">Gaming</span><span style="text-align:right">Products</span><span style="text-align:right">Total</span><span>Paid</span></div>
+<sc-for list="{{ history }}" as="h" hint-placeholder-count="14">
+<div style="display:grid;grid-template-columns:110px 130px 1fr 130px 100px 110px 110px 110px 90px;gap:12px;align-items:center;padding:0 14px;height:46px;border-bottom:1px solid #1D2230;border-radius:6px;background:{{ h.bg }}"><span style="font:12px 'JetBrains Mono',monospace;color:#8A93A6">{{ h.id }}</span><span style="font:500 13px Sora">{{ h.station }}</span><span style="font:13px Sora;color:#8A93A6">{{ h.customer }}</span><span style="font:12px 'JetBrains Mono',monospace;color:#8A93A6">{{ h.time }}</span><span style="font:12px 'JetBrains Mono',monospace">{{ h.dur }}</span><span style="font:12px 'JetBrains Mono',monospace;text-align:right">{{ h.gaming }}</span><span style="font:12px 'JetBrains Mono',monospace;text-align:right;color:#8A93A6">{{ h.products }}</span><span style="font:600 13px 'JetBrains Mono',monospace;text-align:right">{{ h.total }}</span><span style="font:12px Sora;color:#8A93A6">{{ h.pay }}</span></div>
+</sc-for>
+</div>
+</div>
+<aside style="width:400px;flex:none;border-left:1px solid #252A35;background:#12151B;padding:28px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><div style="font:600 14px Sora">Receipt</div><div style="display:flex;gap:12px;font:500 12px Sora;color:#8A93A6"><span>Print</span><span>PDF</span></div></div>
+<div style="background:#F4F3EE;color:#1A1C22;border-radius:6px;padding:22px 20px;font:12px/1.6 'JetBrains Mono',monospace;display:flex;flex-direction:column;gap:2px"><div style="text-align:center;font:700 14px Sora">mi2o Gaming Center</div><div style="text-align:center;color:#555">Rue Didouche Mourad, Alger · 0550 00 00 00</div><div style="text-align:center;color:#555;margin-bottom:10px">24/09/2026 20:13 · #2026-0924-037</div><div style="border-top:1px dashed #999;margin:4px 0"></div><div style="display:flex;justify-content:space-between"><span>Station</span><span>PS5 #04</span></div><div style="display:flex;justify-content:space-between"><span>Session</span><span>18:20 → 20:13</span></div><div style="display:flex;justify-content:space-between"><span>Play time</span><span>1h 53m 42s</span></div><div style="display:flex;justify-content:space-between"><span>Gaming @200/h</span><span>379</span></div><div style="border-top:1px dashed #999;margin:4px 0"></div><div style="display:flex;justify-content:space-between"><span>Coca-Cola 33cl x2</span><span>300</span></div><div style="display:flex;justify-content:space-between"><span>Chips x1</span><span>100</span></div><div style="display:flex;justify-content:space-between"><span>Water 50cl x1</span><span>50</span></div><div style="border-top:1px dashed #999;margin:4px 0"></div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>TOTAL</span><span>829 DA</span></div><div style="display:flex;justify-content:space-between"><span>Cash</span><span>1000</span></div><div style="display:flex;justify-content:space-between"><span>Change</span><span>171</span></div><div style="text-align:center;color:#555;margin-top:10px">Thank you — see you soon</div></div>
+<div style="margin-top:18px;font:12px/1.6 Sora;color:#8A93A6">Paused 18:45 → 19:00 (15m) · Operator Amine · Rate locked at session start</div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1k" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1k" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1k</a>Reports — weekly view</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">KB</div><div><div style="font:500 13px Sora">Karim</div><div style="font:11px Sora;color:#3DDC97">Admin</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35"><div style="font:600 18px Sora">Reports</div><div style="display:flex;gap:4px;background:#181C24;border:1px solid #252A35;border-radius:8px;padding:3px;margin-left:12px"><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Daily</span><span style="padding:6px 12px;border-radius:6px;background:#252A35;font:500 12px Sora">Weekly</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Monthly</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Yearly</span><span style="padding:6px 12px;border-radius:6px;font:500 12px Sora;color:#8A93A6">Custom…</span></div><span style="font:13px 'JetBrains Mono',monospace;color:#8A93A6;margin-left:8px">18 – 24 Sep 2026</span><div style="flex:1"></div><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Export CSV</span><span style="height:38px;padding:0 14px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;display:flex;align-items:center">Export PDF</span></header>
+<div style="flex:1;padding:24px 32px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:min-content;gap:16px;overflow:hidden">
+<div style="grid-column:span 3;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:18px 20px"><div style="font:12px Sora;color:#8A93A6">Total revenue</div><div style="font:600 30px 'JetBrains Mono',monospace;margin-top:6px">168,300 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#3DDC97;margin-top:4px">+8% vs previous week</div></div>
+<div style="grid-column:span 3;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:18px 20px"><div style="font:12px Sora;color:#8A93A6">Gaming revenue</div><div style="font:600 30px 'JetBrains Mono',monospace;margin-top:6px">124,900 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">74% of total</div></div>
+<div style="grid-column:span 3;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:18px 20px"><div style="font:12px Sora;color:#8A93A6">Product revenue</div><div style="font:600 30px 'JetBrains Mono',monospace;margin-top:6px">43,400 <span style="font:500 13px Sora;color:#8A93A6">DA</span></div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">Est. profit 19,100 DA</div></div>
+<div style="grid-column:span 3;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:18px 20px"><div style="font:12px Sora;color:#8A93A6">Sessions</div><div style="font:600 30px 'JetBrains Mono',monospace;margin-top:6px">254</div><div style="font:12px Sora;color:#8A93A6;margin-top:4px">avg 1h 38m · 36 per day</div></div>
+<div style="grid-column:span 8;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:600 14px Sora">Revenue per day</div><div style="display:flex;gap:16px;font:11px Sora;color:#8A93A6"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#3DDC97"></span>Gaming</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#3A4050"></span>Products</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:18px;align-items:end;height:300px;padding:0 8px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end"><span style="font:11px 'JetBrains Mono',monospace;color:#8A93A6">{{ d.total }}</span><div style="width:100%;display:flex;flex-direction:column;border-radius:6px 6px 0 0;overflow:hidden;height:{{ d.h }}"><div style="height:{{ d.pPct }};background:#3A4050"></div><div style="flex:1;background:#3DDC97"></div></div><span style="font:11px Sora;color:#8A93A6">{{ d.label }}</span></div></sc-for>
+</div></div>
+<div style="grid-column:span 4;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:14px"><div style="font:600 14px Sora">Revenue per station</div>
+<sc-for list="{{ perStation }}" as="x" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font:12px Sora"><span>{{ x.name }}</span><span style="font:600 'JetBrains Mono',monospace">{{ x.val }}</span></div><div style="height:6px;border-radius:3px;background:#252A35;overflow:hidden"><div style="height:100%;width:{{ x.pct }};background:#3DDC97"></div></div></div></sc-for>
+</div>
+<div style="grid-column:span 6;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font:600 14px Sora"><span>Top products</span><span style="font:400 12px Sora;color:#8A93A6">units · revenue · profit</span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora;padding:6px 0;border-bottom:1px solid #1D2230"><span>Coca-Cola 33cl</span><span style="font:'JetBrains Mono',monospace;color:#8A93A6">112 · 16,800 · <span style="color:#3DDC97">7,840</span></span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora;padding:6px 0;border-bottom:1px solid #1D2230"><span>Red Bull 25cl</span><span style="font:'JetBrains Mono',monospace;color:#8A93A6">41 · 12,300 · <span style="color:#3DDC97">4,100</span></span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora;padding:6px 0;border-bottom:1px solid #1D2230"><span>Chips</span><span style="font:'JetBrains Mono',monospace;color:#8A93A6">68 · 6,800 · <span style="color:#3DDC97">2,720</span></span></div>
+<div style="display:flex;justify-content:space-between;font:13px Sora;padding:6px 0"><span>Water 50cl</span><span style="font:'JetBrains Mono',monospace;color:#8A93A6">94 · 4,700 · <span style="color:#3DDC97">2,350</span></span></div></div>
+<div style="grid-column:span 6;background:#181C24;border:1px solid #252A35;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px"><div style="font:600 14px Sora">Session modes</div>
+<div style="display:flex;height:14px;border-radius:7px;overflow:hidden"><div style="width:52%;background:#3DDC97"></div><div style="width:31%;background:#5B9CFF"></div><div style="width:17%;background:#F2B84B"></div></div>
+<div style="display:flex;gap:22px;font:12px Sora;color:#8A93A6"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#3DDC97"></span>Open 52%</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#5B9CFF"></span>Fixed duration 31%</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#F2B84B"></span>Fixed budget 17%</span></div>
+<div style="font:12px/1.6 Sora;color:#8A93A6;margin-top:6px">Busiest hour 20:00–21:00 · Most-used station PS5 #01 (41h 20m) · Cash 88% · Card 12%</div></div>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1l" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1l" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1l</a>Settings — billing rules and backup</div>
+<div style="width:1920px;height:1080px;display:flex;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35">
+<aside style="width:240px;flex:none;background:#12151B;border-right:1px solid #252A35;display:flex;flex-direction:column;padding:20px 16px;gap:4px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px 22px"><img src="assets/mi2o-logo.png" style="height:44px;width:auto" alt="mi2o"><div><div style="font:700 14px Sora">mi2o</div><div style="font:11px Sora;color:#8A93A6">Gaming Center</div></div></div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Dashboard</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Gaming Stations</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sessions</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Products</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Customers</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Sales</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Reports</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;color:#8A93A6">Users</div>
+<div style="padding:10px 12px;border-radius:8px;font:500 13px Sora;background:#1D2230;color:#E8EAF0">Settings</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid #252A35"><div style="width:32px;height:32px;border-radius:50%;background:#252A35;display:flex;align-items:center;justify-content:center;font:600 12px Sora">KB</div><div><div style="font:500 13px Sora">Karim</div><div style="font:11px Sora;color:#3DDC97">Admin</div></div></div>
+</aside>
+<main style="flex:1;display:flex;flex-direction:column;min-width:0">
+<header style="height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 32px;border-bottom:1px solid #252A35"><div style="font:600 18px Sora">Settings</div><div style="flex:1"></div><span style="height:38px;padding:0 16px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 13px Sora;display:flex;align-items:center">Save</span></header>
+<div style="flex:1;display:flex;min-height:0">
+<nav style="width:220px;flex:none;padding:24px 20px;display:flex;flex-direction:column;gap:2px;border-right:1px solid #252A35"><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">General</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;background:#1D2230">Billing</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">Receipts &amp; printer</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">Warnings</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">Appearance &amp; language</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">Backup</span><span style="padding:9px 12px;border-radius:7px;font:500 13px Sora;color:#8A93A6">Users &amp; roles</span></nav>
+<div style="flex:1;padding:32px 40px;display:flex;flex-direction:column;gap:32px;max-width:980px">
+<div style="display:flex;flex-direction:column;gap:14px"><div><div style="font:600 15px Sora">Billing unit</div><div style="font:12px Sora;color:#8A93A6;margin-top:3px">How play time is rounded before pricing. Applies to new sessions.</div></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"><div style="padding:14px;border-radius:10px;background:#12211C;border:1px solid #3DDC97"><div style="font:600 13px Sora;color:#3DDC97">Per minute</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:3px">1h 53m 42s → 1h 54m</div></div><div style="padding:14px;border-radius:10px;background:#181C24;border:1px solid #252A35"><div style="font:600 13px Sora">Per 5 minutes</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:3px">→ 1h 55m</div></div><div style="padding:14px;border-radius:10px;background:#181C24;border:1px solid #252A35"><div style="font:600 13px Sora">Per 15 minutes</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:3px">→ 2h 00m</div></div><div style="padding:14px;border-radius:10px;background:#181C24;border:1px solid #252A35"><div style="font:600 13px Sora">Per hour</div><div style="font:11px/1.5 Sora;color:#8A93A6;margin-top:3px">→ 2h 00m</div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Rounding</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora;justify-content:space-between">Round up<span style="color:#5B6270">▾</span></div></div><div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Minimum charge</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px 'JetBrains Mono',monospace;justify-content:space-between">15 min<span style="color:#5B6270">▾</span></div></div><div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Currency</div><div style="height:38px;border-radius:7px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px Sora;justify-content:space-between">DA (DZD)<span style="color:#5B6270">▾</span></div></div></div>
+<div style="padding:12px 14px;border-radius:8px;background:#181C24;border:1px solid #252A35;font:12px/1.6 Sora;color:#8A93A6">Preview at 300 DA/h: 1h 53m 42s → <b style="color:#E8EAF0;font:600 12px 'JetBrains Mono',monospace">570 DA</b> (114 min × 5 DA)</div></div>
+<div style="height:1px;background:#252A35"></div>
+<div style="display:flex;flex-direction:column;gap:14px"><div><div style="font:600 15px Sora">Fixed sessions</div><div style="font:12px Sora;color:#8A93A6;margin-top:3px">Behaviour when duration or budget runs out.</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:#181C24;border:1px solid #252A35"><div><div style="font:500 13px Sora">Warn operator before end</div><div style="font:11px Sora;color:#8A93A6">Toast and card highlight</div></div><div style="height:34px;border-radius:7px;background:#12151B;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px 'JetBrains Mono',monospace">10 min</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:#181C24;border:1px solid #252A35"><div><div style="font:500 13px Sora">Auto-end session when time expires</div><div style="font:11px Sora;color:#8A93A6">Off: session keeps running and is flagged, operator extends or ends it</div></div><div style="width:40px;height:22px;border-radius:11px;background:#252A35;position:relative"><span style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#8A93A6"></span></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:#181C24;border:1px solid #252A35"><div><div style="font:500 13px Sora">Long session alert</div><div style="font:11px Sora;color:#8A93A6">Notify when any session exceeds</div></div><div style="height:34px;border-radius:7px;background:#12151B;border:1px solid #252A35;display:flex;align-items:center;padding:0 12px;font:13px 'JetBrains Mono',monospace">4 h</div></div></div>
+<div style="height:1px;background:#252A35"></div>
+<div style="display:flex;flex-direction:column;gap:14px"><div><div style="font:600 15px Sora">Backup</div><div style="font:12px Sora;color:#8A93A6;margin-top:3px">Local SQLite copies. Restore always asks for confirmation.</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;background:#181C24;border:1px solid #252A35"><div><div style="font:500 13px Sora">Automatic daily backup at 03:00</div><div style="font:11px 'JetBrains Mono',monospace;color:#8A93A6">D:\mi2o\backups\ · last: 24 Sep 03:00 · 14.2 MB</div></div><div style="width:40px;height:22px;border-radius:11px;background:#3DDC97;position:relative"><span style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#06251A"></span></div></div>
+<div style="display:flex;gap:10px"><span style="padding:10px 16px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora">Back up now</span><span style="padding:10px 16px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora">Change folder</span><span style="padding:10px 16px;border-radius:8px;border:1px solid #252A35;font:500 13px Sora;color:#8A93A6">Restore from backup…</span></div></div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<div id="1m" style="flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px">
+<div style="display:flex;align-items:baseline;gap:8px;font:11px Sora;color:#8A93A6"><a href="#1m" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:#1D2230;color:#E8EAF0;border-radius:5px;text-decoration:none">1m</a>Login</div>
+<div style="width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;background:#0E1014;color:#E8EAF0;border-radius:8px;overflow:hidden;border:1px solid #252A35;position:relative">
+<div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,#161A22 0%,#0E1014 70%)"></div>
+<div style="position:relative;width:420px;display:flex;flex-direction:column;align-items:center;gap:28px">
+<img src="assets/mi2o-logo.png" style="width:300px;height:auto" alt="mi2o">
+<div style="width:100%;background:#12151B;border:1px solid #252A35;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<div style="font:600 16px Sora;text-align:center;margin-bottom:6px">Sign in to mi2o</div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Username</div><div style="height:44px;border-radius:8px;background:#181C24;border:1px solid #252A35;display:flex;align-items:center;padding:0 14px;font:14px Sora">amine</div></div>
+<div><div style="font:500 11px Sora;color:#8A93A6;margin-bottom:6px">Password</div><div style="height:44px;border-radius:8px;background:#181C24;border:1px solid #3DDC97;display:flex;align-items:center;padding:0 14px;font:14px 'JetBrains Mono',monospace;letter-spacing:.2em">••••••</div></div>
+<span style="margin-top:6px;padding:14px;border-radius:8px;background:#3DDC97;color:#06251A;font:600 14px Sora;text-align:center">Sign in</span>
+<div style="display:flex;justify-content:space-between;font:11px Sora;color:#5B6270"><span>Local database · offline</span><span>v1.0 · 24 Sep 2026</span></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p style="margin:26px 0 0;font:12px/1.5 Sora;color:#8A93A6">Try next: "use <a href="#1b">1b</a>'s live rail inside <a href="#1a">1a</a>" · "make <a href="#1c">1c</a> the default and add the stats strip" · "light theme of <a href="#1a">1a</a>" · "show the Customers and Users screens"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const C = { available:'#3DDC97', occupied:'#F0555A', paused:'#5B9CFF', reserved:'#F2B84B', offline:'#5B6270' };
+    const raw = [
+      ['PS5 #01','PlayStation 5','PS5','PS5','Room A','occupied',300,'open','01:24:35','423 DA','Open · Walk-in',null],
+      ['PS5 #02','PlayStation 5','PS5','PS5','Room A','occupied',300,'fixed','00:09:12','600 DA','Fixed 2h · Yacine B. · ending soon','92%'],
+      ['PS5 #03','PlayStation 5','PS5','PS5','Room A','available',300],
+      ['PS4 #01','PlayStation 4','PS4','PS4 Pro','Room A','occupied',200,'budget','00:42:21','215 DA','Budget 500 DA · remaining','43%'],
+      ['PS5 #04','PlayStation 5','PS5','PS5','Room B','paused',300,'open','00:38:10','190 DA','Paused 19:31 · Walk-in',null],
+      ['PC #01','Gaming PC','PC','RTX 4070','Room B','occupied',250,'open','02:12:21','551 DA','Open · Riad M.',null],
+      ['PC #02','Gaming PC','PC','RTX 4070','Room B','available',250],
+      ['PS4 #02','PlayStation 4','PS4','PS4 Slim','Room B','reserved',200],
+      ['PS5 VIP #01','PlayStation 5','PS5','PS5','VIP Room','occupied',350,'open','04:05:44','1,433 DA','Open · Sofiane K. · 4h+',null],
+      ['PS5 VIP #02','PlayStation 5','PS5','PS5','VIP Room','available',350],
+      ['PC #03','Gaming PC','PC','RTX 4060','Room B','occupied',250,'fixed','00:51:03','250 DA','Fixed 1h · Walk-in','15%'],
+      ['Xbox #01','Xbox Series X','XBOX','Series X','Room A','available',250],
+      ['Switch #01','Nintendo Switch','NSW','OLED','Room B','offline',150],
+      ['PS4 #03','PlayStation 4','PS4','PS4','Room A','offline',200],
+      ['Sim #01','Racing simulator','SIM','Rig v2','VIP Room','occupied',500,'open','00:27:52','232 DA','Open · Walk-in',null]
+    ];
+    const label = { available:'Available', occupied:'Occupied', paused:'Paused', reserved:'Reserved', offline:'Offline' };
+    const stations = raw.map(r => {
+      const [name,type,tag,model,room,status,rate,mode,timer,cost,line,progress] = r;
+      const color = C[status];
+      const s = { name,type,tag,model,room,status,color,statusLabel:label[status],rateLabel:rate+' DA/h',
+        timer, cost, line, hasProgress: !!progress, progress: progress||'0%', timerColor:'#E8EAF0',
+        isActive: status==='occupied'||status==='paused', isAvailable: status==='available',
+        adminStatus: status==='offline'?'Disabled':'Active', toggleLabel: status==='offline'?'Enable':'Disable',
+        rowBg: name==='PS5 #02' ? '#1A1F2A' : 'transparent' };
+      if (status==='available') { s.timer='Ready'; s.timerColor='#3DDC97'; s.line='Tap to start'; s.cost=rate+' DA/h'; }
+      if (status==='reserved') { s.timer='20:00'; s.timerColor='#F2B84B'; s.line='Reserved · Nabil T.'; s.cost=rate+' DA/h'; }
+      if (status==='offline') { s.timer='—'; s.timerColor='#5B6270'; s.line= name==='PS4 #03' ? 'Disabled by admin' : 'Under maintenance'; s.cost=''; }
+      if (status==='paused') s.timerColor='#5B9CFF';
+      if (mode==='fixed' && progress==='92%') s.timerColor='#F2B84B';
+      return s;
+    });
+    const roomOf = n => stations.filter(s=>s.room===n);
+    const rooms = ['Room A','Room B','VIP Room'].map(n => { const st = roomOf(n); const occ = st.filter(s=>s.isActive).length; return { name:n, stations:st, summary: occ+' of '+st.length+' in use' }; });
+    const pr = [
+      ['Coca-Cola 33cl','DRINKS','Drinks',80,150,45,10,2],['Water 50cl','DRINKS','Drinks',25,50,6,15,1],['Pepsi 33cl','DRINKS','Drinks',80,150,30,10,0],['Fanta 33cl','DRINKS','Drinks',80,150,22,10,0],
+      ['Red Bull 25cl','ENERGY','Energy Drinks',200,300,18,6,0],['Monster 50cl','ENERGY','Energy Drinks',220,350,9,6,0],
+      ['Chips','SNACKS','Snacks',60,100,4,10,1],['Chocolate bar','SNACKS','Snacks',70,120,26,8,0],['Biscuits','SNACKS','Snacks',50,90,31,8,0],
+      ['Coffee','FOOD','Food',30,80,120,20,0],['Sandwich','FOOD','Food',150,250,12,5,0],['Croissant','FOOD','Food',40,80,15,5,0]
+    ];
+    const products = pr.map(([name,cat,catFull,buy,sell,stock,min,qty]) => { const low = stock<=min; return { name,cat,catFull, buy: buy+' DA', price: sell+' DA', margin:'+'+(sell-buy), stock, min,
+      stockPct: Math.min(100, Math.round(stock/(min*4)*100))+'%', stockColor: low?'#F2B84B':'#8A93A6', stockLabel: low?('Low · '+stock+' left'):(stock+' in stock'), inCart: qty>0, qty }; });
+    const hist = [
+      ['#037','PS5 #04','Walk-in','18:20 → 20:13','1h 54m',379,450,'Cash',true],['#036','PC #01','Riad M.','17:05 → 19:40','2h 35m',646,150,'Cash'],['#035','PS5 #02','Yacine B.','16:00 → 18:00','2h 00m',600,300,'Card'],
+      ['#034','PS5 VIP #01','Sofiane K.','15:30 → 17:45','2h 15m',788,0,'Cash'],['#033','PS4 #01','Walk-in','15:10 → 16:40','1h 30m',300,200,'Cash'],['#032','Sim #01','Walk-in','14:50 → 15:20','0h 30m',250,0,'Cash'],
+      ['#031','PS5 #01','Amine Z.','14:00 → 16:30','2h 30m',750,350,'Cash'],['#030','PC #03','Walk-in','13:40 → 14:40','1h 00m',250,100,'Card'],['#029','PS5 #03','Walk-in','13:00 → 14:20','1h 20m',400,150,'Cash'],
+      ['#028','Xbox #01','Walk-in','12:30 → 13:45','1h 15m',313,50,'Cash'],['#027','PS4 #02','Nabil T.','11:00 → 13:00','2h 00m',400,300,'Cash'],['#026','PS5 #02','Walk-in','10:30 → 11:45','1h 15m',375,0,'Cash'],
+      ['#025','PC #02','Walk-in','10:00 → 12:10','2h 10m',542,200,'Other'],['#024','PS5 #01','Walk-in','09:30 → 10:30','1h 00m',300,150,'Cash']
+    ];
+    const history = hist.map(([id,station,customer,time,dur,g,p,pay,sel]) => ({ id:'2026-0924-'+id.slice(1), station, customer, time, dur, gaming:g+' DA', products: p?p+' DA':'—', total:(g+p).toLocaleString('en-US')+' DA', pay, bg: sel?'#1A1F2A':'transparent' }));
+    const dd = [['Thu',19200,5100],['Fri',24600,6900],['Sat',31800,9400],['Sun',28400,7800],['Mon',12200,3600],['Tue',14100,4200],['Wed',18400,6450]];
+    const max = 41200;
+    const days = dd.map(([label,g,p]) => ({ label, total:((g+p)/1000).toFixed(1)+'k', h: Math.round((g+p)/max*100)+'%', pPct: Math.round(p/(g+p)*100)+'%' }));
+    const ps = [['PS5 #01',24800],['PS5 VIP #01',22400],['PC #01',18900],['PS5 #02',17600],['Sim #01',15000],['PS4 #01',9800],['Xbox #01',7200]];
+    const perStation = ps.map(([name,v]) => ({ name, val: v.toLocaleString('en-US'), pct: Math.round(v/24800*100)+'%' }));
+    return { stations, stationsSmall: stations.slice(0,8), rooms, products, history, days, perStation };
+  }
+}
+</script>
+</body>
+</html>
