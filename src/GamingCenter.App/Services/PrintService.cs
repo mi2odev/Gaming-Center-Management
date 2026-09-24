@@ -98,6 +98,7 @@ public sealed class PrintService(ISettingsService settings)
             doc.Blocks.Add(Row($"{l.Name} x{l.Quantity}", Money.Number(l.LineTotal)));
         if (r.Lines.Count > 0) doc.Blocks.Add(Rule());
 
+        if (r.Discount > 0) doc.Blocks.Add(Row("Discount", "-" + Money.Number(r.Discount)));
         doc.Blocks.Add(Row("TOTAL", Money.Format(r.Total), bold: true, size: 13));
         if (r.Parts.Count > 1)
             foreach (var part in r.Parts) doc.Blocks.Add(Row(part.Method.ToString(), Money.Number(part.Amount)));

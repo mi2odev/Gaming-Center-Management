@@ -126,6 +126,7 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         GamingSub = s.Sessions == 0 ? "No sessions yet" : $"{s.Sessions} sessions · avg {Durations.Short(s.AverageSession)}";
         ProductsText = Money.Number(s.ProductRevenue);
         ProductsSub = $"Est. profit {Money.Format(s.ProductProfit)}";
+        if (s.Discounts > 0) GamingSub += $" · discounts {Money.Format(s.Discounts)}";
         MostUsed = s.MostUsedStation ?? "—";
         MostUsedSub = s.MostUsedStation is null ? "No completed sessions" :
             $"{Durations.Short(s.MostUsedStationTime)}" + (s.MostSoldProduct is null ? "" : $" · {s.MostSoldProduct} top seller");

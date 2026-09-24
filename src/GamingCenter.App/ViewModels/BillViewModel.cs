@@ -33,11 +33,18 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     protected PaymentDialogViewModel(ISettingsService settings, ICustomerService customers, DialogService dialogs)
     {
         PrintReceipt = settings.Current.PrintReceiptByDefault;
+        _dialogs = dialogs;
         Customer = new CustomerPickerViewModel(customers, dialogs);
         Customer.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(CustomerPickerViewModel.Selected)) UpdateChange(); };
     }
 
+    private readonly DialogService _dialogs;
+
     public CustomerPickerViewModel Customer { get; }
+
+    /// <summary>Customer paid less than the total and it is accepted as a discount (not owed).</summary>
+    [ObservableProperty] private bool _isDiscount;
+    [ObservableProperty] private string _discountText = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsCash), nameof(ConfirmText))]
@@ -66,8 +73,8 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     public ObservableCollection<PaymentLineViewModel> ExtraLines { get; } = [];
     public bool IsSplit => ExtraLines.Count > 0;
 
-    public bool ShowAmountField => IsCash || PayLater || IsSplit;
-    public string AmountLabel => IsSplit ? "Payment 1" : PayLater ? "Paying now" : "Received";
+    public bool ShowAmountField => true;
+    public string AmountLabel => IsSplit ? "Payment 1" : PayLater ? "Paying now" : IsCash ? "Received" : $"Paid by {Method.ToString().ToLowerInvariant()}";
     public bool CustomerRequired => PayLater || AttachCustomer;
 
     partial void OnPayLaterChanged(bool value)
@@ -84,7 +91,7 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
 
     partial void OnMethodChanged(PaymentMethod value)
     {
-        OnPropertyChanged(nameof(ShowAmountField));
+        OnPropertyChanged(nameof(AmountLabel));
         UpdateChange();
     }
 
@@ -96,7 +103,9 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     public string TotalText => Money.Format(Total);
     public string ConfirmText => PayLater
         ? $"Confirm · {Money.Format(PayNowAmount())} now · {Money.Format(Total - PayNowAmount())} on credit"
-        : $"Confirm payment · {Money.Format(Total)}";
+        : DiscountAmount() > 0
+            ? $"Confirm · {Money.Format(Total - DiscountAmount())} (discount {Money.Format(DiscountAmount())})"
+            : $"Confirm payment · {Money.Format(Total)}";
     public ObservableCollection<Preset> CashPresets { get; } = [];
 
     partial void OnReceivedTextChanged(string value) => UpdateChange();
@@ -152,8 +161,10 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     }
 
     /// <summary>Everything handed over across all payment lines.</summary>
-    private decimal Handed() =>
-        (!IsCash && !PayLater && !IsSplit ? Total : MainAmount()) + ExtraLines.Sum(l => l.Amount);
+    private decimal Handed() => MainAmount() + ExtraLines.Sum(l => l.Amount);
+
+    /// <summary>What the customer does not pay (and will not owe) — only when "pay later" is off.</summary>
+    protected decimal DiscountAmount() => PayLater ? 0 : Math.Max(0, Total - Handed());
 
     private void UpdateChange()
     {
@@ -163,6 +174,8 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
         if (PayLater)
         {
             var credit = Total - PayNowAmount();
+            IsDiscount = false;
+            DiscountText = "";
             ChangeIsNegative = false;
             ChangeLabel = "Change";
             ChangeText = Money.Format(0);
@@ -173,10 +186,13 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
         }
         CreditText = "";
         var change = handed - Total;
-        ChangeIsNegative = change < 0;
-        ChangeLabel = ChangeIsNegative ? "Still to pay" : "Change";
-        ChangeText = Money.Format(Math.Abs(change));
-        CanOfferCredit = ChangeIsNegative;
+        // Paying less is allowed: the difference is a discount (or can be put on credit instead).
+        IsDiscount = change < 0;
+        ChangeIsNegative = false;
+        ChangeLabel = IsDiscount ? "Discount" : "Change";
+        ChangeText = IsDiscount ? "−" + Money.Format(-change) : Money.Format(change);
+        DiscountText = IsDiscount ? $"Discount {Money.Format(-change)} · customer pays {Money.Format(handed)}" : "";
+        CanOfferCredit = IsDiscount;
     }
 
     /// <summary>Amount paid now in pay-later mode (never above the total).</summary>
@@ -196,6 +212,16 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     }
 
     protected int? ChosenCustomerId(int? existing) => PayLater || AttachCustomer ? Customer.SelectedId : existing;
+
+    /// <summary>Asks before a big discount (half the bill or more) so a typo doesn't give the bill away.</summary>
+    protected async Task<bool> ConfirmDiscountAsync()
+    {
+        var d = DiscountAmount();
+        if (d <= 0 || d * 2 < Total) return true;
+        return await _dialogs.ConfirmAsync($"Give a discount of {Money.Format(d)}?",
+            $"The customer pays {Money.Format(Total - d)} instead of {Money.Format(Total)}. The difference is not owed. Use \"Pay the rest later\" if they should pay it another day.",
+            "Give discount");
+    }
 
     /// <summary>Checks that a customer is chosen when part of the bill stays unpaid.</summary>
     protected bool ValidateCredit()
@@ -298,12 +324,12 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
     [RelayCommand]
     private async Task Confirm()
     {
-        if (!ValidateCredit()) return;
+        if (!ValidateCredit() || !await ConfirmDiscountAsync()) return;
         Payment? payment = null;
         bool ok = await RunAsync(async () =>
         {
             payment = await _sessions.CompleteAsync(new CompleteSessionRequest(
-                _session.Id, _end, Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull()));
+                _session.Id, _end, Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull(), DiscountAmount()));
         });
         if (!ok || payment is null) return;
 
@@ -312,7 +338,7 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
             _toasts.Warning($"{Money.Format(payment.CreditAmount)} on credit · {Customer.Selected?.Name}",
                 $"Paid now {Money.Format(payment.PaidNow)}. See the Credits page. {StationName} is available.");
         else
-            _toasts.Success($"Payment confirmed · {Money.Format(payment.TotalAmount)}",
+            _toasts.Success($"Payment confirmed · {Money.Format(payment.TotalAmount)}" + (payment.DiscountAmount > 0 ? $" (discount {Money.Format(payment.DiscountAmount)})" : ""),
                 payment.ChangeGiven > 0 ? $"Give change: {Money.Format(payment.ChangeGiven)} · {StationName} is available" : $"{StationName} is available");
         if (PrintReceipt) await PrintAsync(_session.Id);
         Close(true);
@@ -414,12 +440,12 @@ public sealed partial class CounterSaleViewModel : PaymentDialogViewModel
     private async Task Confirm()
     {
         if (Cart.Count == 0) { Error = "Add at least one product."; return; }
-        if (!ValidateCredit()) return;
+        if (!ValidateCredit() || !await ConfirmDiscountAsync()) return;
         Payment? payment = null;
         bool ok = await RunAsync(async () =>
             payment = await _sessions.CounterSaleAsync(new CounterSaleRequest(
                 Cart.Select(l => new CartLine(l.Product.Id, l.Quantity)).ToList(),
-                Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull())));
+                Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull(), DiscountAmount())));
         if (!ok || payment is null) return;
 
         if (payment.CreditAmount > 0) _toasts.Warning($"{Money.Format(payment.CreditAmount)} on credit · {Customer.Selected?.Name}", "See the Credits page.");

@@ -456,4 +456,31 @@ public class SessionServiceTests : IDisposable
         Assert.Equal(500m, s.HourlyRate);
         await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.ChangeControllersAsync(s.Id, 5));
     }
+
+    [Fact]
+    public async Task Customer_pays_less_as_a_discount()
+    {
+        var st = await _t.Station("PS5 #03");
+        var pepsi = await _t.Product("Pepsi 33cl");
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null));
+        s = await _t.Sessions.AddProductAsync(s.Id, pepsi.Id, 2);
+        _t.Clock.Now = _t.Clock.Now.AddMinutes(1); // 5 gaming + 300 products = 305
+
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 300m, null, Discount: 5m));
+        Assert.Equal(300m, pay.TotalAmount);
+        Assert.Equal(5m, pay.DiscountAmount);
+        Assert.Equal(0m, pay.ChangeGiven);
+
+        var receipt = await _t.Reports.GetReceiptAsync(s.Id);
+        Assert.Equal(5m, receipt!.Discount);
+        Assert.Equal(300m, receipt.Total);
+        var stats = await _t.Reports.GetDashboardStatsAsync(_t.Clock.Now);
+        Assert.Equal(300m, stats.Revenue);
+        Assert.Equal(5m, stats.Discounts);
+        var report = await _t.Reports.GetReportAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1), false);
+        Assert.Equal(300m, report.PerDay.Single().Total);
+
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.CounterSaleAsync(new CounterSaleRequest(
+            [new CartLine(pepsi.Id, 1)], PaymentMethod.Cash, 0, null, Discount: 500m)));
+    }
 }

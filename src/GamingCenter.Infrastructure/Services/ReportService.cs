@@ -61,7 +61,8 @@ public sealed class ReportService(
             MostUsedStationTime: TimeSpan.FromSeconds(topStation.Seconds),
             MostSoldProduct: topProduct.Name,
             MostSoldProductUnits: topProduct.Units,
-            LowStock: await products.GetLowStockAsync(ct));
+            LowStock: await products.GetLowStockAsync(ct),
+            Discounts: today.Sum(p => p.DiscountAmount));
     }
 
     public async Task<IReadOnlyList<HistoryRow>> GetHistoryAsync(DateTime from, DateTime to, string? search = null, CancellationToken ct = default)
@@ -90,7 +91,7 @@ public sealed class ReportService(
         return filtered.Select(s => new HistoryRow(
             s.Id, s.Payment?.ReceiptNumber, s.StationName, s.Customer?.Name ?? "Walk-in", s.Mode, s.Status,
             s.StartTime, s.EndTime, s.PlayedSeconds, s.GamingTotal, s.ProductsTotal, s.Total,
-            s.Payment?.Method, s.Payment?.PaidAt, s.Payment?.User?.DisplayName ?? s.StartedBy?.DisplayName)).ToList();
+            s.Payment?.Method, s.Payment?.PaidAt, s.Payment?.User?.DisplayName ?? s.StartedBy?.DisplayName, s.DiscountTotal)).ToList();
     }
 
     public async Task<ReceiptDto?> GetReceiptAsync(int sessionId, CancellationToken ct = default)
@@ -112,7 +113,7 @@ public sealed class ReportService(
             RateNote(s),
             s.GamingTotal,
             s.Products.OrderBy(p => p.AddedAt).Select(p => new ReceiptLine(p.ProductName, p.Quantity, p.UnitPrice, p.LineTotal)).ToList(),
-            s.ProductsTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.CreditAmount,
+            s.ProductsTotal, s.DiscountTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.CreditAmount,
             s.CustomerId is { } cid ? (await db.CreditTransactions.AsNoTracking().Where(t => t.CustomerId == cid).Select(t => t.Amount).ToListAsync(ct)).Sum() : 0,
             pay.Parts.Select(x => new PaymentPartRequest(x.Method, x.Amount)).ToList(),
             pay.User?.DisplayName,
@@ -177,7 +178,7 @@ public sealed class ReportService(
             for (var m = new DateTime(from.Year, from.Month, 1); m < to; m = m.AddMonths(1))
             {
                 var bucket = payments.Where(p => p.PaidAt.Year == m.Year && p.PaidAt.Month == m.Month).ToList();
-                perDay.Add(new DayRevenue(m, m.ToString("MMM", culture), bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount)));
+                perDay.Add(new DayRevenue(m, m.ToString("MMM", culture), bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount), bucket.Sum(p => p.DiscountAmount)));
             }
         }
         else
@@ -187,7 +188,7 @@ public sealed class ReportService(
             {
                 var bucket = payments.Where(p => p.PaidAt.Date == d).ToList();
                 var label = days <= 7 ? d.ToString("ddd", culture) : d.ToString("dd", culture);
-                perDay.Add(new DayRevenue(d, label, bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount)));
+                perDay.Add(new DayRevenue(d, label, bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount), bucket.Sum(p => p.DiscountAmount)));
             }
         }
 
@@ -218,7 +219,8 @@ public sealed class ReportService(
             gaming.Count,
             gaming.Count == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(gaming.Average(s => s.PlayedSeconds)),
             previous.Sum(),
-            perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour, creditGiven, creditCollected);
+            perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour, creditGiven, creditCollected,
+            payments.Sum(p => p.DiscountAmount));
     }
 }
 

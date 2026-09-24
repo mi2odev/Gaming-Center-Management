@@ -39,6 +39,8 @@ public sealed class GamingSession : Entity
     public long PlayedSeconds { get; set; }
     public decimal GamingTotal { get; set; }
     public decimal ProductsTotal { get; set; }
+    /// <summary>Discount given at payment. Total = GamingTotal + ProductsTotal − DiscountTotal.</summary>
+    public decimal DiscountTotal { get; set; }
     public decimal Total { get; set; }
 
     public int? StartedByUserId { get; set; }
