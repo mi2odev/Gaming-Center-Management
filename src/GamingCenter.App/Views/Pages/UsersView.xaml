@@ -1,0 +1,79 @@
+<UserControl x:Class="GamingCenter.App.Views.Pages.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls">
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <DockPanel Margin="32,24,32,0">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                <Button DockPanel.Dock="Right" Content="Add user" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Plus}" Command="{Binding AddCommand}"/>
+                <TextBlock Text="Admins manage stations, products, prices, reports, users and settings. Operators run sessions, add products, take payments and see basic history."
+                           Style="{StaticResource T.Muted}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,24,0"/>
+            </DockPanel>
+            <Grid DockPanel.Dock="Top" Margin="14,0,14,6">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="180"/><ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Text="NAME" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="2" Text="USERNAME" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="3" Text="ROLE" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="4" Text="STATUS" Style="{StaticResource T.ColumnHeader}"/>
+                <TextBlock Grid.Column="5" Text="LAST SIGN-IN" Style="{StaticResource T.ColumnHeader}"/>
+            </Grid>
+            <ListBox Style="{StaticResource RowList}" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="180"/><ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+                            <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource Border}" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding Initials}" Style="{StaticResource T.Base}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Grid.Column="1" Text="{Binding DisplayName}" Style="{StaticResource T.Base}" FontWeight="Medium" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Username}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Role}" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource T.Muted}">
+                                        <Style.Triggers><DataTrigger Binding="{Binding IsAdmin}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Accent}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Column="4" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource T.Muted}">
+                                        <Setter Property="Text" Value="Active"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IsActive}" Value="False"><Setter Property="Text" Value="Disabled"/><Setter Property="Foreground" Value="{DynamicResource Text.Faint}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Column="5" Text="{Binding LastLoginAt, StringFormat=dd/MM/yyyy HH:mm, TargetNullValue=—}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <Border Grid.Column="1" Width="400" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0"
+                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
+            <DockPanel Margin="28,24">
+                <StackPanel DockPanel.Dock="Bottom">
+                    <TextBlock Text="{Binding EditError}" Style="{StaticResource T.Error}" Margin="0,0,0,10"/>
+                    <UniformGrid Columns="2" Margin="-5,0">
+                        <Button Content="Cancel" Style="{StaticResource Btn.Secondary}" Height="42" Margin="5,0" Command="{Binding CancelEditCommand}"/>
+                        <Button Content="Save" Style="{StaticResource Btn.Primary}" Height="42" Margin="5,0" Command="{Binding SaveCommand}"/>
+                    </UniformGrid>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding EditorTitle}" Style="{StaticResource T.H15}"/>
+                    <TextBlock Text="Display name" Style="{StaticResource T.Label}" Margin="0,18,0,6"/>
+                    <TextBox Text="{Binding EditDisplayName, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="Username" Style="{StaticResource T.Label}" Margin="0,12,0,6"/>
+                    <TextBox Text="{Binding EditUsername, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}"/>
+                    <TextBlock Text="Role" Style="{StaticResource T.Label}" Margin="0,12,0,6"/>
+                    <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding EditRole}"/>
+                    <TextBlock Text="Password" Style="{StaticResource T.Label}" Margin="0,12,0,6"/>
+                    <PasswordBox c:Ui.BoundPassword="{Binding EditPassword, Mode=TwoWay}" Height="38"/>
+                    <TextBlock Text="{Binding PasswordHint}" Style="{StaticResource T.Faint}" Margin="0,6,0,0"/>
+                    <CheckBox Content="Account active" IsChecked="{Binding EditActive}" Margin="0,16,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

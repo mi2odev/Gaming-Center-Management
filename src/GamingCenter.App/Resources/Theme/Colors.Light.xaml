@@ -1,0 +1,81 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Light theme: same token names as Colors.Dark.xaml -->
+    <Color x:Key="C.App">#F4F5F8</Color>
+    <Color x:Key="C.Sidebar">#FFFFFF</Color>
+    <Color x:Key="C.Card">#FFFFFF</Color>
+    <Color x:Key="C.Selected">#E8EBF2</Color>
+    <Color x:Key="C.Placeholder">#EEF0F5</Color>
+    <Color x:Key="C.PlaceholderEnd">#E4E7EE</Color>
+    <Color x:Key="C.Border">#DDE1E8</Color>
+    <Color x:Key="C.BorderStrong">#CDD2DC</Color>
+    <Color x:Key="C.BorderDashed">#B8BFCC</Color>
+    <Color x:Key="C.Text">#14171F</Color>
+    <Color x:Key="C.TextMuted">#5B6475</Color>
+    <Color x:Key="C.TextFaint">#8C94A3</Color>
+    <Color x:Key="C.Tag">#C5CAD4</Color>
+    <Color x:Key="C.Accent">#1FA971</Color>
+    <Color x:Key="C.AccentHover">#23C283</Color>
+    <Color x:Key="C.AccentFg">#FFFFFF</Color>
+    <Color x:Key="C.AccentSoft">#E3F6EE</Color>
+    <Color x:Key="C.Danger">#D93A40</Color>
+    <Color x:Key="C.DangerSoft">#FBE7E8</Color>
+    <Color x:Key="C.Warning">#B7791F</Color>
+    <Color x:Key="C.WarningSoft">#FFF6E5</Color>
+    <Color x:Key="C.WarningBorder">#F0DDB5</Color>
+    <Color x:Key="C.Info">#2F6FDB</Color>
+    <Color x:Key="C.Neutral">#C5CBD6</Color>
+    <Color x:Key="C.RowSelected">#EEF1F7</Color>
+    <Color x:Key="C.RowDivider">#ECEEF3</Color>
+    <Color x:Key="C.PillBg">#E6FFFFFF</Color>
+    <Color x:Key="C.Overlay">#66141720</Color>
+
+    <SolidColorBrush x:Key="Bg.App" Color="{StaticResource C.App}"/>
+    <SolidColorBrush x:Key="Bg.Sidebar" Color="{StaticResource C.Sidebar}"/>
+    <SolidColorBrush x:Key="Bg.Card" Color="{StaticResource C.Card}"/>
+    <SolidColorBrush x:Key="Bg.Input" Color="{StaticResource C.Card}"/>
+    <SolidColorBrush x:Key="Bg.Selected" Color="{StaticResource C.Selected}"/>
+    <SolidColorBrush x:Key="Bg.Placeholder" Color="{StaticResource C.Placeholder}"/>
+    <LinearGradientBrush x:Key="Bg.ImageArea" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="{StaticResource C.Placeholder}"/>
+        <GradientStop Offset="1" Color="{StaticResource C.PlaceholderEnd}"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Border" Color="{StaticResource C.Border}"/>
+    <SolidColorBrush x:Key="Border.Strong" Color="{StaticResource C.BorderStrong}"/>
+    <SolidColorBrush x:Key="Border.Dashed" Color="{StaticResource C.BorderDashed}"/>
+    <SolidColorBrush x:Key="Text" Color="{StaticResource C.Text}"/>
+    <SolidColorBrush x:Key="Text.Muted" Color="{StaticResource C.TextMuted}"/>
+    <SolidColorBrush x:Key="Text.Faint" Color="{StaticResource C.TextFaint}"/>
+    <SolidColorBrush x:Key="Text.Tag" Color="{StaticResource C.Tag}"/>
+    <SolidColorBrush x:Key="Accent" Color="{StaticResource C.Accent}"/>
+    <SolidColorBrush x:Key="Accent.Hover" Color="{StaticResource C.AccentHover}"/>
+    <SolidColorBrush x:Key="Accent.Fg" Color="{StaticResource C.AccentFg}"/>
+    <SolidColorBrush x:Key="Accent.Soft" Color="{StaticResource C.AccentSoft}"/>
+    <SolidColorBrush x:Key="Danger" Color="{StaticResource C.Danger}"/>
+    <SolidColorBrush x:Key="Danger.Soft" Color="{StaticResource C.DangerSoft}"/>
+    <SolidColorBrush x:Key="Warning" Color="{StaticResource C.Warning}"/>
+    <SolidColorBrush x:Key="Warning.Soft" Color="{StaticResource C.WarningSoft}"/>
+    <SolidColorBrush x:Key="Warning.Border" Color="{StaticResource C.WarningBorder}"/>
+    <SolidColorBrush x:Key="Info" Color="{StaticResource C.Info}"/>
+    <SolidColorBrush x:Key="Neutral" Color="{StaticResource C.Neutral}"/>
+    <SolidColorBrush x:Key="Row.Selected" Color="{StaticResource C.RowSelected}"/>
+    <SolidColorBrush x:Key="Row.Divider" Color="{StaticResource C.RowDivider}"/>
+    <SolidColorBrush x:Key="Pill.Bg" Color="{StaticResource C.PillBg}"/>
+    <SolidColorBrush x:Key="Overlay" Color="{StaticResource C.Overlay}"/>
+    <SolidColorBrush x:Key="Paper" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Paper.Text" Color="#1A1C22"/>
+    <SolidColorBrush x:Key="Paper.Muted" Color="#555555"/>
+    <SolidColorBrush x:Key="Danger.Fg" Color="#FFFFFF"/>
+
+    <SolidColorBrush x:Key="Status.Available" Color="{StaticResource C.Accent}"/>
+    <SolidColorBrush x:Key="Status.Occupied" Color="{StaticResource C.Danger}"/>
+    <SolidColorBrush x:Key="Status.Paused" Color="{StaticResource C.Info}"/>
+    <SolidColorBrush x:Key="Status.Reserved" Color="{StaticResource C.Warning}"/>
+    <SolidColorBrush x:Key="Status.Offline" Color="{StaticResource C.TextFaint}"/>
+    <SolidColorBrush x:Key="Status.TimeUp" Color="{StaticResource C.Danger}"/>
+
+    <SolidColorBrush x:Key="Toast.Info" Color="{StaticResource C.Info}"/>
+    <SolidColorBrush x:Key="Toast.Success" Color="{StaticResource C.Accent}"/>
+    <SolidColorBrush x:Key="Toast.Warning" Color="{StaticResource C.Warning}"/>
+    <SolidColorBrush x:Key="Toast.Error" Color="{StaticResource C.Danger}"/>
+</ResourceDictionary>

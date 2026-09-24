@@ -1,0 +1,18 @@
+<UserControl x:Class="GamingCenter.App.Views.Dialogs.PromptDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:parts="clr-namespace:GamingCenter.App.Views.Parts">
+    <Border Style="{StaticResource DialogCard}" Width="460">
+        <StackPanel Margin="26,24">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding Label}" Style="{StaticResource T.Label}" Margin="0,18,0,6"/>
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="{Binding Placeholder}" c:Ui.FocusOnLoad="True"/>
+            <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,10,0,0"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Content="Back" Style="{StaticResource Btn.Secondary}" Command="{Binding CancelCommand}" Margin="0,0,10,0" IsCancel="True"/>
+                <Button Content="{Binding ConfirmText}" Style="{StaticResource Btn.Primary}" Command="{Binding ConfirmCommand}" IsDefault="True"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

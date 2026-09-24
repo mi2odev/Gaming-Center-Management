@@ -1,0 +1,212 @@
+<UserControl x:Class="GamingCenter.App.Views.Pages.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:GamingCenter.App.Controls"
+             xmlns:cm="clr-namespace:GamingCenter.Application.Common;assembly=GamingCenter.Application">
+    <!-- Design 1k -->
+    <DockPanel Margin="32,24,32,0">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCsvCommand}"/>
+                <Button Content="Products CSV" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ExportProductsCommand}"/>
+                <Button Content="Export PDF" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Printer}" Command="{Binding ExportPdfCommand}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Border Style="{StaticResource SegmentHost}">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource Segment}" GroupName="R" Content="Daily" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Day}"/>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="R" Content="Weekly" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Week}"/>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="R" Content="Monthly" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Month}"/>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="R" Content="Yearly" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Year}"/>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="R" Content="Custom…" IsChecked="{Binding Period, Converter={StaticResource Equals}, ConverterParameter=Custom}"/>
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Visibility="{Binding IsCustom, Converter={StaticResource InvBoolToVis}}">
+                    <Button Style="{StaticResource Btn.Icon}" Width="32" Height="32" MinHeight="0" c:Ui.Icon="{StaticResource I.ChevronLeft}" Command="{Binding PreviousCommand}" ToolTip="Previous period"/>
+                    <Button Style="{StaticResource Btn.Icon}" Width="32" Height="32" MinHeight="0" Margin="6,0,0,0" c:Ui.Icon="{StaticResource I.ChevronRight}" Command="{Binding NextCommand}" ToolTip="Next period"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Visibility="{Binding IsCustom, Converter={StaticResource BoolToVis}}">
+                    <DatePicker SelectedDate="{Binding CustomFrom}" Width="130"/>
+                    <TextBlock Text="→" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="8,0"/>
+                    <DatePicker SelectedDate="{Binding CustomTo}" Width="130"/>
+                </StackPanel>
+                <TextBlock Text="{Binding RangeText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center" Margin="14,0,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,0,24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- KPIs -->
+                <UniformGrid Grid.ColumnSpan="3" Rows="1" Columns="4" Margin="-8,0">
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
+                        <StackPanel>
+                            <TextBlock Text="Total revenue" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding TotalText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
+                            <TextBlock Text="{Binding TrendText}" Margin="0,4,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource T.Muted}">
+                                        <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding TrendUp}" Value="False"><Setter Property="Foreground" Value="{DynamicResource Danger}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
+                        <StackPanel>
+                            <TextBlock Text="Gaming revenue" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding GamingText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
+                            <TextBlock Text="{Binding GamingShare}" Style="{StaticResource T.Muted}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
+                        <StackPanel>
+                            <TextBlock Text="Product revenue" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding ProductText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
+                            <TextBlock Text="{Binding ProfitText}" Style="{StaticResource T.Muted}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
+                        <StackPanel>
+                            <TextBlock Text="Sessions" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding SessionsText}" Style="{StaticResource T.StatValue}" FontSize="30"/>
+                            <TextBlock Text="{Binding SessionsSub}" Style="{StaticResource T.Muted}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- Revenue per day -->
+                <Border Grid.Row="2" Style="{StaticResource Card}" Padding="22,20">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Gaming" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="6,0,16,0"/>
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource Neutral}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Products" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="6,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding ChartTitle}" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding Bars}" Height="300">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="4,0" ToolTip="{Binding Value}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}}"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="1" Text="{Binding Value}" Style="{StaticResource T.Mono}" FontSize="11" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                        <Border Grid.Row="2" CornerRadius="6,6,0,0" ClipToBounds="True" MaxWidth="64">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="{Binding ProductShare, Converter={StaticResource FractionStar}}"/>
+                                                    <RowDefinition Height="{Binding ProductShare, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                                </Grid.RowDefinitions>
+                                                <Border Background="{DynamicResource Neutral}" CornerRadius="6,6,0,0"/>
+                                                <Border Grid.Row="1" Background="{DynamicResource Accent}"/>
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Grid.Row="3" Text="{Binding Label}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <!-- Revenue per station -->
+                <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <TextBlock Text="Revenue per station" Style="{StaticResource T.Section}" Margin="0,0,0,14"/>
+                        <TextBlock Text="No sessions in this period." Style="{StaticResource T.Muted}" Visibility="{Binding Stations.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Stations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,14">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Value}" Style="{StaticResource T.MonoStrong}" FontSize="12"/>
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontSize="12"/>
+                                        </DockPanel>
+                                        <Border Height="6" CornerRadius="3" Background="{DynamicResource Border}" Margin="0,5,0,0" ClipToBounds="True">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}}"/>
+                                                    <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Background="{DynamicResource Accent}" CornerRadius="3"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Top products -->
+                <Border Grid.Row="4" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,10">
+                            <TextBlock DockPanel.Dock="Right" Text="units · revenue · profit" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="Top products" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <TextBlock Text="No product sales in this period." Style="{StaticResource T.Muted}" Visibility="{Binding TopProducts.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding TopProducts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,7">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}">
+                                                <Run Text="{Binding Units, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding Revenue, Mode=OneWay, Converter={StaticResource Money}, ConverterParameter=number}"/><Run Text=" · "/><Run Text="{Binding Profit, Mode=OneWay, Converter={StaticResource Money}, ConverterParameter=number}" Foreground="{DynamicResource Accent}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Session modes -->
+                <Border Grid.Row="4" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <TextBlock Text="Session modes" Style="{StaticResource T.Section}" Margin="0,0,0,12"/>
+                        <Border Height="14" CornerRadius="7" ClipToBounds="True" Background="{DynamicResource Border}" Visibility="{Binding ModesLegend, Converter={StaticResource NotEqualsToVis}, ConverterParameter=No sessions}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding OpenShare, Converter={StaticResource FractionStar}}"/>
+                                    <ColumnDefinition Width="{Binding FixedShare, Converter={StaticResource FractionStar}}"/>
+                                    <ColumnDefinition Width="{Binding BudgetShare, Converter={StaticResource FractionStar}}"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Background="{DynamicResource Accent}"/>
+                                <Border Grid.Column="1" Background="{DynamicResource Info}"/>
+                                <Border Grid.Column="2" Background="{DynamicResource Warning}"/>
+                            </Grid>
+                        </Border>
+                        <TextBlock Text="{Binding ModesLegend}" Style="{StaticResource T.Muted}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Insights}" Style="{StaticResource T.Muted}" Margin="0,12,0,0" TextWrapping="Wrap" TextTrimming="None" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
