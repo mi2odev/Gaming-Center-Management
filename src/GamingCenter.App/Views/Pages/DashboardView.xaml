@@ -187,7 +187,7 @@
                                 c:Ui.ClickCommand="{Binding DataContext.OpenCommand, ElementName=Root}" c:Ui.ClickParameter="{Binding}"
                                 Tag="{Binding DataContext, ElementName=Root}" ContextMenu="{StaticResource StationMenu}">
                             <StackPanel>
-                                <Grid Height="104">
+                                <Grid Height="124">
                                     <Border CornerRadius="11,11,0,0" ClipToBounds="True">
                                         <parts:Thumb ImagePath="{Binding ImagePath}" TagText="{Binding Tag}" CornerRadius="11,11,0,0"/>
                                     </Border>
