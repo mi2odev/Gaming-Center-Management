@@ -290,7 +290,7 @@ public sealed class SessionService(
         s.Status = SessionStatus.Completed;
         s.EndedByUserId = CurrentUserId;
 
-        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, ct);
+        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, request.Parts, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return payment;
@@ -364,7 +364,7 @@ public sealed class SessionService(
 
         s.ProductsTotal = s.ProductsCost();
         s.Total = s.ProductsTotal;
-        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, ct);
+        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, request.Parts, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return payment;
@@ -435,10 +435,12 @@ public sealed class SessionService(
     }
 
     /// <summary>
-    /// Records the payment. With <paramref name="payNow"/> set, the customer pays only that much now and
-    /// the rest is added to their credit (the customer must be known). Runs inside the caller's transaction.
+    /// Records the payment. <paramref name="parts"/> splits it between people or methods (50 cash + 70 card).
+    /// With <paramref name="payNow"/> set, only that much is paid now and the rest goes on the customer's credit
+    /// (the customer must be known). Change can only be given from cash. Runs inside the caller's transaction.
     /// </summary>
-    private async Task<Payment> CreatePaymentAsync(GamingCenterDbContext db, GamingSession s, PaymentMethod method, decimal received, decimal? payNow, CancellationToken ct)
+    private async Task<Payment> CreatePaymentAsync(GamingCenterDbContext db, GamingSession s, PaymentMethod method, decimal received,
+        decimal? payNow, IReadOnlyList<PaymentPartRequest>? parts, CancellationToken ct)
     {
         decimal total = s.Total;
         decimal credit = 0;
@@ -451,15 +453,27 @@ public sealed class SessionService(
         }
         decimal due = total - credit;
 
-        decimal change = 0;
-        if (method == PaymentMethod.Cash)
+        List<PaymentPartRequest> lines;
+        if (parts is { Count: > 0 })
         {
-            if (received <= 0 && credit == 0) received = due;
-            if (received < due)
-                throw new BusinessException($"Amount received is less than {(credit > 0 ? "the amount paid now" : "the total")} ({due:0.##}). Tick \"Pay the rest later\" to put the difference on the customer's credit.");
-            change = received - due;
+            if (parts.Any(p => p.Amount < 0)) throw new BusinessException("Payment amounts cannot be negative.");
+            lines = parts.Where(p => p.Amount > 0).ToList();
         }
-        else received = due;
+        else
+        {
+            // Single payment (no split).
+            if (method == PaymentMethod.Cash) { if (received <= 0 && credit == 0) received = due; }
+            else received = due;
+            lines = received > 0 ? [new PaymentPartRequest(method, received)] : [];
+        }
+
+        decimal handed = lines.Sum(p => p.Amount);
+        if (handed < due)
+            throw new BusinessException($"Still {due - handed:0.##} to pay. Add another payment with +, or tick \"Pay the rest later\" to put it on the customer's credit.");
+        decimal change = handed - due;
+        decimal cash = lines.Where(p => p.Method == PaymentMethod.Cash).Sum(p => p.Amount);
+        if (change > cash)
+            throw new BusinessException("Card and other payments cannot be more than what is due. Only cash can be given back as change.");
 
         var now = Clock.Now;
         var prefix = now.ToString("yyyy-MMdd-");
@@ -473,11 +487,13 @@ public sealed class SessionService(
             GamingAmount = s.GamingTotal,
             ProductsAmount = s.ProductsTotal,
             TotalAmount = total,
-            Method = method,
-            AmountReceived = received,
+            // Main method = the biggest part (used where a single method is shown).
+            Method = lines.Count > 0 ? lines.GroupBy(p => p.Method).OrderByDescending(g => g.Sum(p => p.Amount)).First().Key : method,
+            AmountReceived = handed,
             ChangeGiven = change,
             CreditAmount = credit,
             UserId = CurrentUserId,
+            Parts = lines.Select(p => new PaymentPart { Method = p.Method, Amount = p.Amount }).ToList(),
         };
         db.Payments.Add(payment);
 

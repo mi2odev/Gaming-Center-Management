@@ -172,6 +172,25 @@ public sealed class Payment : Entity
     public User? User { get; set; }
 
     public decimal PaidNow => TotalAmount - CreditAmount;
+
+    /// <summary>Split payment: one line per person / method (e.g. 50 cash + 70 card). Empty on older payments.</summary>
+    public List<PaymentPart> Parts { get; set; } = [];
+
+    /// <summary>Money actually kept for a method (change is always given back in cash).</summary>
+    public decimal CollectedBy(PaymentMethod method)
+    {
+        if (Parts.Count == 0) return Method == method ? PaidNow : 0;
+        var sum = Parts.Where(p => p.Method == method).Sum(p => p.Amount);
+        return method == PaymentMethod.Cash ? sum - ChangeGiven : sum;
+    }
+}
+
+public sealed class PaymentPart : Entity
+{
+    public int PaymentId { get; set; }
+    public PaymentMethod Method { get; set; }
+    /// <summary>Amount handed over for this part (cash may include money given back as change).</summary>
+    public decimal Amount { get; set; }
 }
 
 /// <summary>

@@ -382,4 +382,62 @@ public class SessionServiceTests : IDisposable
         var customers = await _t.Customers.GetAllAsync();
         Assert.Equal(1300m, customers.Single(c => c.Id == nabil.Id).Balance);
     }
+
+    [Fact]
+    public async Task Split_payment_between_two_people()
+    {
+        var chips = await _t.Product("Chips");
+        var cola = await _t.Product("Coca-Cola 33cl");
+        // 250 total (cola 150 + chips 100): friend 1 pays 50 cash, friend 2 pays 200 by card
+        var pay = await _t.Sessions.CounterSaleAsync(new CounterSaleRequest(
+            [new CartLine(cola.Id, 1), new CartLine(chips.Id, 1)], PaymentMethod.Cash, 0, null, Parts:
+            [new PaymentPartRequest(PaymentMethod.Cash, 50m), new PaymentPartRequest(PaymentMethod.Card, 200m)]));
+        Assert.Equal(250m, pay.TotalAmount);
+        Assert.Equal(PaymentMethod.Card, pay.Method); // biggest part
+        Assert.Equal(0m, pay.ChangeGiven);
+        Assert.Equal(0m, pay.CreditAmount);
+    }
+
+    [Fact]
+    public async Task Split_payment_rules()
+    {
+        var st = await _t.Station("PS4 #01"); // 200/h
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null));
+        _t.Clock.Now = _t.Clock.Now.AddMinutes(36); // 120 DA
+
+        // Not enough in total → refused
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, null,
+            Parts: [new PaymentPartRequest(PaymentMethod.Cash, 50m)])));
+        // Change larger than the cash handed over (card overpaid) → refused
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, null,
+            Parts: [new PaymentPartRequest(PaymentMethod.Cash, 20m), new PaymentPartRequest(PaymentMethod.Card, 150m)])));
+
+        // 50 cash + 100 cash from the second friend → 30 change
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, null,
+            Parts: [new PaymentPartRequest(PaymentMethod.Cash, 50m), new PaymentPartRequest(PaymentMethod.Cash, 100m)]));
+        Assert.Equal(120m, pay.TotalAmount);
+        Assert.Equal(30m, pay.ChangeGiven);
+        Assert.Equal(120m, pay.CollectedBy(PaymentMethod.Cash));
+
+        var receipt = await _t.Reports.GetReceiptAsync(s.Id);
+        Assert.Equal(2, receipt!.Parts.Count);
+        var rows = await _t.Reports.GetPaymentsAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1));
+        Assert.Equal("Cash 50 + Cash 100", rows[0].MethodsText);
+    }
+
+    [Fact]
+    public async Task Split_payment_with_rest_on_credit()
+    {
+        var karim = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Karim", null, null));
+        var st = await _t.Station("PS4 #02");
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null));
+        _t.Clock.Now = _t.Clock.Now.AddMinutes(90); // 300 DA
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, karim.Id, PayNow: 150m,
+            Parts: [new PaymentPartRequest(PaymentMethod.Cash, 100m), new PaymentPartRequest(PaymentMethod.Card, 50m)]));
+        Assert.Equal(150m, pay.CreditAmount);
+        Assert.Equal(100m, pay.CollectedBy(PaymentMethod.Cash));
+        Assert.Equal(50m, pay.CollectedBy(PaymentMethod.Card));
+        var rows = await _t.Reports.GetPaymentsAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1));
+        Assert.Equal("Cash 100 + Card 50 + credit", rows[0].MethodsText);
+    }
 }

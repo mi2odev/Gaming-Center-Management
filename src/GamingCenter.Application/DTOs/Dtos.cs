@@ -105,11 +105,16 @@ public sealed record CompleteSessionRequest(
     PaymentMethod Method,
     decimal AmountReceived,
     int? CustomerId,
-    decimal? PayNow = null);
+    decimal? PayNow = null,
+    IReadOnlyList<PaymentPartRequest>? Parts = null);
+
+/// <summary>One part of a split payment (e.g. first friend pays 50 cash).</summary>
+public sealed record PaymentPartRequest(PaymentMethod Method, decimal Amount);
 
 public sealed record CartLine(int ProductId, int Quantity);
 
-public sealed record CounterSaleRequest(IReadOnlyList<CartLine> Lines, PaymentMethod Method, decimal AmountReceived, int? CustomerId, decimal? PayNow = null);
+public sealed record CounterSaleRequest(IReadOnlyList<CartLine> Lines, PaymentMethod Method, decimal AmountReceived, int? CustomerId, decimal? PayNow = null,
+    IReadOnlyList<PaymentPartRequest>? Parts = null);
 
 /// <summary>A customer with money owed. Balance &gt; 0 means the customer owes the center.</summary>
 public sealed record CreditBalanceDto(int CustomerId, string Name, string? Phone, decimal Balance, DateTime? LastCreditAt, DateTime? LastRepaymentAt, int OpenBills);
@@ -160,6 +165,7 @@ public sealed record ReceiptDto(
     decimal Change,
     decimal CreditAmount,
     decimal CustomerBalance,
+    IReadOnlyList<PaymentPartRequest> Parts,
     string? Operator,
     IReadOnlyList<(DateTime Start, DateTime? End)> Pauses,
     string Footer);
@@ -176,7 +182,11 @@ public sealed record PaymentRow(
     decimal TotalAmount,
     PaymentMethod Method,
     string? Operator,
-    decimal CreditAmount = 0);
+    decimal CreditAmount = 0,
+    string? MethodsText = null,
+    decimal CashCollected = 0,
+    decimal CardCollected = 0,
+    decimal OtherCollected = 0);
 
 public sealed record DashboardStats(
     decimal Revenue,

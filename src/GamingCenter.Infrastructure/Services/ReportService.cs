@@ -26,6 +26,7 @@ public sealed class ReportService(
             .Include(p => p.Session!).ThenInclude(s => s.Products)
             .Include(p => p.Session!).ThenInclude(s => s.Customer)
             .Include(p => p.User)
+            .Include(p => p.Parts)
             .AsSplitQuery()
             .ToListAsync(ct);
 
@@ -98,6 +99,7 @@ public sealed class ReportService(
         var s = await db.Sessions.AsNoTracking()
             .Include(x => x.Products).Include(x => x.Pauses).Include(x => x.RateChanges).Include(x => x.Customer)
             .Include(x => x.Payment!).ThenInclude(p => p.User)
+            .Include(x => x.Payment!).ThenInclude(p => p.Parts)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == sessionId, ct);
         if (s?.Payment is not { } pay) return null;
@@ -112,6 +114,7 @@ public sealed class ReportService(
             s.Products.OrderBy(p => p.AddedAt).Select(p => new ReceiptLine(p.ProductName, p.Quantity, p.UnitPrice, p.LineTotal)).ToList(),
             s.ProductsTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.CreditAmount,
             s.CustomerId is { } cid ? (await db.CreditTransactions.AsNoTracking().Where(t => t.CustomerId == cid).Select(t => t.Amount).ToListAsync(ct)).Sum() : 0,
+            pay.Parts.Select(x => new PaymentPartRequest(x.Method, x.Amount)).ToList(),
             pay.User?.DisplayName,
             s.Pauses.OrderBy(p => p.StartTime).Select(p => (p.StartTime, p.EndTime)).ToList(),
             cfg.ReceiptFooter);
@@ -128,6 +131,16 @@ public sealed class ReportService(
             $"{x.From:HH:mm}–{x.To:HH:mm} {(x.Controllers is { } c ? $"{c} ctrl " : "")}@{Money.Number(x.HourlyRate)}/h"));
     }
 
+    /// <summary>"Cash" or "Cash 50 + Card 70", with "+ credit" when part is unpaid.</summary>
+    internal static string MethodsText(Payment p)
+    {
+        var text = p.Parts.Count > 1
+            ? string.Join(" + ", p.Parts.Select(x => $"{x.Method} {Money.Number(x.Amount)}"))
+            : p.Parts.Count == 1 ? p.Parts[0].Method.ToString() : p.CreditAmount >= p.TotalAmount ? "" : p.Method.ToString();
+        if (p.CreditAmount > 0) text = text.Length == 0 ? "Credit" : text + " + credit";
+        return text;
+    }
+
     public async Task<IReadOnlyList<PaymentRow>> GetPaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default)
     {
         await using var db = await OpenAsync(ct);
@@ -135,10 +148,13 @@ public sealed class ReportService(
             .Where(p => p.PaidAt >= from && p.PaidAt < to)
             .Include(p => p.Session!).ThenInclude(s => s.Customer)
             .Include(p => p.User)
+            .Include(p => p.Parts)
+            .AsSplitQuery()
             .OrderByDescending(p => p.PaidAt)
             .ToListAsync(ct);
         return list.Select(p => new PaymentRow(p.Id, p.SessionId, p.ReceiptNumber, p.PaidAt, p.Session!.StationName,
-            p.Session.Customer?.Name ?? "Walk-in", p.GamingAmount, p.ProductsAmount, p.TotalAmount, p.Method, p.User?.DisplayName, p.CreditAmount)).ToList();
+            p.Session.Customer?.Name ?? "Walk-in", p.GamingAmount, p.ProductsAmount, p.TotalAmount, p.Method, p.User?.DisplayName, p.CreditAmount, MethodsText(p),
+            p.CollectedBy(PaymentMethod.Cash), p.CollectedBy(PaymentMethod.Card), p.CollectedBy(PaymentMethod.Other))).ToList();
     }
 
     public async Task<ReportData> GetReportAsync(DateTime from, DateTime to, bool groupByMonth, CancellationToken ct = default)
@@ -184,7 +200,9 @@ public sealed class ReportService(
             .OrderByDescending(x => x.Revenue).ToList();
 
         var modeCounts = gaming.GroupBy(s => s.Mode).ToDictionary(g => g.Key, g => g.Count());
-        var methodTotals = payments.GroupBy(p => p.Method).ToDictionary(g => g.Key, g => g.Sum(p => p.TotalAmount));
+        var methodTotals = Enum.GetValues<PaymentMethod>()
+            .ToDictionary(m => m, m => payments.Sum(p => p.CollectedBy(m)))
+            .Where(kv => kv.Value > 0).ToDictionary(kv => kv.Key, kv => kv.Value);
         var creditRows = await db.CreditTransactions.AsNoTracking()
             .Where(t => t.At >= from && t.At < to).Select(t => new { t.Amount, t.Kind }).ToListAsync(ct);
         decimal creditGiven = creditRows.Where(t => t.Amount > 0).Sum(t => t.Amount);

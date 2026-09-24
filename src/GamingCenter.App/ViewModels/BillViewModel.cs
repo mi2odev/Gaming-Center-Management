@@ -14,7 +14,20 @@ public sealed record BillArgs(int SessionId);
 
 public sealed record BillLine(string Name, int Quantity, string Total);
 
-/// <summary>Shared payment panel: method, amount received, change, receipt and customer options.</summary>
+/// <summary>An extra line of a split payment ("+"), e.g. the second friend pays 70 by card.</summary>
+public sealed partial class PaymentLineViewModel : ObservableObject
+{
+    [ObservableProperty] private PaymentMethod _method = PaymentMethod.Cash;
+    [ObservableProperty] private string _amountText = "";
+
+    public PaymentMethod[] Methods { get; } = [PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Other];
+
+    public decimal Amount => Money.TryParse(AmountText, out var a) && a > 0 ? a : 0;
+}
+
+/// <summary>
+/// Shared payment panel: method, amount received, split payments (+), change, credit, receipt and customer options.
+/// </summary>
 public abstract partial class PaymentDialogViewModel : DialogViewModel
 {
     protected PaymentDialogViewModel(ISettingsService settings, ICustomerService customers, DialogService dialogs)
@@ -32,6 +45,7 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
 
     [ObservableProperty] private string _receivedText = "";
     [ObservableProperty] private string _changeText = "0";
+    [ObservableProperty] private string _changeLabel = "Change";
     [ObservableProperty] private bool _changeIsNegative;
     [ObservableProperty] private bool _printReceipt;
 
@@ -46,9 +60,14 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
 
     [ObservableProperty] private string _creditText = "";
     [ObservableProperty] private bool _canOfferCredit;
+    [ObservableProperty] private string _paidSoFarText = "";
 
-    public bool ShowAmountField => IsCash || PayLater;
-    public string AmountLabel => PayLater ? "Paying now" : "Received";
+    /// <summary>Extra payment lines added with "+" (split between people or methods).</summary>
+    public ObservableCollection<PaymentLineViewModel> ExtraLines { get; } = [];
+    public bool IsSplit => ExtraLines.Count > 0;
+
+    public bool ShowAmountField => IsCash || PayLater || IsSplit;
+    public string AmountLabel => IsSplit ? "Payment 1" : PayLater ? "Paying now" : "Received";
     public bool CustomerRequired => PayLater || AttachCustomer;
 
     partial void OnPayLaterChanged(bool value)
@@ -57,9 +76,9 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
         {
             AttachCustomer = true;
             // Keep what was typed if it is a real partial amount, otherwise start from zero.
-            if (!Money.TryParse(ReceivedText, out var r) || r >= Total) ReceivedText = "0";
+            if (!IsSplit && (!Money.TryParse(ReceivedText, out var r) || r >= Total)) ReceivedText = "0";
         }
-        else ReceivedText = Money.Number(Total).Replace(",", "");
+        else if (!IsSplit) ReceivedText = Money.Number(Total).Replace(",", "");
         UpdateChange();
     }
 
@@ -95,13 +114,57 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
     [RelayCommand]
     private void SetReceived(int amount) => ReceivedText = amount.ToString();
 
+    /// <summary>"+": another person / method pays part of the bill. Pre-filled with what is still missing.</summary>
+    [RelayCommand]
+    private void AddPayment()
+    {
+        // The first line becomes an explicit amount (e.g. what the first friend paid).
+        if (!IsSplit && !Money.TryParse(ReceivedText, out _)) ReceivedText = Money.Number(Total).Replace(",", "");
+        var line = new PaymentLineViewModel();
+        var missing = Total - Handed();
+        line.AmountText = missing > 0 ? Money.Number(missing).Replace(",", "") : "";
+        line.PropertyChanged += (_, _) => UpdateChange();
+        ExtraLines.Add(line);
+        OnSplitChanged();
+    }
+
+    [RelayCommand]
+    private void RemovePayment(PaymentLineViewModel line)
+    {
+        ExtraLines.Remove(line);
+        OnSplitChanged();
+    }
+
+    private void OnSplitChanged()
+    {
+        OnPropertyChanged(nameof(IsSplit));
+        OnPropertyChanged(nameof(ShowAmountField));
+        OnPropertyChanged(nameof(AmountLabel));
+        UpdateChange();
+    }
+
+    /// <summary>Amount of the first payment line.</summary>
+    private decimal MainAmount()
+    {
+        if (Money.TryParse(ReceivedText, out var r)) return Math.Max(0, r);
+        // Blank field on a simple full payment means "exact amount".
+        return string.IsNullOrWhiteSpace(ReceivedText) && !PayLater && !IsSplit ? Total : 0;
+    }
+
+    /// <summary>Everything handed over across all payment lines.</summary>
+    private decimal Handed() =>
+        (!IsCash && !PayLater && !IsSplit ? Total : MainAmount()) + ExtraLines.Sum(l => l.Amount);
+
     private void UpdateChange()
     {
         OnPropertyChanged(nameof(ConfirmText));
+        var handed = Handed();
+        PaidSoFarText = IsSplit ? $"Paid so far {Money.Format(handed)} of {Money.Format(Total)}" : "";
         if (PayLater)
         {
             var credit = Total - PayNowAmount();
             ChangeIsNegative = false;
+            ChangeLabel = "Change";
             ChangeText = Money.Format(0);
             CreditText = $"{Money.Format(credit)} will be added to {(Customer.Selected?.Name ?? "the customer")}'s credit"
                 + (Customer.Selected is { Balance: > 0 } c ? $" (already owes {Money.Format(c.Balance)}, new total {Money.Format(c.Balance + credit)})" : "");
@@ -109,21 +172,28 @@ public abstract partial class PaymentDialogViewModel : DialogViewModel
             return;
         }
         CreditText = "";
-        if (!Money.TryParse(ReceivedText, out var received)) received = string.IsNullOrWhiteSpace(ReceivedText) ? Total : 0;
-        var change = received - Total;
-        ChangeIsNegative = IsCash && change < 0;
-        ChangeText = ChangeIsNegative ? $"Missing {Money.Format(-change)}" : Money.Format(Math.Max(0, change));
+        var change = handed - Total;
+        ChangeIsNegative = change < 0;
+        ChangeLabel = ChangeIsNegative ? "Still to pay" : "Change";
+        ChangeText = Money.Format(Math.Abs(change));
         CanOfferCredit = ChangeIsNegative;
     }
 
     /// <summary>Amount paid now in pay-later mode (never above the total).</summary>
-    protected decimal PayNowAmount() =>
-        Money.TryParse(ReceivedText, out var r) ? Math.Clamp(r, 0, Total) : 0;
+    protected decimal PayNowAmount() => Math.Clamp(Handed(), 0, Total);
 
-    protected decimal ReceivedAmount() =>
-        PayLater ? PayNowAmount() : Money.TryParse(ReceivedText, out var r) ? r : Total;
+    protected decimal ReceivedAmount() => PayLater ? PayNowAmount() : Handed();
 
     protected decimal? PayNowOrNull() => PayLater ? PayNowAmount() : null;
+
+    /// <summary>Payment lines for the service; null for a simple one-method payment.</summary>
+    protected IReadOnlyList<PaymentPartRequest>? PartsOrNull()
+    {
+        if (!IsSplit) return null;
+        var parts = new List<PaymentPartRequest> { new(Method, MainAmount()) };
+        parts.AddRange(ExtraLines.Select(l => new PaymentPartRequest(l.Method, l.Amount)));
+        return parts.Where(p => p.Amount > 0).ToList();
+    }
 
     protected int? ChosenCustomerId(int? existing) => PayLater || AttachCustomer ? Customer.SelectedId : existing;
 
@@ -233,7 +303,7 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
         bool ok = await RunAsync(async () =>
         {
             payment = await _sessions.CompleteAsync(new CompleteSessionRequest(
-                _session.Id, _end, Method, Method == PaymentMethod.Cash || PayLater ? ReceivedAmount() : Total, ChosenCustomerId(null), PayNowOrNull()));
+                _session.Id, _end, Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull()));
         });
         if (!ok || payment is null) return;
 
@@ -349,7 +419,7 @@ public sealed partial class CounterSaleViewModel : PaymentDialogViewModel
         bool ok = await RunAsync(async () =>
             payment = await _sessions.CounterSaleAsync(new CounterSaleRequest(
                 Cart.Select(l => new CartLine(l.Product.Id, l.Quantity)).ToList(),
-                Method, Method == PaymentMethod.Cash || PayLater ? ReceivedAmount() : Total, ChosenCustomerId(null), PayNowOrNull())));
+                Method, ReceivedAmount(), ChosenCustomerId(null), PayNowOrNull(), PartsOrNull())));
         if (!ok || payment is null) return;
 
         if (payment.CreditAmount > 0) _toasts.Warning($"{Money.Format(payment.CreditAmount)} on credit · {Customer.Selected?.Name}", "See the Credits page.");
