@@ -65,6 +65,8 @@
                                  Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
                     <RadioButton Content="Customers" c:Ui.Icon="{StaticResource I.Users}" CommandParameter="{x:Static vm:Page.Customers}"
                                  IsChecked="{Binding CurrentPageKey, Mode=OneWay, Converter={StaticResource Equals}, ConverterParameter=Customers}"/>
+                    <RadioButton Content="Credits" c:Ui.Icon="{StaticResource I.Wallet}" CommandParameter="{x:Static vm:Page.Credits}"
+                                 IsChecked="{Binding CurrentPageKey, Mode=OneWay, Converter={StaticResource Equals}, ConverterParameter=Credits}"/>
                     <RadioButton Content="Sales" c:Ui.Icon="{StaticResource I.Receipt}" CommandParameter="{x:Static vm:Page.Sales}"
                                  IsChecked="{Binding CurrentPageKey, Mode=OneWay, Converter={StaticResource Equals}, ConverterParameter=Sales}"/>
                     <RadioButton Content="Reports" c:Ui.Icon="{StaticResource I.Chart}" CommandParameter="{x:Static vm:Page.Reports}"

@@ -116,6 +116,7 @@ public sealed partial class ShellViewModel : ObservableObject
             Page.Sessions => _services.GetRequiredService<SessionsViewModel>(),
             Page.Products => _services.GetRequiredService<ProductsViewModel>(),
             Page.Customers => _services.GetRequiredService<CustomersViewModel>(),
+            Page.Credits => _services.GetRequiredService<CreditsViewModel>(),
             Page.Sales => _services.GetRequiredService<SalesViewModel>(),
             Page.Reports => _services.GetRequiredService<ReportsViewModel>(),
             Page.Users => _services.GetRequiredService<UsersViewModel>(),

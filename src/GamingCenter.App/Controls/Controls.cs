@@ -139,6 +139,40 @@ public static class Ui
         }
     }
 
+    /// <summary>Lets the user drop an image file from Explorer; executes the command with the file path.</summary>
+    public static readonly DependencyProperty ImageDropCommandProperty = DependencyProperty.RegisterAttached(
+        "ImageDropCommand", typeof(ICommand), typeof(Ui), new PropertyMetadata(null, (d, e) =>
+        {
+            if (d is not UIElement el) return;
+            el.AllowDrop = e.NewValue is not null;
+            el.DragOver -= OnImageDragOver;
+            el.Drop -= OnImageDrop;
+            if (e.NewValue is null) return;
+            el.DragOver += OnImageDragOver;
+            el.Drop += OnImageDrop;
+        }));
+    public static ICommand? GetImageDropCommand(DependencyObject d) => (ICommand?)d.GetValue(ImageDropCommandProperty);
+    public static void SetImageDropCommand(DependencyObject d, ICommand? value) => d.SetValue(ImageDropCommandProperty, value);
+
+    private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tif", ".tiff"];
+
+    private static string? DroppedImage(DragEventArgs e) =>
+        e.Data.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } files
+        && ImageExtensions.Contains(System.IO.Path.GetExtension(files[0]).ToLowerInvariant()) ? files[0] : null;
+
+    private static void OnImageDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = DroppedImage(e) is null ? DragDropEffects.None : DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    private static void OnImageDrop(object sender, DragEventArgs e)
+    {
+        if (sender is DependencyObject d && DroppedImage(e) is { } file && GetImageDropCommand(d) is { } cmd && cmd.CanExecute(file))
+            cmd.Execute(file);
+        e.Handled = true;
+    }
+
     /// <summary>Selects all text when a TextBox gets keyboard focus (fast numeric entry).</summary>
     public static readonly DependencyProperty SelectAllOnFocusProperty = DependencyProperty.RegisterAttached(
         "SelectAllOnFocus", typeof(bool), typeof(Ui), new PropertyMetadata(false, (d, e) =>

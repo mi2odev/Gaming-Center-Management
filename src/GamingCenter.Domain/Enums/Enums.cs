@@ -45,6 +45,16 @@ public enum PaymentMethod
     Other = 2,
 }
 
+public enum CreditKind
+{
+    /// <summary>Unpaid part of a bill.</summary>
+    UnpaidBill = 0,
+    /// <summary>Customer paid back (amount is negative).</summary>
+    Repayment = 1,
+    /// <summary>Debt entered by hand, e.g. from before the app.</summary>
+    Manual = 2,
+}
+
 public enum UserRole
 {
     Operator = 0,

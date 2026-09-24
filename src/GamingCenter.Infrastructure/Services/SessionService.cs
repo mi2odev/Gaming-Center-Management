@@ -290,7 +290,7 @@ public sealed class SessionService(
         s.Status = SessionStatus.Completed;
         s.EndedByUserId = CurrentUserId;
 
-        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, ct);
+        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return payment;
@@ -364,7 +364,7 @@ public sealed class SessionService(
 
         s.ProductsTotal = s.ProductsCost();
         s.Total = s.ProductsTotal;
-        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, ct);
+        var payment = await CreatePaymentAsync(db, s, request.Method, request.AmountReceived, request.PayNow, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return payment;
@@ -434,17 +434,32 @@ public sealed class SessionService(
         });
     }
 
-    private async Task<Payment> CreatePaymentAsync(GamingCenterDbContext db, GamingSession s, PaymentMethod method, decimal received, CancellationToken ct)
+    /// <summary>
+    /// Records the payment. With <paramref name="payNow"/> set, the customer pays only that much now and
+    /// the rest is added to their credit (the customer must be known). Runs inside the caller's transaction.
+    /// </summary>
+    private async Task<Payment> CreatePaymentAsync(GamingCenterDbContext db, GamingSession s, PaymentMethod method, decimal received, decimal? payNow, CancellationToken ct)
     {
         decimal total = s.Total;
+        decimal credit = 0;
+        if (payNow is { } now0 && now0 < total)
+        {
+            if (now0 < 0) throw new BusinessException("Amount paid now cannot be negative.");
+            if (s.CustomerId is null)
+                throw new BusinessException("To leave part of the bill unpaid, choose or create the customer who owes it.");
+            credit = total - now0;
+        }
+        decimal due = total - credit;
+
         decimal change = 0;
         if (method == PaymentMethod.Cash)
         {
-            if (received <= 0) received = total;
-            if (received < total) throw new BusinessException($"Amount received is less than the total ({total:0.##}).");
-            change = received - total;
+            if (received <= 0 && credit == 0) received = due;
+            if (received < due)
+                throw new BusinessException($"Amount received is less than {(credit > 0 ? "the amount paid now" : "the total")} ({due:0.##}). Tick \"Pay the rest later\" to put the difference on the customer's credit.");
+            change = received - due;
         }
-        else received = total;
+        else received = due;
 
         var now = Clock.Now;
         var prefix = now.ToString("yyyy-MMdd-");
@@ -461,9 +476,24 @@ public sealed class SessionService(
             Method = method,
             AmountReceived = received,
             ChangeGiven = change,
+            CreditAmount = credit,
             UserId = CurrentUserId,
         };
         db.Payments.Add(payment);
+
+        if (credit > 0)
+        {
+            db.CreditTransactions.Add(new CreditTransaction
+            {
+                CustomerId = s.CustomerId!.Value,
+                At = now,
+                Amount = credit,
+                Kind = CreditKind.UnpaidBill,
+                Payment = payment,
+                Note = $"Unpaid part of {s.StationName} bill",
+                UserId = CurrentUserId,
+            });
+        }
         return payment;
     }
 

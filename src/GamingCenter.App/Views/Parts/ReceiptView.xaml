@@ -53,6 +53,8 @@
             </DockPanel>
             <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding Received}" Style="{StaticResource P}"/><TextBlock Text="{Binding Method}" Style="{StaticResource P}"/></DockPanel>
             <DockPanel Visibility="{Binding HasChange, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding Change}" Style="{StaticResource P}"/><TextBlock Text="Change" Style="{StaticResource P}"/></DockPanel>
+            <DockPanel Visibility="{Binding HasCredit, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding CreditAmount}" Style="{StaticResource P}" FontWeight="Bold"/><TextBlock Text="On credit (unpaid)" Style="{StaticResource P}" FontWeight="Bold"/></DockPanel>
+            <DockPanel Visibility="{Binding HasBalance, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding CustomerBalance}" Style="{StaticResource P}"/><TextBlock Text="Total owed now" Style="{StaticResource P}"/></DockPanel>
             <DockPanel Visibility="{Binding Customer, Converter={StaticResource HasValueToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding Customer}" Style="{StaticResource P}"/><TextBlock Text="Customer" Style="{StaticResource P}"/></DockPanel>
             <TextBlock Text="{Binding Footer}" Style="{StaticResource PC}" Margin="0,10,0,0"/>
         </StackPanel>

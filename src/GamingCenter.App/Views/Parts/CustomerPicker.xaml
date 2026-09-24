@@ -9,6 +9,10 @@
                 Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
             <DockPanel VerticalAlignment="Center">
                 <Button DockPanel.Dock="Right" Content="Walk-in instead" Style="{StaticResource Btn.Link}" Command="{Binding ClearCommand}"/>
+                <Border DockPanel.Dock="Right" Background="{DynamicResource Warning.Soft}" BorderBrush="{DynamicResource Warning.Border}" BorderThickness="1" CornerRadius="999" Padding="8,2" Margin="0,0,10,0"
+                        VerticalAlignment="Center" Visibility="{Binding DebtLabel, Converter={StaticResource HasValueToVis}}" ToolTip="Unpaid credit — see the Credits page">
+                    <TextBlock Text="{Binding DebtLabel}" Style="{StaticResource T.Base}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Warning}"/>
+                </Border>
                 <c:Icon Data="{StaticResource I.Users}" Width="15" Height="15" Foreground="{DynamicResource Accent}" Margin="0,0,10,0"/>
                 <TextBlock Text="{Binding SelectedLabel}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
             </DockPanel>

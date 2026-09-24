@@ -211,9 +211,12 @@ public sealed partial class ProductEditorViewModel : DialogViewModel
     private async Task ChooseImage()
     {
         var file = _files.OpenImage();
-        if (file is null) return;
-        await RunAsync(async () => ImagePath = await _images.ImportAsync(file, "products"));
+        if (file is not null) await ImportImage(file);
     }
+
+    [RelayCommand]
+    private async Task ImportImage(string file) =>
+        await RunAsync(async () => ImagePath = await _images.ImportAsync(file, "products"));
 
     [RelayCommand]
     private void RemoveImage() => ImagePath = null;

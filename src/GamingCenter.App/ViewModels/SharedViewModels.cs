@@ -88,11 +88,12 @@ public sealed partial class CustomerPickerViewModel(ICustomerService customers, 
     [ObservableProperty] private bool _isOpen;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasSelection), nameof(SelectedLabel))]
+    [NotifyPropertyChangedFor(nameof(HasSelection), nameof(SelectedLabel), nameof(DebtLabel))]
     private CustomerDto? _selected;
 
     public bool HasSelection => Selected is not null;
     public string SelectedLabel => Selected is null ? "Walk-in" : string.IsNullOrWhiteSpace(Selected.Phone) ? Selected.Name : $"{Selected.Name} · {Selected.Phone}";
+    public string? DebtLabel => Selected is { Balance: > 0 } c ? $"owes {Money.Format(c.Balance)}" : null;
 
     public int? SelectedId => Selected?.Id;
 

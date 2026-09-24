@@ -20,13 +20,14 @@
 
             <Grid DockPanel.Dock="Top" Margin="14,0,14,6">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="160"/><ColumnDefinition Width="100"/><ColumnDefinition Width="130"/><ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="150"/><ColumnDefinition Width="80"/><ColumnDefinition Width="120"/><ColumnDefinition Width="110"/><ColumnDefinition Width="110"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="1" Text="NAME" Style="{StaticResource T.ColumnHeader}"/>
                 <TextBlock Grid.Column="2" Text="PHONE" Style="{StaticResource T.ColumnHeader}"/>
                 <TextBlock Grid.Column="3" Text="SESSIONS" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
                 <TextBlock Grid.Column="4" Text="TOTAL SPENT" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
                 <TextBlock Grid.Column="5" Text="LAST VISIT" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="OWES" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
             </Grid>
             <Grid>
                 <TextBlock Text="No customers yet." Style="{StaticResource T.Muted}" HorizontalAlignment="Center" Margin="0,40,0,0" Visibility="{Binding Rows.Count, Converter={StaticResource NoValueToVis}}"/>
@@ -35,7 +36,7 @@
                         <DataTemplate>
                             <Grid Height="50">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="160"/><ColumnDefinition Width="100"/><ColumnDefinition Width="130"/><ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="48"/><ColumnDefinition/><ColumnDefinition Width="150"/><ColumnDefinition Width="80"/><ColumnDefinition Width="120"/><ColumnDefinition Width="110"/><ColumnDefinition Width="110"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource Border}" HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding Initials}" Style="{StaticResource T.Base}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -45,6 +46,14 @@
                                 <TextBlock Grid.Column="3" Text="{Binding Sessions}" Style="{StaticResource T.Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="4" Text="{Binding Spent}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="5" Text="{Binding LastVisit}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="{Binding Owes}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource T.MonoStrong}">
+                                            <Setter Property="Foreground" Value="{DynamicResource Text.Faint}"/>
+                                            <Style.Triggers><DataTrigger Binding="{Binding HasDebt}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Warning}"/></DataTrigger></Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -61,6 +70,8 @@
                         <Button Content="Cancel" Style="{StaticResource Btn.Secondary}" Height="42" Margin="5,0" Command="{Binding CancelEditCommand}"/>
                         <Button Content="Save" Style="{StaticResource Btn.Primary}" Height="42" Margin="5,0" Command="{Binding SaveCommand}"/>
                     </UniformGrid>
+                    <Button Content="Credit history / record payment →" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding OpenCreditCommand}"
+                            Visibility="{Binding EditId, Converter={StaticResource HasValueToVis}}"/>
                     <Button Content="Delete customer" Style="{StaticResource Btn.LinkDanger}" HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding DeleteCommand}" Visibility="{Binding ShowDelete, Converter={StaticResource BoolToVis}}"/>
                 </StackPanel>
                 <StackPanel>
