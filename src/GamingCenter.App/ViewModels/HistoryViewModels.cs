@@ -21,7 +21,8 @@ public sealed class ReceiptPreview(ReceiptDto r)
     public string Station => r.StationName;
     public string SessionRange => $"{r.StartTime:HH:mm} → {r.EndTime:HH:mm}";
     public string PlayTime => Durations.Long(TimeSpan.FromSeconds(r.PlayedSeconds));
-    public string GamingLabel => $"Gaming @{Money.Number(r.HourlyRate)}/h";
+    public string GamingLabel => $"Gaming @{Money.Number(Math.Round(r.HourlyRate, 0))}/h";
+    public string? RateNote => r.RateNote;
     public string Gaming => Money.Number(r.GamingTotal);
     public IEnumerable<(string Name, string Total)> Lines => r.Lines.Select(l => ($"{l.Name} x{l.Quantity}", Money.Number(l.LineTotal)));
     public IReadOnlyList<ReceiptLine> Items => r.Lines;

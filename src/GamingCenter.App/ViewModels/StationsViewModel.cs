@@ -67,6 +67,9 @@ public sealed partial class StationsViewModel : PageViewModel
     [ObservableProperty] private string _editModel = "";
     [ObservableProperty] private string _editRate = "";
     [ObservableProperty] private string _editControllers = "";
+    [ObservableProperty] private string _editMaxControllers = "";
+    [ObservableProperty] private string _editExtraRate = "";
+    [ObservableProperty] private string _controllerPricingHint = "";
     [ObservableProperty] private string _editLocation = "";
     [ObservableProperty] private StationState _editState;
     [ObservableProperty] private bool _editActive = true;
@@ -127,6 +130,8 @@ public sealed partial class StationsViewModel : PageViewModel
         EditModel = s.Model ?? "";
         EditRate = Money.Number(s.HourlyRate).Replace(",", "");
         EditControllers = s.ControllerCount?.ToString() ?? "";
+        EditMaxControllers = s.MaxControllers?.ToString() ?? "";
+        EditExtraRate = s.ExtraControllerRate > 0 ? Money.Number(s.ExtraControllerRate).Replace(",", "") : "";
         EditLocation = s.Location ?? "";
         EditState = s.State;
         EditActive = s.IsActive;
@@ -145,7 +150,24 @@ public sealed partial class StationsViewModel : PageViewModel
         });
     }
 
-    partial void OnEditRateChanged(string value) => UpdatePriceNotice();
+    partial void OnEditRateChanged(string value) { UpdatePriceNotice(); UpdateControllerHint(); }
+    partial void OnEditControllersChanged(string value) => UpdateControllerHint();
+    partial void OnEditMaxControllersChanged(string value) => UpdateControllerHint();
+    partial void OnEditExtraRateChanged(string value) => UpdateControllerHint();
+
+    /// <summary>e.g. "2 controllers 300 DA/h · 3 → 400 DA/h · 4 → 500 DA/h"</summary>
+    private void UpdateControllerHint()
+    {
+        ControllerPricingHint = "";
+        if (!int.TryParse(EditControllers, out var inc) || inc <= 0) return;
+        if (!int.TryParse(EditMaxControllers, out var max) || max <= inc) return;
+        if (!Money.TryParse(EditExtraRate, out var extra) || extra <= 0) return;
+        if (!Money.TryParse(EditRate, out var rate)) return;
+        var parts = new List<string> { $"{inc} controllers {Money.Rate(rate)}" };
+        for (int n = inc + 1; n <= max; n++)
+            parts.Add($"{n} → {Money.Rate(Domain.Billing.ControllerPricing.RateFor(rate, inc, extra, n))}");
+        ControllerPricingHint = string.Join(" · ", parts);
+    }
     partial void OnEditModelChanged(string value) => EditTag = !string.IsNullOrWhiteSpace(value) && value.Length <= 5 ? value.ToUpperInvariant() : EditType?.Tag ?? "";
 
     partial void OnEditTypeChanged(StationTypeDto? value)
@@ -179,7 +201,9 @@ public sealed partial class StationsViewModel : PageViewModel
         EditBrand = "";
         EditModel = "";
         EditRate = EditType is null ? "" : Money.Number(EditType.DefaultHourlyRate).Replace(",", "");
-        EditControllers = "";
+        EditControllers = "2";
+        EditMaxControllers = "";
+        EditExtraRate = "";
         EditLocation = Locations.FirstOrDefault() ?? "";
         EditState = StationState.Available;
         EditActive = true;
@@ -215,14 +239,17 @@ public sealed partial class StationsViewModel : PageViewModel
         EditError = null;
         if (EditType is null) { EditError = "Choose a station type."; return; }
         if (!Money.TryParse(EditRate, out var rate)) { EditError = "Enter a valid hourly price."; return; }
-        int? number = null, controllers = null;
+        int? number = null, controllers = null, maxControllers = null;
+        decimal extraRate = 0;
+        if (!string.IsNullOrWhiteSpace(EditMaxControllers)) { if (!int.TryParse(EditMaxControllers, out var mx)) { EditError = "Maximum controllers must be a whole number."; return; } maxControllers = mx; }
+        if (!string.IsNullOrWhiteSpace(EditExtraRate) && !Money.TryParse(EditExtraRate, out extraRate)) { EditError = "Enter a valid price per extra controller."; return; }
         if (!string.IsNullOrWhiteSpace(EditNumber)) { if (!int.TryParse(EditNumber, out var n)) { EditError = "Number must be a whole number."; return; } number = n; }
         if (!string.IsNullOrWhiteSpace(EditControllers)) { if (!int.TryParse(EditControllers, out var c)) { EditError = "Controllers must be a whole number."; return; } controllers = c; }
 
         try
         {
             var saved = await _stations.SaveAsync(new SaveStationRequest(EditId, EditName, number, EditType.Id, EditBrand, EditModel, EditImage,
-                rate, EditDescription, EditLocation, controllers, EditState, EditActive));
+                rate, EditDescription, EditLocation, controllers, EditState, EditActive, maxControllers, extraRate));
             Toasts.Success(EditId is null ? $"{saved.Name} added" : $"{saved.Name} saved");
             WeakReferenceMessenger.Default.Send(new DataChangedMessage(DataArea.Stations));
             await ReloadAsync();

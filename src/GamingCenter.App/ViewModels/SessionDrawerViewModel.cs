@@ -73,6 +73,9 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
     [ObservableProperty] private bool _hasProgress;
     [ObservableProperty] private double _progress;
     [ObservableProperty] private string _modeDetail = "";
+    [ObservableProperty] private string _controllersText = "";
+    [ObservableProperty] private string _controllersNote = "";
+    [ObservableProperty] private bool _canChangeControllers;
 
     public string StationName => Session.StationName;
     public bool IsPaused => Session.Status == SessionStatus.Paused;
@@ -136,9 +139,18 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         ModeDetail = s.Mode switch
         {
             SessionMode.FixedDuration => $"Purchased {Durations.Minutes(s.PlannedMinutes ?? 0)}",
-            SessionMode.FixedBudget => $"Budget {Money.Format(s.Budget ?? 0)} · max {Durations.Clock(s.AllowedTime ?? TimeSpan.Zero)}",
+            SessionMode.FixedBudget => $"Budget {Money.Format(s.Budget ?? 0)} · max {Durations.Clock(s.AllowedTime(DateTime.Now) ?? TimeSpan.Zero)}",
             _ => $"Billed {s.Rules.UnitLabel}",
         };
+
+        var st = s.Station;
+        CanChangeControllers = st is not null && s.Status != SessionStatus.AwaitingPayment
+            && Domain.Billing.ControllerPricing.IsPriced(st.ControllerCount, st.MaxControllers, st.ExtraControllerRate);
+        ControllersText = s.Controllers is { } n ? $"{n} controller{(n == 1 ? "" : "s")}" : "";
+        ControllersNote = CanChangeControllers
+            ? $"{st!.ControllerCount} included · +{Money.Number(st.ExtraControllerRate)}/h each extra · max {st.MaxControllers}"
+              + (s.RateChanges.Count > 0 ? $" · changed {s.RateChanges.Count}×, earlier time keeps its rate" : "")
+            : "";
 
         Lines.Clear();
         foreach (var l in s.Products.OrderBy(p => p.AddedAt))
@@ -163,11 +175,11 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         }
         else
         {
-            TimerLabel = timeUp && s.AllowedTime is not null ? $"Time up · overtime {Durations.Clock(s.Overtime(now))}" : "Play time";
+            TimerLabel = timeUp && s.AllowedTime(now) is not null ? $"Time up · overtime {Durations.Clock(s.Overtime(now))}" : "Play time";
             TimerText = Durations.Clock(s.PlayedTime(now));
             TimerBrush = timeUp ? "Danger" : s.Status == SessionStatus.Paused ? "Info" : "Text";
         }
-        HasProgress = s.AllowedTime is not null;
+        HasProgress = s.AllowedTime(now) is not null;
         Progress = s.Progress(now);
         GamingLabel = s.Mode switch
         {
@@ -215,6 +227,19 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
             await Catalog.LoadAsync();
             SyncQuantities();
         });
+    }
+
+    [RelayCommand]
+    private Task AddController() => ChangeControllersAsync(+1);
+
+    [RelayCommand]
+    private Task RemoveController() => ChangeControllersAsync(-1);
+
+    private async Task ChangeControllersAsync(int delta)
+    {
+        int current = Session.Controllers ?? Session.Station?.ControllerCount ?? 1;
+        if (await RunAsync(async () => _store.Upsert(await _sessions.ChangeControllersAsync(_sessionId, current + delta))))
+            _toasts.Info($"{Session.StationName}: {Session.Controllers} controllers", $"Now {Money.Rate(Session.HourlyRate)} from {DateTime.Now:HH:mm}");
     }
 
     [RelayCommand]

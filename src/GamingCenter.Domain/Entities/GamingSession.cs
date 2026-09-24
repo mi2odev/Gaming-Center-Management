@@ -22,7 +22,8 @@ public sealed class GamingSession : Entity
     /// <summary>When play stopped. Set when billed or auto-ended.</summary>
     public DateTime? EndTime { get; set; }
 
-    // Price and billing rules locked at start
+    // Price and billing rules locked at start. HourlyRate is the rate in force now;
+    // earlier rates are kept in RateChanges.
     public decimal HourlyRate { get; set; }
     public int BillingUnitSeconds { get; set; }
     public RoundingMode Rounding { get; set; }
@@ -45,7 +46,11 @@ public sealed class GamingSession : Entity
     public int? EndedByUserId { get; set; }
     public string? Notes { get; set; }
 
+    /// <summary>Number of controllers currently in use (null when the station does not price by controller).</summary>
+    public int? Controllers { get; set; }
+
     public List<SessionPause> Pauses { get; set; } = [];
+    public List<SessionRateChange> RateChanges { get; set; } = [];
     public List<SessionProduct> Products { get; set; } = [];
     public Payment? Payment { get; set; }
 
@@ -80,34 +85,97 @@ public sealed class GamingSession : Entity
     public TimeSpan WallTime(DateTime now) => ClockAt(now) - StartTime;
 
     /// <summary>Actual gaming time: wall time minus pauses.</summary>
-    public TimeSpan PlayedTime(DateTime now)
+    public TimeSpan PlayedTime(DateTime now) => PlayedUntil(ClockAt(now), now);
+
+    /// <summary>Play time between the start and <paramref name="instant"/> (pauses excluded).</summary>
+    private TimeSpan PlayedUntil(DateTime instant, DateTime now)
     {
         if (IsCounterSale) return TimeSpan.Zero;
-        var played = WallTime(now) - PausedTime(now);
+        var clock = ClockAt(now);
+        if (instant > clock) instant = clock;
+        if (instant <= StartTime) return TimeSpan.Zero;
+        var paused = TimeSpan.Zero;
+        foreach (var p in Pauses)
+        {
+            var pEnd = p.EndTime ?? clock;
+            if (pEnd > instant) pEnd = instant;
+            if (pEnd > p.StartTime) paused += pEnd - p.StartTime;
+        }
+        var played = instant - StartTime - paused;
         return played < TimeSpan.Zero ? TimeSpan.Zero : played;
     }
 
-    /// <summary>Play time allowed by the fixed duration or budget; null for open sessions.</summary>
-    public TimeSpan? AllowedTime => Mode switch
+    /// <summary>
+    /// Play time split by hourly rate. The rate changes when controllers are added or removed
+    /// mid-session; each part is priced at the rate that applied while it was played.
+    /// </summary>
+    public IReadOnlyList<RateSegment> RateSegments(DateTime now)
     {
-        SessionMode.FixedDuration => TimeSpan.FromMinutes(PlannedMinutes ?? 0),
-        SessionMode.FixedBudget => BillingCalculator.TimeForBudget(Budget ?? 0, HourlyRate),
-        _ => null,
-    };
+        var segments = new List<RateSegment>();
+        var changes = RateChanges.OrderBy(c => c.At).ToList();
+        var from = StartTime;
+        decimal rate = changes.Count > 0 ? changes[0].OldRate : HourlyRate;
+        int? controllers = changes.Count > 0 ? changes[0].OldControllers : Controllers;
+        foreach (var c in changes)
+        {
+            Add(from, c.At, rate, controllers);
+            from = c.At;
+            rate = c.NewRate;
+            controllers = c.NewControllers;
+        }
+        Add(from, ClockAt(now), rate, controllers);
+        return segments;
+
+        void Add(DateTime a, DateTime b, decimal r, int? ctrl)
+        {
+            var secs = PlayedUntil(b, now) - PlayedUntil(a, now);
+            if (secs > TimeSpan.Zero) segments.Add(new RateSegment(a, b, r, ctrl, secs));
+        }
+    }
+
+    /// <summary>Exact (unrounded) gaming value: Σ rate × time over all rate segments.</summary>
+    private decimal ExactValue(DateTime now) =>
+        RateSegments(now).Sum(s => s.HourlyRate * (decimal)Math.Floor(s.Played.TotalSeconds) / 3600m);
+
+    /// <summary>Time-weighted hourly rate over what has been played (current rate if nothing played yet).</summary>
+    public decimal AverageRate(DateTime now)
+    {
+        if (RateChanges.Count == 0) return HourlyRate;
+        var secs = (decimal)Math.Floor(PlayedTime(now).TotalSeconds);
+        return secs <= 0 ? HourlyRate : ExactValue(now) * 3600m / secs;
+    }
+
+    /// <summary>Play time allowed by the fixed duration or budget; null for open sessions.</summary>
+    public TimeSpan? AllowedTime(DateTime now)
+    {
+        switch (Mode)
+        {
+            case SessionMode.FixedDuration:
+                return TimeSpan.FromMinutes(PlannedMinutes ?? 0);
+            case SessionMode.FixedBudget:
+                if (RateChanges.Count == 0) return BillingCalculator.TimeForBudget(Budget ?? 0, HourlyRate);
+                // What is left of the budget lasts at the current rate.
+                var left = (Budget ?? 0) - ExactValue(now);
+                var extra = left > 0 ? BillingCalculator.TimeForBudget(left, HourlyRate) : TimeSpan.Zero;
+                return PlayedTime(now) + extra;
+            default:
+                return null;
+        }
+    }
 
     public TimeSpan? RemainingTime(DateTime now)
     {
-        if (AllowedTime is not { } allowed) return null;
+        if (AllowedTime(now) is not { } allowed) return null;
         var left = allowed - PlayedTime(now);
         return left < TimeSpan.Zero ? TimeSpan.Zero : left;
     }
 
-    public bool IsTimeUp(DateTime now) => AllowedTime is { } allowed && PlayedTime(now) >= allowed;
+    public bool IsTimeUp(DateTime now) => AllowedTime(now) is { } allowed && PlayedTime(now) >= allowed;
 
     /// <summary>Overtime past the allowed time (fixed modes), otherwise zero.</summary>
     public TimeSpan Overtime(DateTime now)
     {
-        if (AllowedTime is not { } allowed) return TimeSpan.Zero;
+        if (AllowedTime(now) is not { } allowed) return TimeSpan.Zero;
         var over = PlayedTime(now) - allowed;
         return over > TimeSpan.Zero ? over : TimeSpan.Zero;
     }
@@ -115,7 +183,7 @@ public sealed class GamingSession : Entity
     /// <summary>0..1 share of allowed time used, for progress bars.</summary>
     public double Progress(DateTime now)
     {
-        if (AllowedTime is not { } allowed || allowed <= TimeSpan.Zero) return 0;
+        if (AllowedTime(now) is not { } allowed || allowed <= TimeSpan.Zero) return 0;
         return Math.Clamp(PlayedTime(now) / allowed, 0, 1);
     }
 
@@ -123,20 +191,33 @@ public sealed class GamingSession : Entity
     /// Gaming charge according to the mode:
     /// open = played time; fixed duration = purchased time (or played time if the customer overstayed);
     /// fixed budget = played time capped at the budget.
+    /// With controller changes, time is priced at the time-weighted average of the rates actually played.
     /// </summary>
     public decimal GamingCost(DateTime now)
     {
         if (IsCounterSale) return 0m;
         var rules = Rules;
         var played = PlayedTime(now);
-        var actual = BillingCalculator.Cost(played, HourlyRate, rules);
-        return Mode switch
+        var avg = AverageRate(now);
+        var actual = BillingCalculator.Cost(played, avg, rules);
+        switch (Mode)
         {
-            SessionMode.FixedDuration => Math.Max(
-                BillingCalculator.Cost(TimeSpan.FromMinutes(PlannedMinutes ?? 0), HourlyRate, rules), actual),
-            SessionMode.FixedBudget => Math.Min(actual, Budget ?? 0m),
-            _ => actual,
-        };
+            case SessionMode.FixedDuration:
+                var planned = TimeSpan.FromMinutes(PlannedMinutes ?? 0);
+                // Unplayed purchased time is charged at the current rate.
+                decimal plannedRate = HourlyRate;
+                if (played > TimeSpan.Zero && planned > TimeSpan.Zero)
+                {
+                    var playedSecs = (decimal)Math.Floor(Math.Min(played.TotalSeconds, planned.TotalSeconds));
+                    var restSecs = (decimal)planned.TotalSeconds - playedSecs;
+                    plannedRate = (avg * playedSecs + HourlyRate * restSecs) / (decimal)planned.TotalSeconds;
+                }
+                return Math.Max(BillingCalculator.Cost(planned, plannedRate, rules), actual);
+            case SessionMode.FixedBudget:
+                return Math.Min(actual, Budget ?? 0m);
+            default:
+                return actual;
+        }
     }
 
     public decimal ProductsCost() => Products.Sum(p => p.LineTotal);
@@ -145,3 +226,6 @@ public sealed class GamingSession : Entity
 
     public SessionPause? OpenPause => Pauses.FirstOrDefault(p => p.EndTime is null);
 }
+
+/// <summary>A part of a session played at one hourly rate.</summary>
+public sealed record RateSegment(DateTime From, DateTime To, decimal HourlyRate, int? Controllers, TimeSpan Played);

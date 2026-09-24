@@ -33,6 +33,7 @@
                 <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding SessionRange}" Style="{StaticResource P}"/><TextBlock Text="Session" Style="{StaticResource P}"/></DockPanel>
                 <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding PlayTime}" Style="{StaticResource P}"/><TextBlock Text="Play time" Style="{StaticResource P}"/></DockPanel>
                 <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding Gaming}" Style="{StaticResource P}"/><TextBlock Text="{Binding GamingLabel}" Style="{StaticResource P}"/></DockPanel>
+                <TextBlock Text="{Binding RateNote}" Style="{StaticResource P}" FontSize="11" Foreground="{DynamicResource Paper.Muted}" TextWrapping="Wrap" Visibility="{Binding RateNote, Converter={StaticResource HasValueToVis}}"/>
                 <Rectangle Style="{StaticResource Rule}"/>
             </StackPanel>
             <ItemsControl ItemsSource="{Binding Items}" Visibility="{Binding HasItems, Converter={StaticResource BoolToVis}}">

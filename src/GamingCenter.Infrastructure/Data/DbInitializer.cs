@@ -53,6 +53,8 @@ public static class DbInitializer
             {
                 Name = name, Number = number, StationTypeId = types[type].Id, Brand = brand, Model = model,
                 HourlyRate = rate, Location = room, ControllerCount = controllers, Description = description,
+                MaxControllers = controllers is 2 ? 4 : controllers,
+                ExtraControllerRate = controllers is 2 && type is "PlayStation" or "Xbox" ? 100 : 0,
                 State = StationState.Available, IsActive = true, CreatedAt = now, UpdatedAt = now,
             };
             db.Stations.AddRange(

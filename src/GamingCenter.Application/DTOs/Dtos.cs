@@ -28,6 +28,8 @@ public sealed record StationDto(
     string? Description,
     string? Location,
     int? ControllerCount,
+    int? MaxControllers,
+    decimal ExtraControllerRate,
     StationState State,
     string? ReservedFor,
     DateTime? ReservedAt,
@@ -35,6 +37,12 @@ public sealed record StationDto(
 {
     /// <summary>Short label for image placeholders: model if short, else the type tag.</summary>
     public string Tag => !string.IsNullOrWhiteSpace(Model) && Model.Length <= 5 ? Model.ToUpperInvariant() : TypeTag;
+
+    /// <summary>True when the operator chooses how many controllers (and the price changes with it).</summary>
+    public bool HasControllerPricing => Domain.Billing.ControllerPricing.IsPriced(ControllerCount, MaxControllers, ExtraControllerRate);
+
+    public decimal RateFor(int? controllers) =>
+        Domain.Billing.ControllerPricing.RateFor(HourlyRate, ControllerCount, ExtraControllerRate, controllers);
 }
 
 public sealed record SaveStationRequest(
@@ -50,7 +58,9 @@ public sealed record SaveStationRequest(
     string? Location,
     int? ControllerCount,
     StationState State,
-    bool IsActive);
+    bool IsActive,
+    int? MaxControllers = null,
+    decimal ExtraControllerRate = 0);
 
 public sealed record PriceHistoryDto(DateTime ChangedAt, decimal OldRate, decimal NewRate, string? ChangedBy);
 
@@ -87,7 +97,7 @@ public sealed record CustomerDto(int Id, string Name, string? Phone, string? Not
 
 public sealed record SaveCustomerRequest(int? Id, string Name, string? Phone, string? Notes);
 
-public sealed record StartSessionRequest(int StationId, int? CustomerId, SessionMode Mode, int? PlannedMinutes, decimal? Budget);
+public sealed record StartSessionRequest(int StationId, int? CustomerId, SessionMode Mode, int? PlannedMinutes, decimal? Budget, int? Controllers = null);
 
 public sealed record CompleteSessionRequest(
     int SessionId,
@@ -134,6 +144,7 @@ public sealed record ReceiptDto(
     long PlayedSeconds,
     decimal HourlyRate,
     string BillingLabel,
+    string? RateNote,
     decimal GamingTotal,
     IReadOnlyList<ReceiptLine> Lines,
     decimal ProductsTotal,

@@ -1,3 +1,4 @@
+using GamingCenter.Application.Common;
 using System.Globalization;
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
@@ -95,7 +96,7 @@ public sealed class ReportService(
     {
         await using var db = await OpenAsync(ct);
         var s = await db.Sessions.AsNoTracking()
-            .Include(x => x.Products).Include(x => x.Pauses).Include(x => x.Customer)
+            .Include(x => x.Products).Include(x => x.Pauses).Include(x => x.RateChanges).Include(x => x.Customer)
             .Include(x => x.Payment!).ThenInclude(p => p.User)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == sessionId, ct);
@@ -105,12 +106,24 @@ public sealed class ReportService(
         return new ReceiptDto(
             s.Id, pay.ReceiptNumber, pay.PaidAt, cfg.CenterName, cfg.Address, cfg.Phone,
             s.StationName, cfg.ShowCustomerOnReceipt ? s.Customer?.Name : null, s.Mode,
-            s.StartTime, s.EndTime, s.PlayedSeconds, s.HourlyRate, s.Rules.UnitLabel,
+            s.StartTime, s.EndTime, s.PlayedSeconds, s.EndTime is { } end ? s.AverageRate(end) : s.HourlyRate, s.Rules.UnitLabel,
+            RateNote(s),
             s.GamingTotal,
             s.Products.OrderBy(p => p.AddedAt).Select(p => new ReceiptLine(p.ProductName, p.Quantity, p.UnitPrice, p.LineTotal)).ToList(),
             s.ProductsTotal, s.Total, pay.Method, pay.AmountReceived, pay.ChangeGiven, pay.User?.DisplayName,
             s.Pauses.OrderBy(p => p.StartTime).Select(p => (p.StartTime, p.EndTime)).ToList(),
             cfg.ReceiptFooter);
+    }
+
+    /// <summary>"2 controllers" or "18:20–19:05 2 ctrl @300 · 19:05–20:13 4 ctrl @500" when controllers changed.</summary>
+    internal static string? RateNote(GamingSession s)
+    {
+        if (s.EndTime is not { } end) return null;
+        var segments = s.RateSegments(end);
+        if (s.RateChanges.Count == 0)
+            return s.Controllers is { } n ? $"{n} controller{(n == 1 ? "" : "s")}" : null;
+        return string.Join(" · ", segments.Select(x =>
+            $"{x.From:HH:mm}–{x.To:HH:mm} {(x.Controllers is { } c ? $"{c} ctrl " : "")}@{Money.Number(x.HourlyRate)}/h"));
     }
 
     public async Task<IReadOnlyList<PaymentRow>> GetPaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default)

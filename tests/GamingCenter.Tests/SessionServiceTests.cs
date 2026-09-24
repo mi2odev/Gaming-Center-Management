@@ -186,7 +186,7 @@ public class SessionServiceTests : IDisposable
     {
         var st = await _t.Station("PS4 #01"); // 200 DA/h
         var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.FixedBudget, null, 200m));
-        Assert.Equal(TimeSpan.FromHours(1), s.AllowedTime);
+        Assert.Equal(TimeSpan.FromHours(1), s.AllowedTime(_t.Clock.Now));
 
         _t.Clock.Now = _t.Clock.Now.AddMinutes(60);
         s = await _t.Sessions.StopPlayAsync(s.Id, _t.Clock.Now);
@@ -260,5 +260,70 @@ public class SessionServiceTests : IDisposable
         var st = await _t.Station("PS5 #01");
         await Assert.ThrowsAsync<BusinessException>(() => _t.Stations.SaveAsync(new SaveStationRequest(st.Id, st.Name, st.Number, st.StationTypeId,
             st.Brand, st.Model, st.ImagePath, 1m, st.Description, st.Location, st.ControllerCount, st.State, true)));
+    }
+
+    [Fact]
+    public async Task Extra_controllers_raise_the_hourly_rate()
+    {
+        var ps5 = await _t.Station("PS5 #01"); // seeded: 300 DA/h, 2 included, max 4, +100/h each extra
+        Assert.True(ps5.HasControllerPricing);
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(ps5.Id, null, SessionMode.Open, null, null, Controllers: 4));
+        Assert.Equal(500m, s.HourlyRate);
+        Assert.Equal(4, s.Controllers);
+
+        _t.Clock.Now = _t.Clock.Now.AddHours(1);
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, null));
+        Assert.Equal(500m, pay.GamingAmount);
+    }
+
+    [Fact]
+    public async Task Adding_controllers_mid_session_only_affects_the_rest()
+    {
+        var ps5 = await _t.Station("PS5 #02");
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(ps5.Id, null, SessionMode.Open, null, null));
+        Assert.Equal(300m, s.HourlyRate);
+        Assert.Equal(2, s.Controllers);
+
+        _t.Clock.Now = _t.Clock.Now.AddMinutes(60);        // 1h with 2 controllers = 300
+        s = await _t.Sessions.ChangeControllersAsync(s.Id, 4);
+        Assert.Equal(500m, s.HourlyRate);
+        _t.Clock.Now = _t.Clock.Now.AddMinutes(30);        // 30 min with 4 controllers = 250
+
+        var pay = await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 0, null));
+        Assert.Equal(550m, pay.GamingAmount);
+
+        var receipt = await _t.Reports.GetReceiptAsync(s.Id);
+        Assert.Contains("4 ctrl @500/h", receipt!.RateNote);
+    }
+
+    [Fact]
+    public async Task Controller_change_keeps_budget_and_fixed_rules()
+    {
+        var ps5 = await _t.Station("PS5 #03");
+        // Budget 600 at 300/h; after 1h (300 spent) switch to 4 controllers (500/h): 300 left lasts 36 min.
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(ps5.Id, null, SessionMode.FixedBudget, null, 600m));
+        _t.Clock.Now = _t.Clock.Now.AddHours(1);
+        s = await _t.Sessions.ChangeControllersAsync(s.Id, 4);
+        Assert.Equal(TimeSpan.FromMinutes(36), s.RemainingTime(_t.Clock.Now));
+        _t.Clock.Now = _t.Clock.Now.AddHours(2);
+        Assert.Equal(600m, s.GamingCost(_t.Clock.Now)); // never above budget
+
+        var xbox = await _t.Station("Xbox #01"); // 250/h +100 per extra
+        var f = await _t.Sessions.StartAsync(new StartSessionRequest(xbox.Id, null, SessionMode.FixedDuration, 120, null));
+        _t.Clock.Now = _t.Clock.Now.AddHours(1);
+        f = await _t.Sessions.ChangeControllersAsync(f.Id, 3);
+        // 1h at 250 + remaining 1h at 350 = 600
+        Assert.Equal(600m, f.GamingCost(_t.Clock.Now));
+    }
+
+    [Fact]
+    public async Task Controllers_outside_station_limits_are_refused()
+    {
+        var ps5 = await _t.Station("PS5 #04");
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.StartAsync(new StartSessionRequest(ps5.Id, null, SessionMode.Open, null, null, Controllers: 5)));
+        var pc = await _t.Station("PC #01"); // no controller pricing
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(pc.Id, null, SessionMode.Open, null, null, Controllers: 4));
+        Assert.Equal(250m, s.HourlyRate);
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.ChangeControllersAsync(s.Id, 2));
     }
 }

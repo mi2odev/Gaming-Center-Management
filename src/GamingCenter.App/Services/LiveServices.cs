@@ -118,11 +118,11 @@ public sealed partial class NotificationCenter : ObservableObject
             if (s.RemainingTime(now) is { } left)
             {
                 if (cfg.WarnBeforeEndMinutes > 0 && left > TimeSpan.Zero && left <= TimeSpan.FromMinutes(cfg.WarnBeforeEndMinutes)
-                    && _fired.Add($"warn:{s.Id}:{s.AllowedTime}"))
+                    && _fired.Add($"warn:{s.Id}:{s.PlannedMinutes}:{s.Budget}:{s.RateChanges.Count}"))
                 {
                     Add(ToastKind.Warning, "Ending soon", $"{s.StationName} session ending in {Math.Ceiling(left.TotalMinutes)} minutes.");
                 }
-                if (left <= TimeSpan.Zero && _fired.Add($"up:{s.Id}:{s.AllowedTime}"))
+                if (left <= TimeSpan.Zero && _fired.Add($"up:{s.Id}:{s.PlannedMinutes}:{s.Budget}:{s.RateChanges.Count}"))
                 {
                     Add(ToastKind.Warning, "Time is up", s.Mode == SessionMode.FixedBudget
                         ? $"{s.StationName}: budget of {Money.Format(s.Budget ?? 0)} used up."
@@ -145,7 +145,7 @@ public sealed partial class NotificationCenter : ObservableObject
         _stopping = true;
         try
         {
-            var end = s.StartTime + (s.AllowedTime ?? TimeSpan.Zero) + s.PausedTime(DateTime.Now);
+            var end = s.StartTime + (s.AllowedTime(DateTime.Now) ?? TimeSpan.Zero) + s.PausedTime(DateTime.Now);
             if (end > DateTime.Now) end = DateTime.Now;
             _store.Upsert(await _sessions.StopPlayAsync(s.Id, end));
         }

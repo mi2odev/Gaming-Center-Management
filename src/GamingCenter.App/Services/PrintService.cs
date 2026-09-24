@@ -89,7 +89,9 @@ public sealed class PrintService(ISettingsService settings)
             doc.Blocks.Add(Row("Station", r.StationName));
             doc.Blocks.Add(Row("Session", $"{r.StartTime:HH:mm} → {r.EndTime:HH:mm}"));
             doc.Blocks.Add(Row("Play time", Durations.Long(TimeSpan.FromSeconds(r.PlayedSeconds))));
-            doc.Blocks.Add(Row($"Gaming @{Money.Number(r.HourlyRate)}/h", Money.Number(r.GamingTotal)));
+            doc.Blocks.Add(Row($"Gaming @{Money.Number(Math.Round(r.HourlyRate, 0))}/h", Money.Number(r.GamingTotal)));
+            if (!string.IsNullOrWhiteSpace(r.RateNote))
+                doc.Blocks.Add(new Paragraph(new Run(r.RateNote)) { FontSize = 9, Margin = new Thickness(0, 0, 0, 2), Foreground = Brushes.DimGray });
             doc.Blocks.Add(Rule());
         }
         foreach (var l in r.Lines)

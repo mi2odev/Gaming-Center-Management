@@ -57,6 +57,22 @@
                                     <ProgressBar Value="{Binding Progress, Mode=OneWay}" Margin="0,10,0,0" Foreground="{Binding TimerBrush, Converter={StaticResource StatusBrush}}"
                                                  Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}"/>
                                     <TextBlock Text="{Binding ModeDetail}" Style="{StaticResource T.Faint}" Margin="0,8,0,0"/>
+                                    <Border Style="{StaticResource Notice.Info}" Padding="12,10" Margin="0,12,0,0" Visibility="{Binding CanChangeControllers, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel>
+                                            <DockPanel>
+                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                    <Button Content="−" Style="{StaticResource Btn.Qty}" Width="28" Height="28" ToolTip="Remove a controller" Command="{Binding RemoveControllerCommand}"/>
+                                                    <Button Content="+" Style="{StaticResource Btn.Qty}" Width="28" Height="28" Margin="8,0,0,0" ToolTip="Add a controller (price goes up from now)" Command="{Binding AddControllerCommand}"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <c:Icon Data="{StaticResource I.Gamepad}" Width="16" Height="16" Foreground="{DynamicResource Accent}" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{Binding ControllersText}" Style="{StaticResource T.Base}" FontWeight="SemiBold"/>
+                                                    <TextBlock Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" Margin="10,0,0,0" VerticalAlignment="Center"><Run Text="{Binding Session.HourlyRate, Mode=OneWay, Converter={StaticResource Money}}"/><Run Text="/h"/></TextBlock>
+                                                </StackPanel>
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding ControllersNote}" Style="{StaticResource T.Faint}" TextWrapping="Wrap" TextTrimming="None" Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                    </Border>
                                     <DockPanel Margin="0,14,0,0">
                                         <TextBlock DockPanel.Dock="Right" Text="{Binding GamingText}" Style="{StaticResource T.MonoStrong}" FontSize="18"/>
                                         <TextBlock Text="{Binding GamingLabel}" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>

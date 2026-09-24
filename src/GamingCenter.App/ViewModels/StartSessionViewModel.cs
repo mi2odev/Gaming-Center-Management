@@ -15,6 +15,8 @@ public sealed record StartSessionArgs(StationDto? Station);
 
 public sealed record Preset(int Value, string Label);
 
+public sealed record ControllerOption(int Count, string Label, string PriceNote);
+
 /// <summary>Start-session dialog (design 1e): customer, pricing mode, duration or budget.</summary>
 public sealed partial class StartSessionViewModel : DialogViewModel
 {
@@ -30,7 +32,7 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         ChooseStation = args.Station is null;
         _station = args.Station;
         if (ChooseStation) _ = LoadStationsAsync(stations, store);
-        Recalculate();
+        OnStationChanged(_station);
     }
 
     public CustomerPickerViewModel Customer { get; }
@@ -50,7 +52,19 @@ public sealed partial class StartSessionViewModel : DialogViewModel
     }.Where(s => !string.IsNullOrWhiteSpace(s)));
     public string StationTag => Station?.Tag ?? "";
     public string? ImagePath => Station?.ImagePath;
-    public string RateNumber => Station is null ? "—" : $"{Money.Number(Station.HourlyRate)} {Money.CurrencySymbol}";
+    public string RateNumber => Station is null ? "—" : $"{Money.Number(EffectiveRate)} {Money.CurrencySymbol}";
+
+    /// <summary>Hourly rate for the chosen number of controllers.</summary>
+    public decimal EffectiveRate => Station?.RateFor(Station.HasControllerPricing ? Controllers : null) ?? 0;
+
+    public bool HasControllerPricing => Station?.HasControllerPricing == true;
+    public ObservableCollection<ControllerOption> ControllerOptions { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RateNumber), nameof(EffectiveRate))]
+    private int _controllers = 2;
+
+    partial void OnControllersChanged(int value) => Recalculate();
     public string BillingLabel => $"billed {_settings.Current.BillingRules.UnitLabel}";
     public string StartsNow => $"Starts now · {DateTime.Now:HH:mm}";
     public string WarningHint
@@ -84,7 +98,23 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         if (AvailableStations.Count == 0) Error = "No station is available right now.";
     }
 
-    partial void OnStationChanged(StationDto? value) => Recalculate();
+    partial void OnStationChanged(StationDto? value)
+    {
+        ControllerOptions.Clear();
+        if (value is { HasControllerPricing: true })
+        {
+            int inc = value.ControllerCount!.Value;
+            for (int n = 1; n <= (value.MaxControllers ?? inc); n++)
+            {
+                var r = value.RateFor(n);
+                ControllerOptions.Add(new ControllerOption(n, n <= inc ? $"{n}" : $"{n}", r == value.HourlyRate ? "base" : "+" + Money.Number(r - value.HourlyRate)));
+            }
+            Controllers = inc;
+        }
+        OnPropertyChanged(nameof(HasControllerPricing));
+        OnPropertyChanged(nameof(RateNumber));
+        Recalculate();
+    }
     partial void OnModeChanged(SessionMode value) => Recalculate();
     partial void OnDurationTextChanged(string value) => Recalculate();
     partial void OnBudgetTextChanged(string value) => Recalculate();
@@ -92,7 +122,7 @@ public sealed partial class StartSessionViewModel : DialogViewModel
     private void Recalculate()
     {
         Error = null;
-        decimal rate = Station?.HourlyRate ?? 0;
+        decimal rate = EffectiveRate;
         var rules = _settings.Current.BillingRules;
         if (int.TryParse(DurationText, out var minutes) && minutes > 0)
         {
@@ -133,7 +163,7 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         }
 
         GamingSession? started = null;
-        if (await RunAsync(async () => started = await _sessions.StartAsync(new StartSessionRequest(Station.Id, Customer.SelectedId, Mode, minutes, budget))))
+        if (await RunAsync(async () => started = await _sessions.StartAsync(new StartSessionRequest(Station.Id, Customer.SelectedId, Mode, minutes, budget, HasControllerPricing ? Controllers : null))))
             Close(started);
     }
 }
