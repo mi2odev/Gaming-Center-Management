@@ -116,7 +116,7 @@ public class BillingCalculatorTests
     {
         var start = new DateTime(2026, 9, 24, 18, 0, 0);
         var s = Session(SessionMode.FixedBudget, start, budget: 500m);
-        Assert.Equal(new TimeSpan(2, 30, 0), s.AllowedTime);
+        Assert.Equal(new TimeSpan(2, 30, 0), s.AllowedTime(start));
         Assert.Equal(100m, s.GamingCost(start.AddMinutes(30)));
         Assert.Equal(500m, s.GamingCost(start.AddHours(4)));
         Assert.Equal(TimeSpan.FromMinutes(10), s.RemainingTime(start.AddMinutes(140)));

@@ -110,7 +110,7 @@
                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <StackPanel Grid.ColumnSpan="3"><TextBlock Text="Name" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="PS5 #12"/></StackPanel>
                             <StackPanel Grid.Row="1" Margin="0,10,0,0"><TextBlock Text="Type" Style="{StaticResource T.Label}"/><ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding EditType}" DisplayMemberPath="Name"/></StackPanel>
@@ -121,11 +121,24 @@
                                 <TextBlock Text="Hourly price" Style="{StaticResource T.Label}"/>
                                 <TextBox x:Name="PriceBox" Text="{Binding EditRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}" c:Ui.SelectAllOnFocus="True"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,10,0,0"><TextBlock Text="Controllers" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditControllers, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="2"/></StackPanel>
+                            <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,10,0,0"><TextBlock Text="Controllers included" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditControllers, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="2"/></StackPanel>
                             <StackPanel Grid.Row="4" Margin="0,10,0,0"><TextBlock Text="Location" Style="{StaticResource T.Label}"/><ComboBox IsEditable="True" ItemsSource="{Binding Locations}" Text="{Binding EditLocation, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="Room A"/></StackPanel>
                             <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,10,0,0"><TextBlock Text="Status" Style="{StaticResource T.Label}"/><ComboBox ItemsSource="{Binding States}" SelectedItem="{Binding EditState}"/></StackPanel>
                             <StackPanel Grid.Row="5" Grid.ColumnSpan="3" Margin="0,10,0,0"><TextBlock Text="Description" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditDescription, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Multiline}" c:Ui.Placeholder="Premium PS5 station, 4K TV"/></StackPanel>
-                            <CheckBox Grid.Row="6" Grid.ColumnSpan="3" Margin="0,14,0,0" Content="Active — available for new sessions" IsChecked="{Binding EditActive}"/>
+                            <Border Grid.Row="6" Grid.ColumnSpan="3" Style="{StaticResource Notice.Info}" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Price by controllers" Style="{StaticResource T.Base}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="The hourly price covers the included controllers. Each extra controller the customer asks for adds this amount per hour." Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" Margin="0,3,0,10"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                        <StackPanel><TextBlock Text="Maximum controllers" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditMaxControllers, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="4"/></StackPanel>
+                                        <StackPanel Grid.Column="2"><TextBlock Text="Extra per controller / h" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditExtraRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}" c:Ui.Placeholder="100"/></StackPanel>
+                                    </Grid>
+                                    <TextBlock Text="{Binding ControllerPricingHint}" Style="{StaticResource T.Muted}" Foreground="{DynamicResource Accent}" TextWrapping="Wrap" TextTrimming="None" Margin="0,10,0,0"
+                                               Visibility="{Binding ControllerPricingHint, Converter={StaticResource HasValueToVis}}"/>
+                                </StackPanel>
+                            </Border>
+                            <CheckBox Grid.Row="7" Grid.ColumnSpan="3" Margin="0,14,0,0" Content="Active — available for new sessions" IsChecked="{Binding EditActive}"/>
                         </Grid>
 
                         <Border Style="{StaticResource Notice.Warning}" Margin="0,16,0,0" Visibility="{Binding PriceNotice, Converter={StaticResource HasValueToVis}}">

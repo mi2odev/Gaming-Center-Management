@@ -1,5 +1,6 @@
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
+using GamingCenter.Domain.Billing;
 using GamingCenter.Domain.Entities;
 using GamingCenter.Domain.Enums;
 using GamingCenter.Infrastructure.Data;
@@ -19,6 +20,7 @@ public sealed class SessionService(
         db.Sessions
           .Include(s => s.Pauses)
           .Include(s => s.Products)
+          .Include(s => s.RateChanges)
           .Include(s => s.Customer)
           .Include(s => s.Station!).ThenInclude(st => st.StationType);
 
@@ -64,6 +66,13 @@ public sealed class SessionService(
             HourlyRate = station.HourlyRate,
             StartedByUserId = CurrentUserId,
         };
+        if (ControllerPricing.IsPriced(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate))
+        {
+            int n = ValidControllers(station, request.Controllers ?? station.ControllerCount!.Value);
+            session.Controllers = n;
+            session.HourlyRate = ControllerPricing.RateFor(station.HourlyRate, station.ControllerCount, station.ExtraControllerRate, n);
+        }
+        else session.Controllers = station.ControllerCount;
         session.ApplyRules(settings.Current.BillingRules);
 
         switch (request.Mode)
@@ -154,6 +163,36 @@ public sealed class SessionService(
             Reopen(s);
             return Task.CompletedTask;
         }, ct);
+
+    public Task<GamingSession> ChangeControllersAsync(int sessionId, int controllers, CancellationToken ct = default) =>
+        MutateAsync(sessionId, async (db, s) =>
+        {
+            if (s.Status == SessionStatus.AwaitingPayment) throw new BusinessException("Time is up. Extend the session before changing controllers.");
+            var station = await db.Stations.FirstOrDefaultAsync(x => x.Id == s.StationId, ct) ?? throw new BusinessException("Station not found.");
+            if (!ControllerPricing.IsPriced(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate))
+                throw new BusinessException($"{station.Name} does not have controller pricing. Set it up on the Gaming Stations page.");
+            int n = ValidControllers(station, controllers);
+            if (n == s.Controllers) return;
+
+            // The price locked for this session stays the base; only the controller supplement follows the station setup.
+            decimal baseRate = s.HourlyRate - Math.Max(0, (s.Controllers ?? station.ControllerCount!.Value) - station.ControllerCount!.Value) * station.ExtraControllerRate;
+            decimal newRate = ControllerPricing.RateFor(baseRate, station.ControllerCount, station.ExtraControllerRate, n);
+            s.RateChanges.Add(new SessionRateChange
+            {
+                At = Clock.Now, OldRate = s.HourlyRate, NewRate = newRate,
+                OldControllers = s.Controllers, NewControllers = n,
+            });
+            s.HourlyRate = newRate;
+            s.Controllers = n;
+        }, ct);
+
+    private static int ValidControllers(GamingStation station, int controllers)
+    {
+        int max = station.MaxControllers ?? station.ControllerCount ?? 1;
+        if (controllers < 1 || controllers > max)
+            throw new BusinessException($"{station.Name} takes 1 to {max} controllers.");
+        return controllers;
+    }
 
     public Task<GamingSession> AttachCustomerAsync(int sessionId, int? customerId, CancellationToken ct = default) =>
         MutateAsync(sessionId, async (db, s) =>
@@ -348,7 +387,7 @@ public sealed class SessionService(
     }
 
     private static async Task<GamingSession> LoadTrackedAsync(GamingCenterDbContext db, int id, CancellationToken ct) =>
-        await db.Sessions.Include(s => s.Pauses).Include(s => s.Products).AsSplitQuery().FirstOrDefaultAsync(s => s.Id == id, ct)
+        await db.Sessions.Include(s => s.Pauses).Include(s => s.Products).Include(s => s.RateChanges).AsSplitQuery().FirstOrDefaultAsync(s => s.Id == id, ct)
         ?? throw new BusinessException("Session not found.");
 
     /// <summary>Stops the clock at <paramref name="end"/>, closing any open pause.</summary>

@@ -47,7 +47,7 @@ public sealed class SessionWorkflow(
             toasts.Success($"Session started on {session.StationName}", session.Mode switch
             {
                 SessionMode.FixedDuration => $"Fixed {Durations.Minutes(session.PlannedMinutes ?? 0)} · {Money.Format(session.GamingCost(session.StartTime))}",
-                SessionMode.FixedBudget => $"Budget {Money.Format(session.Budget ?? 0)} · max {Durations.Clock(session.AllowedTime ?? TimeSpan.Zero)}",
+                SessionMode.FixedBudget => $"Budget {Money.Format(session.Budget ?? 0)} · max {Durations.Clock(session.AllowedTime(session.StartTime) ?? TimeSpan.Zero)}",
                 _ => $"Open session at {Money.Rate(session.HourlyRate)}",
             });
         }

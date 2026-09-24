@@ -74,6 +74,7 @@ public sealed partial class StationCardViewModel(StationDto station) : Observabl
             IsEndingSoon = endingSoon || timeUp;
 
             var who = s.Customer?.Name ?? "Walk-in";
+            if (s.Controllers is { } ctrl && Station.HasControllerPricing && ctrl != Station.ControllerCount) who += $" · {ctrl} ctrl";
             Line = s.Mode switch
             {
                 SessionMode.FixedDuration => $"Fixed {Durations.Minutes(s.PlannedMinutes ?? 0)} · {who}" + (endingSoon ? " · ending soon" : ""),
@@ -81,7 +82,7 @@ public sealed partial class StationCardViewModel(StationDto station) : Observabl
                 _ => s.Status == SessionStatus.Paused && s.OpenPause is { } p ? $"Paused {p.StartTime:HH:mm} · {who}" : $"Open · {who}",
             };
             CostText = Money.Format(s.TotalCost(now));
-            HasProgress = s.AllowedTime is not null;
+            HasProgress = s.AllowedTime(now) is not null;
             Progress = s.Progress(now);
             ProgressBrush = timeUp ? "Danger" : endingSoon ? "Warning" : "Status.Occupied";
         }

@@ -21,6 +21,11 @@
                         <TextBlock DockPanel.Dock="Right" Text="{Binding GamingText}" Style="{StaticResource T.MonoStrong}"/>
                         <TextBlock Style="{StaticResource T.Base}"><Run Text="{Binding GamingDetail, Mode=OneWay}"/> <Run Text="{Binding GamingRate, Mode=OneWay}" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
                     </DockPanel>
+                    <ItemsControl ItemsSource="{Binding RateLines}" Margin="0,6,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" Margin="0,0,0,3"/></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <TextBlock Text="{Binding PauseNote}" Style="{StaticResource T.Faint}" Margin="0,4,0,0" Visibility="{Binding PauseNote, Converter={StaticResource HasValueToVis}}"/>
 
                     <StackPanel Visibility="{Binding HasLines, Converter={StaticResource BoolToVis}}">

@@ -42,7 +42,12 @@ public sealed class GamingStation : Entity
     public decimal HourlyRate { get; set; }
     public string? Description { get; set; }
     public string? Location { get; set; }
+    /// <summary>Controllers included in <see cref="HourlyRate"/>.</summary>
     public int? ControllerCount { get; set; }
+    /// <summary>Most controllers the station can take (null = same as included).</summary>
+    public int? MaxControllers { get; set; }
+    /// <summary>Added to the hourly rate for each controller above <see cref="ControllerCount"/>.</summary>
+    public decimal ExtraControllerRate { get; set; }
     public StationState State { get; set; }
     public string? ReservedFor { get; set; }
     public DateTime? ReservedAt { get; set; }
@@ -119,6 +124,17 @@ public sealed class SessionPause : Entity
     public DateTime? EndTime { get; set; }
 
     public TimeSpan DurationAt(DateTime now) => (EndTime ?? now) - StartTime;
+}
+
+/// <summary>Rate change inside a session (controllers added or removed). Kept for the bill and history.</summary>
+public sealed class SessionRateChange : Entity
+{
+    public int SessionId { get; set; }
+    public DateTime At { get; set; }
+    public decimal OldRate { get; set; }
+    public decimal NewRate { get; set; }
+    public int? OldControllers { get; set; }
+    public int? NewControllers { get; set; }
 }
 
 /// <summary>A product line on a session. Name, price and cost are copied so history never changes.</summary>

@@ -16,6 +16,7 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
     public DbSet<GamingSession> Sessions => Set<GamingSession>();
     public DbSet<SessionPause> SessionPauses => Set<SessionPause>();
     public DbSet<SessionProduct> SessionProducts => Set<SessionProduct>();
+    public DbSet<SessionRateChange> SessionRateChanges => Set<SessionRateChange>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<ApplicationSetting> Settings => Set<ApplicationSetting>();
 
@@ -96,13 +97,13 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
             e.HasOne(x => x.StartedBy).WithMany().HasForeignKey(x => x.StartedByUserId).OnDelete(DeleteBehavior.SetNull);
             e.HasMany(x => x.Pauses).WithOne().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
             e.HasMany(x => x.Products).WithOne().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.RateChanges).WithOne().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Payment).WithOne(x => x.Session).HasForeignKey<Payment>(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.Status);
             e.HasIndex(x => x.StartTime);
             e.HasIndex(x => new { x.StationId, x.Status });
             e.HasIndex(x => x.CustomerId);
             e.Ignore(x => x.Rules);
-            e.Ignore(x => x.AllowedTime);
             e.Ignore(x => x.OpenPause);
         });
 

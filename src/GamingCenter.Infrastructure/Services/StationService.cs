@@ -13,7 +13,7 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
     private static StationDto ToDto(GamingStation s) => new(
         s.Id, s.Name, s.Number, s.StationTypeId, s.StationType?.Name ?? "", s.StationType?.Tag ?? "",
         s.Brand, s.Model, s.ImagePath, s.HourlyRate, s.Description, s.Location, s.ControllerCount,
-        s.State, s.ReservedFor, s.ReservedAt, s.IsActive);
+        s.MaxControllers, s.ExtraControllerRate, s.State, s.ReservedFor, s.ReservedAt, s.IsActive);
 
     public async Task<IReadOnlyList<StationDto>> GetAllAsync(bool includeInactive = true, CancellationToken ct = default)
     {
@@ -42,6 +42,10 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         if (r.HourlyRate < 0) throw new BusinessException("Hourly price cannot be negative.");
         if (r.HourlyRate > 1_000_000) throw new BusinessException("Hourly price is too large.");
         if (r.ControllerCount is < 0 or > 16) throw new BusinessException("Controllers must be between 0 and 16.");
+        if (r.ExtraControllerRate < 0) throw new BusinessException("Extra controller price cannot be negative.");
+        if (r.MaxControllers is { } max && (max < 0 || max > 16)) throw new BusinessException("Maximum controllers must be between 0 and 16.");
+        if (r.MaxControllers is { } mx && r.ControllerCount is { } inc && mx < inc)
+            throw new BusinessException("Maximum controllers cannot be lower than the included controllers.");
         if (r.Number is < 0) throw new BusinessException("Number cannot be negative.");
 
         await using var db = await OpenAsync(ct);
@@ -86,6 +90,8 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         station.Description = Optional(r.Description, 500);
         station.Location = Optional(r.Location, 64);
         station.ControllerCount = r.ControllerCount;
+        station.MaxControllers = r.MaxControllers;
+        station.ExtraControllerRate = r.ExtraControllerRate;
         if (station.State != r.State)
         {
             station.State = r.State;

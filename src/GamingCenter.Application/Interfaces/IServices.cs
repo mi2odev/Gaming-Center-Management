@@ -59,6 +59,8 @@ public interface ISessionService
     Task<GamingSession> ExtendTimeAsync(int sessionId, int minutes, CancellationToken ct = default);
     Task<GamingSession> AddBudgetAsync(int sessionId, decimal amount, CancellationToken ct = default);
     Task<GamingSession> ChangeModeAsync(int sessionId, SessionMode mode, int? plannedMinutes, decimal? budget, CancellationToken ct = default);
+    /// <summary>Changes the number of controllers; the new hourly rate applies from now on.</summary>
+    Task<GamingSession> ChangeControllersAsync(int sessionId, int controllers, CancellationToken ct = default);
     Task<GamingSession> AttachCustomerAsync(int sessionId, int? customerId, CancellationToken ct = default);
 
     Task<GamingSession> AddProductAsync(int sessionId, int productId, int quantity = 1, CancellationToken ct = default);

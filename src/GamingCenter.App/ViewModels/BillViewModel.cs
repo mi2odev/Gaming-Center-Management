@@ -102,12 +102,18 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
         StationName = s.StationName;
         SessionLine = $"Session {s.StartTime:HH:mm} → {_end:HH:mm} · {s.Customer?.Name ?? "Walk-in"} · {ModeName(s)}";
         GamingDetail = Durations.Long(played);
-        GamingRate = $"@ {Money.Rate(s.HourlyRate)} · {s.Rules.UnitLabel}" + s.Mode switch
+        var segments = s.RateSegments(_end);
+        GamingRate = (s.RateChanges.Count > 0 ? $"@ avg {Money.Rate(Math.Round(s.AverageRate(_end), 2))}" : $"@ {Money.Rate(s.HourlyRate)}")
+            + (s.Controllers is { } ctrl && s.RateChanges.Count == 0 ? $" · {ctrl} controllers" : "")
+            + $" · {s.Rules.UnitLabel}" + s.Mode switch
         {
             SessionMode.FixedDuration => $" · {Durations.Minutes(s.PlannedMinutes ?? 0)} purchased",
             SessionMode.FixedBudget => $" · budget {Money.Format(s.Budget ?? 0)}",
             _ => "",
         };
+        if (s.RateChanges.Count > 0)
+            foreach (var seg in segments)
+                RateLines.Add($"{seg.From:HH:mm}–{seg.To:HH:mm} · {(seg.Controllers is { } c ? $"{c} controllers · " : "")}{Durations.Short(seg.Played)} @ {Money.Rate(seg.HourlyRate)}");
         GamingTotal = s.GamingCost(_end);
         ProductsTotal = s.ProductsCost();
         foreach (var l in s.Products.OrderBy(p => p.AddedAt))
@@ -140,6 +146,7 @@ public sealed partial class BillViewModel : PaymentDialogViewModel
     public string ProductsText => Money.Format(ProductsTotal);
     public string PauseNote { get; }
     public ObservableCollection<BillLine> Lines { get; } = [];
+    public ObservableCollection<string> RateLines { get; } = [];
     public bool HasLines => Lines.Count > 0;
     public string FooterNote => $"On confirm: payment recorded, stock already deducted, session closed, {StationName} becomes Available. Runs in one transaction.";
 
