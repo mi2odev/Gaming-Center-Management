@@ -29,6 +29,9 @@ public sealed class ReceiptPreview(ReceiptDto r)
     public bool HasItems => r.Lines.Count > 0;
     public string Total => Money.Format(r.Total);
     public string Method => r.Method.ToString();
+    public bool IsSplit => r.Parts.Count > 1;
+    public bool IsSingle => r.Parts.Count <= 1;
+    public IReadOnlyList<PaymentPartRequest> Parts => r.Parts;
     public string Received => Money.Number(r.AmountReceived);
     public bool HasChange => r.Change > 0;
     public bool HasCredit => r.CreditAmount > 0;
@@ -205,7 +208,7 @@ public sealed record PaymentRowView(PaymentRow Row)
     public string Gaming => Row.GamingAmount > 0 ? Money.Format(Row.GamingAmount) : "—";
     public string Products => Row.ProductsAmount > 0 ? Money.Format(Row.ProductsAmount) : "—";
     public string Total => Money.Format(Row.TotalAmount);
-    public string Method => Row.CreditAmount > 0 ? (Row.CreditAmount == Row.TotalAmount ? "Credit" : $"{Row.Method} + credit") : Row.Method.ToString();
+    public string Method => string.IsNullOrEmpty(Row.MethodsText) ? Row.Method.ToString() : Row.MethodsText;
     public string Operator => Row.Operator ?? "—";
 }
 
@@ -263,9 +266,9 @@ public sealed partial class SalesViewModel : PageViewModel
         foreach (var r in _rows) Rows.Add(new PaymentRowView(r));
         TotalText = Money.Format(_rows.Sum(r => r.TotalAmount));
         // Cash/Card/Other show money actually collected; the unpaid part is shown as credit.
-        CashText = Money.Format(_rows.Where(r => r.Method == PaymentMethod.Cash).Sum(r => r.TotalAmount - r.CreditAmount));
-        CardText = Money.Format(_rows.Where(r => r.Method == PaymentMethod.Card).Sum(r => r.TotalAmount - r.CreditAmount));
-        OtherText = Money.Format(_rows.Where(r => r.Method == PaymentMethod.Other).Sum(r => r.TotalAmount - r.CreditAmount));
+        CashText = Money.Format(_rows.Sum(r => r.CashCollected));
+        CardText = Money.Format(_rows.Sum(r => r.CardCollected));
+        OtherText = Money.Format(_rows.Sum(r => r.OtherCollected));
         CreditText = Money.Format(_rows.Sum(r => r.CreditAmount));
         CountText = $"{_rows.Count} payments";
         IsEmpty = _rows.Count == 0;
@@ -306,7 +309,7 @@ public sealed partial class SalesViewModel : PageViewModel
         await TryAsync(() => CsvWriter.WriteAsync(path, _rows, [
             new("Receipt", r => r.ReceiptNumber), new("Paid at", r => r.PaidAt), new("Station", r => r.StationName),
             new("Customer", r => r.CustomerName), new("Gaming", r => r.GamingAmount), new("Products", r => r.ProductsAmount),
-            new("Total", r => r.TotalAmount), new("On credit", r => r.CreditAmount), new("Method", r => r.Method), new("Operator", r => r.Operator),
+            new("Total", r => r.TotalAmount), new("On credit", r => r.CreditAmount), new("Method", r => r.MethodsText), new("Cash", r => r.CashCollected), new("Card", r => r.CardCollected), new("Other", r => r.OtherCollected), new("Operator", r => r.Operator),
         ]), "Export complete", path);
     }
 }

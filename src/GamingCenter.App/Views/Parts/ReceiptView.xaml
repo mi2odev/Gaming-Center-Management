@@ -51,7 +51,17 @@
                 <TextBlock DockPanel.Dock="Right" Text="{Binding Total}" Style="{StaticResource P}" FontWeight="Bold" FontSize="14"/>
                 <TextBlock Text="TOTAL" Style="{StaticResource P}" FontWeight="Bold" FontSize="14"/>
             </DockPanel>
-            <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding Received}" Style="{StaticResource P}"/><TextBlock Text="{Binding Method}" Style="{StaticResource P}"/></DockPanel>
+            <DockPanel Visibility="{Binding IsSingle, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding Received}" Style="{StaticResource P}"/><TextBlock Text="{Binding Method}" Style="{StaticResource P}"/></DockPanel>
+            <ItemsControl ItemsSource="{Binding Parts}" Visibility="{Binding IsSplit, Converter={StaticResource BoolToVis}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Amount, Converter={StaticResource Money}, ConverterParameter=number}" Style="{StaticResource P}"/>
+                            <TextBlock Text="{Binding Method}" Style="{StaticResource P}"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <DockPanel Visibility="{Binding HasChange, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding Change}" Style="{StaticResource P}"/><TextBlock Text="Change" Style="{StaticResource P}"/></DockPanel>
             <DockPanel Visibility="{Binding HasCredit, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding CreditAmount}" Style="{StaticResource P}" FontWeight="Bold"/><TextBlock Text="On credit (unpaid)" Style="{StaticResource P}" FontWeight="Bold"/></DockPanel>
             <DockPanel Visibility="{Binding HasBalance, Converter={StaticResource BoolToVis}}"><TextBlock DockPanel.Dock="Right" Text="{Binding CustomerBalance}" Style="{StaticResource P}"/><TextBlock Text="Total owed now" Style="{StaticResource P}"/></DockPanel>

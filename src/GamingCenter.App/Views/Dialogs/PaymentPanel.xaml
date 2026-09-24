@@ -38,6 +38,30 @@
                         <Button Content="{Binding Label}" Style="{StaticResource Preset}" Command="{Binding DataContext.SetReceivedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Value}"/>
                     </DataTemplate></ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- Split payment: extra lines added with + -->
+                <ItemsControl ItemsSource="{Binding ExtraLines}" Margin="0,4,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="96"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" Height="42" FontSize="16"
+                                         c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}" c:Ui.SelectAllOnFocus="True" c:Ui.FocusOnLoad="True"/>
+                                <ComboBox Grid.Column="2" Height="42" ItemsSource="{Binding Methods}" SelectedItem="{Binding Method}"/>
+                                <Button Grid.Column="4" Style="{StaticResource Btn.Icon}" Width="42" Height="42" c:Ui.Icon="{StaticResource I.X}" ToolTip="Remove this payment"
+                                        Command="{Binding DataContext.RemovePaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding PaidSoFarText}" Style="{StaticResource T.Muted}" Margin="0,10,0,0" Visibility="{Binding IsSplit, Converter={StaticResource BoolToVis}}"/>
+
                 <DockPanel Margin="0,12,0,0" Visibility="{Binding PayLater, Converter={StaticResource InvBoolToVis}}">
                     <TextBlock DockPanel.Dock="Right" Text="{Binding ChangeText}" FontSize="16">
                         <TextBlock.Style>
@@ -47,9 +71,12 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Text="Change" Style="{StaticResource T.Muted}" FontSize="13" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ChangeLabel}" Style="{StaticResource T.Muted}" FontSize="13" VerticalAlignment="Center"/>
                 </DockPanel>
             </StackPanel>
+
+            <Button Content="+ Add another payment (split between people or cash + card)" Style="{StaticResource Btn.Secondary}" MinHeight="36" Margin="0,12,0,0"
+                    HorizontalAlignment="Stretch" Command="{Binding AddPaymentCommand}" ToolTip="Someone else pays part of the bill"/>
 
             <Button Content="Customer can't pay it all → put the missing amount on credit" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,10,0,0"
                     Command="{Binding PutMissingOnCreditCommand}" Visibility="{Binding CanOfferCredit, Converter={StaticResource BoolToVis}}"/>

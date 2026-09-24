@@ -25,7 +25,7 @@
             <Grid DockPanel.Dock="Top" Margin="14,0,14,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="120"/><ColumnDefinition/>
-                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="76"/><ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="160"/><ColumnDefinition Width="100"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="RECEIPT" Style="{StaticResource T.ColumnHeader}"/>
                 <TextBlock Grid.Column="1" Text="PAID AT" Style="{StaticResource T.ColumnHeader}"/>
@@ -45,7 +45,7 @@
                             <Grid Height="46">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="120"/><ColumnDefinition Width="100"/><ColumnDefinition Width="120"/><ColumnDefinition/>
-                                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="76"/><ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="90"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="160"/><ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Receipt}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Time}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>

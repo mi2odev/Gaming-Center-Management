@@ -122,6 +122,7 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
             e.HasIndex(x => x.PaidAt);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
             e.Ignore(x => x.PaidNow);
+            e.HasMany(x => x.Parts).WithOne().HasForeignKey(x => x.PaymentId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<CreditTransaction>(e =>
