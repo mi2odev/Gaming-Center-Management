@@ -3,12 +3,54 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:GamingCenter.App.Controls"
              xmlns:cm="clr-namespace:GamingCenter.Application.Common;assembly=GamingCenter.Application">
+    <UserControl.Resources>
+        <!-- Horizontal bar with a label, value and small detail line -->
+        <DataTemplate x:Key="BarRow">
+            <StackPanel Margin="0,0,0,12">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding Value}" Style="{StaticResource T.MonoStrong}" FontSize="12"/>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontSize="12"/>
+                </DockPanel>
+                <Border Height="6" CornerRadius="3" Background="{DynamicResource Border}" Margin="0,5,0,0" ClipToBounds="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}}"/>
+                            <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource Accent}" CornerRadius="3"/>
+                    </Grid>
+                </Border>
+                <TextBlock Text="{Binding Sub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="0,4,0,0"
+                           Visibility="{Binding Sub, Converter={StaticResource HasValueToVis}}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Simple column for hour / weekday charts -->
+        <DataTemplate x:Key="ColumnBar">
+            <Grid Margin="2,0" ToolTip="{Binding Value}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}}"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="1" Text="{Binding Value}" Style="{StaticResource T.Mono}" FontSize="10" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                <Border Grid.Row="2" Background="{DynamicResource Accent}" CornerRadius="4,4,0,0" MaxWidth="48" MinHeight="2"/>
+                <TextBlock Grid.Row="3" Text="{Binding Label}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+            </Grid>
+        </DataTemplate>
+
+        <Style x:Key="KpiValue" TargetType="TextBlock" BasedOn="{StaticResource T.StatValue}">
+            <Setter Property="FontSize" Value="24"/>
+        </Style>
+    </UserControl.Resources>
     <!-- Design 1k -->
     <DockPanel Margin="32,24,32,0">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCsvCommand}"/>
                 <Button Content="Products CSV" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ExportProductsCommand}"/>
+                <Button Content="Stations CSV" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ExportStationsCommand}"/>
                 <Button Content="Export PDF" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Printer}" Command="{Binding ExportPdfCommand}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -42,6 +84,16 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="16"/>
                     <RowDefinition Height="Auto"/>
@@ -88,8 +140,67 @@
                     </Border>
                 </UniformGrid>
 
+                <!-- Second KPI row -->
+                <UniformGrid Grid.Row="2" Grid.ColumnSpan="3" Rows="1" Columns="6" Margin="-8,0">
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Average ticket" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding AvgTicketText}" Style="{StaticResource KpiValue}"/>
+                            <TextBlock Text="{Binding AvgTicketSub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Play hours" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding PlayHoursText}" Style="{StaticResource KpiValue}"/>
+                            <DockPanel Margin="0,6,0,0">
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding OccupancyText}" Style="{StaticResource T.Mono}" FontSize="11" Foreground="{DynamicResource Text.Muted}" Margin="8,0,0,0"/>
+                                <Border Height="6" CornerRadius="3" Background="{DynamicResource Border}" ClipToBounds="True" VerticalAlignment="Center"
+                                        ToolTip="Occupancy: play time compared with the time all active stations were open in this period">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{Binding Occupancy, Converter={StaticResource FractionStar}}"/>
+                                            <ColumnDefinition Width="{Binding Occupancy, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Background="{DynamicResource Info}" CornerRadius="3"/>
+                                    </Grid>
+                                </Border>
+                            </DockPanel>
+                            <TextBlock Text="occupancy" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Customers" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding CustomersText}" Style="{StaticResource KpiValue}"/>
+                            <TextBlock Text="{Binding CustomersSub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Counter sales" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding CounterText}" Style="{StaticResource KpiValue}"/>
+                            <TextBlock Text="{Binding CounterSub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Discounts given" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding DiscountsText}" Style="{StaticResource KpiValue}" Foreground="{DynamicResource Warning}"/>
+                            <TextBlock Text="paid less than the bill" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Left on credit" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="{Binding CreditText}" Style="{StaticResource KpiValue}" Foreground="{DynamicResource Danger}"/>
+                            <TextBlock Text="{Binding CreditSub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
                 <!-- Revenue per day -->
-                <Border Grid.Row="2" Style="{StaticResource Card}" Padding="22,20">
+                <Border Grid.Row="4" Style="{StaticResource Card}" Padding="22,20">
                     <DockPanel>
                         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -133,7 +244,7 @@
                 </Border>
 
                 <!-- Revenue per station -->
-                <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                <Border Grid.Row="4" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
                     <StackPanel>
                         <TextBlock Text="Revenue per station" Style="{StaticResource T.Section}" Margin="0,0,0,14"/>
                         <TextBlock Text="No sessions in this period." Style="{StaticResource T.Muted}" Visibility="{Binding Stations.Count, Converter={StaticResource NoValueToVis}}"/>
@@ -162,7 +273,7 @@
                 </Border>
 
                 <!-- Top products -->
-                <Border Grid.Row="4" Style="{StaticResource Card}" Padding="22,20">
+                <Border Grid.Row="8" Style="{StaticResource Card}" Padding="22,20">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,10">
                             <TextBlock DockPanel.Dock="Right" Text="units · revenue · profit" Style="{StaticResource T.Muted}"/>
@@ -187,7 +298,7 @@
                 </Border>
 
                 <!-- Session modes -->
-                <Border Grid.Row="4" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                <Border Grid.Row="8" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
                     <StackPanel>
                         <TextBlock Text="Session modes" Style="{StaticResource T.Section}" Margin="0,0,0,12"/>
                         <Border Height="14" CornerRadius="7" ClipToBounds="True" Background="{DynamicResource Border}" Visibility="{Binding ModesLegend, Converter={StaticResource NotEqualsToVis}, ConverterParameter=No sessions}">
@@ -204,6 +315,169 @@
                         </Border>
                         <TextBlock Text="{Binding ModesLegend}" Style="{StaticResource T.Muted}" Margin="0,10,0,0" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding Insights}" Style="{StaticResource T.Muted}" Margin="0,12,0,0" TextWrapping="Wrap" TextTrimming="None" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="6" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding BusiestText}" Style="{StaticResource T.Muted}" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Busy hours" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding HourBars}" ItemTemplate="{StaticResource ColumnBar}" Height="170" Margin="0,16,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="6" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding BestDayText}" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Revenue by weekday" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding WeekdayBars}" ItemTemplate="{StaticResource ColumnBar}" Height="170" Margin="0,16,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="10" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <TextBlock Text="Payment methods" Style="{StaticResource T.Section}"/>
+                        <TextBlock Text="No payments in this period." Style="{StaticResource T.Muted}" Margin="0,14,0,0" Visibility="{Binding Methods.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Methods}" ItemTemplate="{StaticResource BarRow}" Margin="0,14,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="10" Grid.Column="2">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="16"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Border Style="{StaticResource Card}" Padding="22,20">
+                        <StackPanel>
+                            <TextBlock Text="Revenue by room" Style="{StaticResource T.Section}"/>
+                        <TextBlock Text="No sessions in this period." Style="{StaticResource T.Muted}" Margin="0,14,0,0" Visibility="{Binding Rooms.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Rooms}" ItemTemplate="{StaticResource BarRow}" Margin="0,14,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="22,20">
+                        <StackPanel>
+                            <TextBlock Text="Revenue by console type" Style="{StaticResource T.Section}"/>
+                        <TextBlock Text="No sessions in this period." Style="{StaticResource T.Muted}" Margin="0,14,0,0" Visibility="{Binding Types.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Types}" ItemTemplate="{StaticResource BarRow}" Margin="0,14,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Grid.Row="12" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <TextBlock Text="Station usage" Style="{StaticResource T.Section}"/>
+                        <Grid Margin="0,14,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/><ColumnDefinition Width="70"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="1.4*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="STATION" Style="{StaticResource T.ColumnHeader}"/>
+                            <TextBlock Grid.Column="1" Text="SESSIONS" Style="{StaticResource T.ColumnHeader}"/>
+                            <TextBlock Grid.Column="2" Text="PLAY TIME" Style="{StaticResource T.ColumnHeader}"/>
+                            <TextBlock Grid.Column="3" Text="REVENUE" Style="{StaticResource T.ColumnHeader}"/>
+                            <TextBlock Grid.Column="4" Text="OCCUPANCY" Style="{StaticResource T.ColumnHeader}"/>
+                        </Grid>
+                        <TextBlock Text="No gaming stations yet" Style="{StaticResource T.Muted}" Visibility="{Binding StationUsage.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding StationUsage}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,1,0,0" Padding="0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/><ColumnDefinition Width="70"/><ColumnDefinition Width="90"/><ColumnDefinition Width="100"/><ColumnDefinition Width="1.4*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding Where}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Sessions}" Style="{StaticResource T.Mono}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding PlayTime}" Style="{StaticResource T.Mono}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding Revenue}" Style="{StaticResource T.MonoStrong}" VerticalAlignment="Center"/>
+                                            <DockPanel Grid.Column="4" VerticalAlignment="Center">
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Occupancy}" Style="{StaticResource T.Mono}" FontSize="11" Foreground="{DynamicResource Text.Muted}" Width="40" TextAlignment="Right"/>
+                                                <Border Height="6" CornerRadius="3" Background="{DynamicResource Border}" ClipToBounds="True" VerticalAlignment="Center">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}}"/>
+                                                            <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Background="{DynamicResource Info}" CornerRadius="3"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DockPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="12" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <TextBlock Text="Product categories" Style="{StaticResource T.Section}"/>
+                        <TextBlock Text="No product sales in this period." Style="{StaticResource T.Muted}" Margin="0,14,0,0" Visibility="{Binding Categories.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Categories}" ItemTemplate="{StaticResource BarRow}" Margin="0,14,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="14" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="spent in this period" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Top customers" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <TextBlock Text="No customers yet." Style="{StaticResource T.Muted}" Margin="0,12,0,0" Visibility="{Binding TopCustomers.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding TopCustomers}" Margin="0,10,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,8">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding Spent}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Owes}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Danger}" HorizontalAlignment="Right"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding Visits}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="14" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="money collected" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Operators" Style="{StaticResource T.Section}"/>
+                        </DockPanel>
+                        <TextBlock Text="No payments in this period." Style="{StaticResource T.Muted}" Margin="0,12,0,0" Visibility="{Binding Operators.Count, Converter={StaticResource NoValueToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Operators}" Margin="0,10,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,8">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding Collected}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Discounts}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Warning}" HorizontalAlignment="Right"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding Receipts}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
             </Grid>

@@ -206,7 +206,34 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
 }
 
 public sealed record BarItem(string Label, string Value, double Height, double ProductShare);
-public sealed record StationBar(string Name, string Value, double Fraction);
+public sealed record StationBar(string Name, string Value, double Fraction, string Sub = "");
+
+public sealed record StationUsageRow(StationUsage U)
+{
+    public string Name => U.Name;
+    public string Where => string.Join(" · ", new[] { U.Type, U.Room }.Where(s => !string.IsNullOrWhiteSpace(s)));
+    public string Sessions => U.Sessions.ToString();
+    public string PlayTime => Durations.Short(U.PlayTime);
+    public string Revenue => Money.Number(U.Revenue);
+    public string Occupancy => $"{U.Occupancy:P0}";
+    public double Fraction => U.Occupancy;
+}
+
+public sealed record CustomerSpendRow(CustomerSpend C)
+{
+    public string Name => C.Name;
+    public string Visits => L.F(C.Visits == 1 ? "{0} visit" : "{0} visits", C.Visits);
+    public string Spent => Money.Number(C.Spent);
+    public string Owes => C.Owes > 0 ? L.F("owes {0}", Money.Format(C.Owes)) : "";
+}
+
+public sealed record OperatorRow(OperatorTotal O)
+{
+    public string Name => O.Name;
+    public string Receipts => L.F(O.Receipts == 1 ? "{0} receipt" : "{0} receipts", O.Receipts);
+    public string Collected => Money.Number(O.Collected);
+    public string Discounts => O.Discounts > 0 ? L.F("discounts {0}", Money.Format(O.Discounts)) : "";
+}
 
 /// <summary>Revenue reports (design 1k) for day, week, month, year or a custom range.</summary>
 public sealed partial class ReportsViewModel : PageViewModel
@@ -251,6 +278,32 @@ public sealed partial class ReportsViewModel : PageViewModel
     [ObservableProperty] private string _modesLegend = "";
     [ObservableProperty] private string _insights = "";
     [ObservableProperty] private bool _isEmpty;
+
+    // Second KPI row
+    [ObservableProperty] private string _avgTicketText = "—";
+    [ObservableProperty] private string _avgTicketSub = "";
+    [ObservableProperty] private string _playHoursText = "0";
+    [ObservableProperty] private string _occupancyText = "0%";
+    [ObservableProperty] private double _occupancy;
+    [ObservableProperty] private string _customersText = "0";
+    [ObservableProperty] private string _customersSub = "";
+    [ObservableProperty] private string _counterText = "0";
+    [ObservableProperty] private string _counterSub = "";
+    [ObservableProperty] private string _discountsText = "0";
+    [ObservableProperty] private string _creditText = "0";
+    [ObservableProperty] private string _creditSub = "";
+    [ObservableProperty] private string _busiestText = "";
+    [ObservableProperty] private string _bestDayText = "";
+
+    public ObservableCollection<BarItem> HourBars { get; } = [];
+    public ObservableCollection<BarItem> WeekdayBars { get; } = [];
+    public ObservableCollection<StationBar> Methods { get; } = [];
+    public ObservableCollection<StationBar> Rooms { get; } = [];
+    public ObservableCollection<StationBar> Types { get; } = [];
+    public ObservableCollection<StationBar> Categories { get; } = [];
+    public ObservableCollection<StationUsageRow> StationUsage { get; } = [];
+    public ObservableCollection<CustomerSpendRow> TopCustomers { get; } = [];
+    public ObservableCollection<OperatorRow> Operators { get; } = [];
 
     public ObservableCollection<BarItem> Bars { get; } = [];
     public ObservableCollection<StationBar> Stations { get; } = [];
@@ -308,17 +361,17 @@ public sealed partial class ReportsViewModel : PageViewModel
         {
             var pct = (d.TotalRevenue - d.PreviousTotalRevenue) / d.PreviousTotalRevenue * 100m;
             TrendUp = pct >= 0;
-            TrendText = $"{(pct >= 0 ? "+" : "")}{pct:0}% vs previous period";
+            TrendText = L.F("{0}% vs previous period", $"{(pct >= 0 ? "+" : "")}{pct:0}");
         }
-        else { TrendUp = true; TrendText = "No data for previous period"; }
+        else { TrendUp = true; TrendText = L.T("No data for previous period"); }
         GamingText = Money.Number(d.GamingRevenue);
-        GamingShare = d.TotalRevenue > 0 ? $"{d.GamingRevenue / d.TotalRevenue * 100:0}% of total" : "—";
+        GamingShare = d.TotalRevenue > 0 ? L.F("{0}% of total", $"{d.GamingRevenue / d.TotalRevenue * 100:0}") : "—";
         ProductText = Money.Number(d.ProductRevenue);
-        ProfitText = $"Est. profit {Money.Format(d.ProductProfit)}";
+        ProfitText = L.F("Est. profit {0}", Money.Format(d.ProductProfit));
         SessionsText = d.Sessions.ToString();
         var days = Math.Max(1, (to - from).TotalDays);
-        SessionsSub = d.Sessions == 0 ? "No sessions" : $"avg {Durations.Short(d.AverageSession)} · {d.Sessions / days:0.#} per day";
-        ChartTitle = byMonth ? "Revenue per month" : "Revenue per day";
+        SessionsSub = d.Sessions == 0 ? L.T("No sessions") : L.F("avg {0} · {1} per day", Durations.Short(d.AverageSession), (d.Sessions / days).ToString("0.#"));
+        ChartTitle = L.T(byMonth ? "Revenue per month" : "Revenue per day");
 
         Bars.Clear();
         var max = d.PerDay.Count == 0 ? 0 : d.PerDay.Max(x => x.Total);
@@ -338,19 +391,81 @@ public sealed partial class ReportsViewModel : PageViewModel
         OpenShare = total == 0 ? 0 : d.ModeCounts.GetValueOrDefault(SessionMode.Open) / (double)total;
         FixedShare = total == 0 ? 0 : d.ModeCounts.GetValueOrDefault(SessionMode.FixedDuration) / (double)total;
         BudgetShare = total == 0 ? 0 : d.ModeCounts.GetValueOrDefault(SessionMode.FixedBudget) / (double)total;
-        ModesLegend = total == 0 ? "No sessions" : $"Open {OpenShare:P0} · Fixed duration {FixedShare:P0} · Fixed budget {BudgetShare:P0}";
+        ModesLegend = total == 0 ? "No sessions" : L.F("Open {0} · Fixed duration {1} · Fixed budget {2}", OpenShare.ToString("P0"), FixedShare.ToString("P0"), BudgetShare.ToString("P0"));
 
         var parts = new List<string>();
-        if (d.BusiestHour is { } h) parts.Add($"Busiest hour {h:00}:00–{(h + 1) % 24:00}:00");
+        if (d.BusiestHour is { } h) parts.Add(L.F("Busiest hour {0}:00–{1}:00", h.ToString("00"), ((h + 1) % 24).ToString("00")));
         if (d.PerStation.OrderByDescending(s => s.PlayTime).FirstOrDefault() is { } top)
-            parts.Add($"Most-used station {top.Name} ({Durations.Short(top.PlayTime)})");
+            parts.Add(L.F("Most-used station {0} ({1})", top.Name, Durations.Short(top.PlayTime)));
         if (d.TotalRevenue > 0)
-            parts.Add(string.Join(" · ", d.MethodTotals.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value / d.TotalRevenue:P0}")));
-        if (d.Discounts > 0) parts.Add($"Discounts given {Money.Format(d.Discounts)}");
+            parts.Add(string.Join(" · ", d.MethodTotals.OrderByDescending(kv => kv.Value).Select(kv => $"{L.T(kv.Key.ToString())} {kv.Value / d.TotalRevenue:P0}")));
+        if (d.Discounts > 0) parts.Add(L.F("Discounts given {0}", Money.Format(d.Discounts)));
         if (d.CreditGiven > 0 || d.CreditCollected > 0)
-            parts.Add($"Credit given {Money.Format(d.CreditGiven)} · paid back {Money.Format(d.CreditCollected)}");
+            parts.Add(L.F("Credit given {0} · paid back {1}", Money.Format(d.CreditGiven), Money.Format(d.CreditCollected)));
         Insights = string.Join(" · ", parts);
         IsEmpty = d.TotalRevenue == 0 && d.Sessions == 0;
+        if (d.Extras is { } extras) ShowExtras(d, extras);
+    }
+
+    private static string Short(decimal v) => v >= 10000 ? $"{v / 1000m:0}k" : v >= 1000 ? $"{v / 1000m:0.#}k" : Money.Number(v);
+
+    private static void Fill(ObservableCollection<StationBar> target, IEnumerable<NamedAmount> items, Func<NamedAmount, string> sub, Func<string, string>? name = null)
+    {
+        target.Clear();
+        var list = items.ToList();
+        var max = list.Count == 0 ? 0 : list.Max(i => i.Amount);
+        foreach (var i in list)
+            target.Add(new StationBar(name?.Invoke(i.Name) ?? i.Name, Money.Number(i.Amount), max > 0 ? (double)(i.Amount / max) : 0, sub(i)));
+    }
+
+    private void ShowExtras(ReportData d, ReportExtras x)
+    {
+        AvgTicketText = x.Receipts == 0 ? "—" : Money.Number(d.TotalRevenue / x.Receipts);
+        AvgTicketSub = L.F(x.Receipts == 1 ? "{0} receipt" : "{0} receipts", x.Receipts)
+            + (d.Sessions > 0 ? " · " + L.F("{0} per session", Money.Format(d.GamingRevenue / d.Sessions)) : "");
+        PlayHoursText = $"{x.PlayTime.TotalHours:0.#}";
+        Occupancy = x.Occupancy;
+        OccupancyText = $"{x.Occupancy:P0}";
+        CustomersText = x.Customers.ToString();
+        CustomersSub = L.F("{0} new · {1} walk-in sessions", x.NewCustomers, x.WalkInSessions);
+        CounterText = Money.Number(x.CounterSalesRevenue);
+        CounterSub = L.F(x.CounterSales == 1 ? "{0} sale without session" : "{0} sales without session", x.CounterSales);
+        DiscountsText = Money.Number(d.Discounts);
+        CreditText = Money.Number(x.UnpaidOnCredit);
+        CreditSub = L.F("paid back {0}", Money.Format(d.CreditCollected));
+
+        HourBars.Clear();
+        int hmax = x.SessionsPerHour.Max();
+        for (int h = 0; h < 24; h++)
+        {
+            int n = x.SessionsPerHour[h];
+            HourBars.Add(new BarItem(h % 3 == 0 ? $"{h:00}" : "", n == 0 ? "" : n.ToString(), hmax > 0 ? n / (double)hmax : 0, 0));
+        }
+        BusiestText = hmax == 0 ? L.T("No sessions") : L.F("Busiest {0}:00–{1}:00", Array.IndexOf(x.SessionsPerHour.ToArray(), hmax).ToString("00"), ((Array.IndexOf(x.SessionsPerHour.ToArray(), hmax) + 1) % 24).ToString("00"));
+
+        WeekdayBars.Clear();
+        var wmax = x.RevenuePerWeekday.Max();
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        for (int i = 0; i < 7; i++)
+        {
+            var day = (DayOfWeek)((i + 1) % 7);
+            var v = x.RevenuePerWeekday[i];
+            WeekdayBars.Add(new BarItem(culture.DateTimeFormat.GetAbbreviatedDayName(day), v == 0 ? "" : Short(v), wmax > 0 ? (double)(v / wmax) : 0, 0));
+        }
+        BestDayText = wmax == 0 ? "" : L.F("Best day: {0}", culture.DateTimeFormat.GetDayName((DayOfWeek)((x.RevenuePerWeekday.ToList().IndexOf(wmax) + 1) % 7)));
+
+        var total = x.Methods.Sum(m => m.Amount);
+        Fill(Methods, x.Methods, m => $"{(total > 0 ? m.Amount / total : 0):P0} · " + L.F(m.Count == 1 ? "{0} payment" : "{0} payments", m.Count), n => L.T(n));
+        Fill(Rooms, x.PerRoom, r => L.F("{0} sessions · {1} h", r.Count, r.Extra.ToString("0.#")), n => L.T(n));
+        Fill(Types, x.PerType, r => L.F("{0} sessions · {1} h", r.Count, r.Extra.ToString("0.#")), n => L.T(n));
+        Fill(Categories, x.PerCategory, c => L.F("{0} units · profit {1}", c.Count, Money.Format(c.Extra)), n => L.T(n));
+
+        StationUsage.Clear();
+        foreach (var s in x.Stations) StationUsage.Add(new StationUsageRow(s));
+        TopCustomers.Clear();
+        foreach (var c in x.TopCustomers) TopCustomers.Add(new CustomerSpendRow(c));
+        Operators.Clear();
+        foreach (var o in x.Operators) Operators.Add(new OperatorRow(o));
     }
 
     [RelayCommand]
@@ -361,6 +476,18 @@ public sealed partial class ReportsViewModel : PageViewModel
         if (path is null) return;
         await TryAsync(() => CsvWriter.WriteAsync(path, _data.PerDay, [
             new("Date", x => x.Day.ToString("yyyy-MM-dd")), new("Gaming", x => x.Gaming), new("Products", x => x.Products), new("Total", x => x.Total),
+        ]), "Export complete", path);
+    }
+
+    [RelayCommand]
+    private async Task ExportStations()
+    {
+        if (_data?.Extras is not { } x) return;
+        var path = _files.SaveCsv($"stations-{_data.From:yyyyMMdd}-{_data.To.AddDays(-1):yyyyMMdd}.csv");
+        if (path is null) return;
+        await TryAsync(() => CsvWriter.WriteAsync(path, x.Stations, [
+            new("Station", s => s.Name), new("Type", s => s.Type), new("Room", s => s.Room), new("Sessions", s => s.Sessions),
+            new("Play hours", s => Math.Round(s.PlayTime.TotalHours, 2)), new("Revenue", s => s.Revenue), new("Occupancy %", s => Math.Round(s.Occupancy * 100, 1)),
         ]), "Export complete", path);
     }
 

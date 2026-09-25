@@ -396,6 +396,42 @@ public class SessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Report_extras_break_down_hours_rooms_methods_customers_and_operators()
+    {
+        var ps5 = await _t.Station("PS5 #01");
+        var cola = await _t.Product("Coca-Cola 33cl");
+        var amine = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Amine", null, null));
+
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(ps5.Id, amine.Id, SessionMode.Open, null, null));  // 18:00
+        _t.Clock.Now = _t.Clock.Now.AddHours(1);
+        await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Card, 300m, null));
+        await _t.Sessions.CounterSaleAsync(new CounterSaleRequest([new CartLine(cola.Id, 2)], PaymentMethod.Cash, 0, amine.Id, PayNow: 0));
+
+        var report = await _t.Reports.GetReportAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1), false);
+        var x = report.Extras!;
+        Assert.Equal(1, x.SessionsPerHour[18]);
+        Assert.Equal(2, x.Receipts);
+        Assert.Equal(1, x.CounterSales);
+        Assert.Equal(TimeSpan.FromHours(1), x.PlayTime);
+        Assert.True(x.Occupancy > 0);
+        Assert.Equal(300m, x.PerRoom.Single(r => r.Name == ps5.Location).Amount);
+        Assert.Equal(300m, x.PerType.Single(r => r.Name == ps5.TypeName).Amount);
+        Assert.Equal(300m, x.Methods.Single(m => m.Name == "Card").Amount);
+        Assert.Equal(x.UnpaidOnCredit, x.Methods.Single(m => m.Name == "Credit").Amount);
+        Assert.True(x.UnpaidOnCredit > 0);
+        var top = x.TopCustomers.Single();
+        Assert.Equal("Amine", top.Name);
+        Assert.Equal(2, top.Visits);
+        Assert.Equal(x.UnpaidOnCredit, top.Owes);
+        Assert.Equal(1, x.Customers);
+        Assert.Equal(1, x.NewCustomers);
+        Assert.Equal(300m, x.Operators.Single().Collected);
+        Assert.Equal(1, x.Stations.Single(st => st.Name == "PS5 #01").Sessions);
+        Assert.Contains(x.PerCategory, c => c.Count == 2);
+        Assert.Equal(report.TotalRevenue, x.RevenuePerWeekday.Sum());
+    }
+
+    [Fact]
     public async Task Controllers_outside_station_limits_are_refused()
     {
         var ps5 = await _t.Station("PS5 #04");
