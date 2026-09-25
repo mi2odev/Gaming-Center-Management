@@ -29,20 +29,7 @@ public static class L
     {
         Language = Languages.Any(l => l.Code == language) ? language! : "en";
         _map = [];
-        if (Language != "en")
-        {
-            try
-            {
-                var uri = new Uri($"pack://application:,,,/Resources/Lang/{Language}.json");
-                var info = System.Windows.Application.GetResourceStream(uri);
-                if (info is not null)
-                {
-                    using var reader = new StreamReader(info.Stream);
-                    _map = JsonSerializer.Deserialize<Dictionary<string, string>>(reader.ReadToEnd()) ?? [];
-                }
-            }
-            catch (Exception) { /* fall back to English */ }
-        }
+        if (Language != "en") _map = ReadTranslations(Language);
 
         // Dates and day names follow the language; money keeps its own fixed format.
         var culture = CultureInfo.GetCultureInfo(Language switch { "fr" => "fr-FR", "ar" => "ar-DZ", _ => "en-GB" });
@@ -51,6 +38,38 @@ public static class L
         CultureInfo.CurrentCulture = culture;
         CultureInfo.CurrentUICulture = culture;
     }
+
+    /// <summary>Last problem reading a translation file, shown in Settings when a language fails to load.</summary>
+    public static string? LoadError { get; private set; }
+
+    /// <summary>
+    /// Lang\{code}.json next to the exe wins (lets a shop fix a word without rebuilding);
+    /// otherwise the copy embedded in the program.
+    /// </summary>
+    private static Dictionary<string, string> ReadTranslations(string code)
+    {
+        LoadError = null;
+        try
+        {
+            var file = Path.Combine(AppContext.BaseDirectory, "Lang", code + ".json");
+            if (File.Exists(file)) return Parse(File.ReadAllText(file));
+
+            var asm = typeof(L).Assembly;
+            var name = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith("." + code + ".json", StringComparison.OrdinalIgnoreCase));
+            if (name is null) { LoadError = $"Translation {code}.json not found."; return []; }
+            using var stream = asm.GetManifestResourceStream(name)!;
+            using var reader = new StreamReader(stream);
+            return Parse(reader.ReadToEnd());
+        }
+        catch (Exception ex)
+        {
+            LoadError = $"Could not read {code}.json: {ex.Message}";
+            return [];
+        }
+    }
+
+    private static Dictionary<string, string> Parse(string json) =>
+        JsonSerializer.Deserialize<Dictionary<string, string>>(json, new JsonSerializerOptions { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip }) ?? [];
 
     /// <summary>Translate a fixed English text.</summary>
     public static string T(string english) =>

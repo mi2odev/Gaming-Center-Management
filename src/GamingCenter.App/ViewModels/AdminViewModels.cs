@@ -487,6 +487,57 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty] private int _billingUnit;
     [ObservableProperty] private RoundingMode _rounding;
     [ObservableProperty] private string _themeName = "Dark";
+    [ObservableProperty] private string _languageCode = L.Language;
+    private bool _loading;
+
+    public string? LanguageError => L.LoadError;
+
+    /// <summary>Theme buttons apply at once (no Save needed) and are remembered.</summary>
+    partial void OnThemeNameChanged(string value)
+    {
+        if (_loading || string.Equals(value, _theme.Current, StringComparison.OrdinalIgnoreCase)) return;
+        _ = ApplyThemeAsync(value);
+    }
+
+    private async Task ApplyThemeAsync(string theme)
+    {
+        try { await _settings.SavePreferencesAsync(theme, null); }
+        catch (Exception ex) { Toasts.Error(L.T("Could not save"), ErrorText.For(ex)); }
+        _theme.Apply(theme);
+    }
+
+    /// <summary>Called by the shell when the top-bar button switched the theme while this page is open.</summary>
+    public void SyncTheme()
+    {
+        _loading = true;
+        ThemeName = _theme.Current;
+        _loading = false;
+    }
+
+    /// <summary>Picking a language saves it and restarts the app to redraw every screen.</summary>
+    partial void OnLanguageCodeChanged(string value)
+    {
+        if (_loading || string.Equals(value, L.Language, StringComparison.OrdinalIgnoreCase)) return;
+        _ = ChangeLanguageAsync(value);
+    }
+
+    private async Task ChangeLanguageAsync(string code)
+    {
+        if (await _dialogs.ConfirmAsync(L.T("Restart to change the language?"),
+                L.T("The app restarts now. Running sessions keep going; their timers are saved."), L.T("Restart now")))
+        {
+            try
+            {
+                await _settings.SavePreferencesAsync(null, code);
+                App.Restart();
+                return;
+            }
+            catch (Exception ex) { Toasts.Error(L.T("Could not save"), ErrorText.For(ex)); }
+        }
+        _loading = true;
+        LanguageCode = L.Language;
+        _loading = false;
+    }
 
     public IReadOnlyList<BillingUnitOption> Units { get; } =
     [
@@ -509,6 +560,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     private void LoadFields()
     {
+        _loading = true;
         var m = Model = _settings.Current.Clone();
         BillingUnit = m.BillingUnitSeconds;
         Rounding = m.Rounding;
@@ -522,7 +574,9 @@ public sealed partial class SettingsViewModel : PageViewModel
         BackupHourText = m.AutoBackupHour.ToString();
         KeepText = m.BackupsToKeep.ToString();
         ReceiptWidthText = m.ReceiptWidthMm.ToString();
-        ThemeName = m.Theme;
+        ThemeName = _theme.Current;
+        LanguageCode = L.Language;
+        _loading = false;
         UpdatePreview();
         UpdateBackupInfo();
     }
@@ -557,7 +611,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         var m = Model.Clone();
         m.BillingUnitSeconds = BillingUnit;
         m.Rounding = Rounding;
-        m.Theme = ThemeName;
+        m.Theme = _settings.Current.Theme;
+        m.Language = _settings.Current.Language;
         if (!int.TryParse(MinimumChargeText, out var min)) { Toasts.Error("Minimum charge must be a whole number of minutes."); return; }
         if (!Money.TryParse(RoundingStepText, out var step)) { Toasts.Error("Money rounding step is not a number."); return; }
         if (!Money.TryParse(DefaultRateText, out var rate)) { Toasts.Error("Default hourly price is not a number."); return; }
@@ -578,18 +633,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         m.ReceiptWidthMm = width;
         m.LastBackupAt = _settings.Current.LastBackupAt;
 
-        bool languageChanged = !string.Equals(m.Language, L.Language, StringComparison.OrdinalIgnoreCase);
         if (await TryAsync(() => _settings.SaveAsync(m), L.T("Settings saved"), L.T("Billing changes apply to new sessions.")))
         {
-            if (languageChanged && await _dialogs.ConfirmAsync(L.T("Restart to change the language?"),
-                    L.T("The app restarts now. Running sessions keep going; their timers are saved."), L.T("Restart now")))
-            {
-                App.Restart();
-                return;
-            }
             WeakReferenceMessenger.Default.Send(new DataChangedMessage(DataArea.Settings));
-            if (!string.Equals(_theme.Current, m.Theme, StringComparison.OrdinalIgnoreCase)) _theme.Apply(m.Theme);
-            else LoadFields();
+            LoadFields();
         }
     }
 

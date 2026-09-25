@@ -66,12 +66,9 @@
             </DockPanel>
 
             <!-- Payment -->
-            <Border Grid.Column="1" Background="{DynamicResource Bg.App}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0" CornerRadius="0,16,16,0" Padding="32,28">
+            <Border Grid.Column="1" Background="{DynamicResource Bg.App}" BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0" CornerRadius="0,16,16,0" Padding="28,24">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                        <TextBlock Text="{Binding FooterNote}" Style="{StaticResource T.Faint}" TextWrapping="Wrap" TextTrimming="None" LineHeight="16" Margin="0,0,0,12"/>
-                        <Button Content="Back to session" Style="{StaticResource Btn.Secondary}" Height="42" Foreground="{DynamicResource Text.Muted}" Command="{Binding BackCommand}" IsCancel="True"/>
-                    </StackPanel>
+                    <Button DockPanel.Dock="Bottom" Content="Back to session" Style="{StaticResource Btn.Secondary}" Height="40" Margin="0,8,0,0" Foreground="{DynamicResource Text.Muted}" Command="{Binding BackCommand}" IsCancel="True"/>
                     <d:PaymentPanel/>
                 </DockPanel>
             </Border>
