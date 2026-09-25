@@ -8,6 +8,7 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<GamingStationType> StationTypes => Set<GamingStationType>();
     public DbSet<GamingStation> Stations => Set<GamingStation>();
+    public DbSet<Room> Rooms => Set<Room>();
     public DbSet<PriceHistory> PriceHistory => Set<PriceHistory>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
@@ -34,6 +35,12 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
         {
             e.Property(x => x.Name).HasMaxLength(64);
             e.Property(x => x.Tag).HasMaxLength(8);
+            e.HasIndex(x => x.Name).IsUnique();
+        });
+
+        b.Entity<Room>(e =>
+        {
+            e.Property(x => x.Name).HasMaxLength(64).UseCollation("NOCASE");
             e.HasIndex(x => x.Name).IsUnique();
         });
 

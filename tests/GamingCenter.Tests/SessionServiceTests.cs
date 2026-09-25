@@ -351,6 +351,37 @@ public class SessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Rooms_can_be_added_renamed_and_deleted()
+    {
+        var rooms = await _t.Stations.GetRoomsAsync();          // seeded station rooms appear automatically
+        Assert.NotEmpty(rooms);
+        var first = rooms[0];
+        Assert.True(first.StationCount > 0);
+
+        var vip = await _t.Stations.SaveRoomAsync(null, "VIP");
+        Assert.Equal(0, vip.StationCount);
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Stations.SaveRoomAsync(null, "vip"));
+
+        // Rename: stations follow.
+        var renamed = await _t.Stations.SaveRoomAsync(first.Id, "Main hall");
+        Assert.Equal(first.StationCount, renamed.StationCount);
+        Assert.Equal(first.StationCount, (await _t.Stations.GetAllAsync()).Count(s => s.Location == "Main hall"));
+
+        // Delete: stations move to VIP.
+        await _t.Stations.DeleteRoomAsync(renamed.Id, "VIP");
+        var after = await _t.Stations.GetRoomsAsync();
+        Assert.DoesNotContain(after, r => r.Name == "Main hall");
+        Assert.Equal(first.StationCount, after.Single(r => r.Name == "VIP").StationCount);
+
+        // Delete with no target: stations have no room.
+        await _t.Stations.DeleteRoomAsync(after.Single(r => r.Name == "VIP").Id, null);
+        Assert.DoesNotContain(await _t.Stations.GetRoomsAsync(), r => r.Name == "VIP");
+
+        _t.User.User = new UserDto(2, "operator", "Operator", UserRole.Operator, true, null);
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Stations.SaveRoomAsync(null, "Nope"));
+    }
+
+    [Fact]
     public async Task Controllers_outside_station_limits_are_refused()
     {
         var ps5 = await _t.Station("PS5 #04");

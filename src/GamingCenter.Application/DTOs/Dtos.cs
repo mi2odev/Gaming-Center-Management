@@ -10,6 +10,8 @@ public sealed record UserDto(int Id, string Username, string DisplayName, UserRo
 
 public sealed record SaveUserRequest(int? Id, string Username, string DisplayName, UserRole Role, bool IsActive, string? NewPassword);
 
+public sealed record RoomDto(int Id, string Name, int SortOrder, int StationCount);
+
 public sealed record StationTypeDto(int Id, string Name, string Tag, decimal DefaultHourlyRate, int SortOrder, bool IsActive, int StationCount, decimal ExtraControllerRate = 0);
 
 public sealed record SaveStationTypeRequest(int? Id, string Name, string Tag, decimal DefaultHourlyRate, bool IsActive, decimal ExtraControllerRate = 0,

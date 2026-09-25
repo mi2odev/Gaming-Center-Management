@@ -19,6 +19,13 @@ public sealed class User : Entity
     public DateTime? LastLoginAt { get; set; }
 }
 
+/// <summary>A room or area of the center (Room A, VIP…). Stations keep the room name in <see cref="GamingStation.Location"/>.</summary>
+public sealed class Room : Entity
+{
+    public string Name { get; set; } = "";
+    public int SortOrder { get; set; }
+}
+
 /// <summary>Station category such as PlayStation, PC, Xbox. Fully editable by admins.</summary>
 public sealed class GamingStationType : Entity
 {
