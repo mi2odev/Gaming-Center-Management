@@ -27,7 +27,7 @@ public sealed class AppSettings
 
     // Receipts
     public string ReceiptFooter { get; set; } = "Thank you — see you soon";
-    public bool PrintReceiptByDefault { get; set; } = true;
+    public bool PrintReceiptByDefault { get; set; }
     public string? ReceiptPrinterName { get; set; }
     public int ReceiptWidthMm { get; set; } = 80;
     public bool ShowCustomerOnReceipt { get; set; } = true;

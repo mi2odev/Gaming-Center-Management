@@ -51,8 +51,8 @@ public sealed partial class ProductsViewModel : PageViewModel, INavigationTarget
     public ObservableCollection<ProductRow> Rows { get; } = [];
     public ObservableCollection<string> Categories { get; } = ["All"];
 
-    [ObservableProperty] private string _category = "All";
-    [ObservableProperty] private bool _lowStockOnly;
+    [ObservableProperty] private string _category = UiState.Get("Products.Category", "All");
+    [ObservableProperty] private bool _lowStockOnly = UiState.GetBool("Products.LowStockOnly", false);
     [ObservableProperty] private string _search = "";
     [ObservableProperty] private string _summary = "";
     [ObservableProperty] private string _revenueToday = "";
@@ -97,9 +97,10 @@ public sealed partial class ProductsViewModel : PageViewModel, INavigationTarget
         // A chip list briefly reports null while its items are rebuilt.
         if (_rebuilding) return;
         if (value is null) { Category = "All"; return; }
+        UiState.Set("Products.Category", value);
         ApplyFilter();
     }
-    partial void OnLowStockOnlyChanged(bool value) => ApplyFilter();
+    partial void OnLowStockOnlyChanged(bool value) { UiState.Set("Products.LowStockOnly", value); ApplyFilter(); }
     partial void OnSearchChanged(string value) => ApplyFilter();
 
     private void ApplyFilter()
