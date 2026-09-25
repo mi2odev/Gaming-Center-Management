@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -43,7 +44,7 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
         _files = files;
     }
 
-    public override string Title => "Customers";
+    public override string Title => L.T("Customers");
     public bool ShowDelete => _user.IsAdmin && EditId is not null;
 
     public ObservableCollection<CustomerRow> Rows { get; } = [];
@@ -198,7 +199,7 @@ public sealed partial class ReportsViewModel : PageViewModel
         _settings = settings;
     }
 
-    public override string Title => "Reports";
+    public override string Title => L.T("Reports");
 
     [ObservableProperty] private string _period = "Week";
     [ObservableProperty] private DateTime _anchor = DateTime.Today;
@@ -360,7 +361,7 @@ public sealed partial class UsersViewModel : PageViewModel
 
     public UsersViewModel(IUserService users, ToastService toasts) : base(toasts) => _users = users;
 
-    public override string Title => "Users";
+    public override string Title => L.T("Users");
 
     public ObservableCollection<UserDto> Rows { get; } = [];
     public UserRole[] Roles { get; } = [UserRole.Operator, UserRole.Admin];
@@ -439,6 +440,8 @@ public sealed partial class UsersViewModel : PageViewModel
     }
 }
 
+public sealed record LanguageOption(string Code, string Name);
+
 public sealed record BillingUnitOption(int Seconds, string Title, string Example);
 
 /// <summary>Settings (design 1l). Edits a copy; nothing changes until Save.</summary>
@@ -465,7 +468,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         Model = settings.Current.Clone();
     }
 
-    public override string Title => "Settings";
+    public override string Title => L.T("Settings");
 
     [ObservableProperty] private string _section = "General";
     [ObservableProperty] private AppSettings _model;
@@ -495,7 +498,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     ];
     public RoundingMode[] RoundingModes { get; } = [RoundingMode.Up, RoundingMode.Nearest, RoundingMode.Down];
     public IReadOnlyList<string> Printers { get; } = PrintService.InstalledPrinters();
-    public string[] Languages { get; } = ["en"];
+    public IReadOnlyList<LanguageOption> Languages { get; } = L.Languages.Select(l => new LanguageOption(l.Code, l.Name)).ToList();
     public string DataFolder => System.IO.Path.GetDirectoryName(_backup.DatabasePath) ?? "";
 
     public override Task OnNavigatedToAsync()
@@ -575,8 +578,15 @@ public sealed partial class SettingsViewModel : PageViewModel
         m.ReceiptWidthMm = width;
         m.LastBackupAt = _settings.Current.LastBackupAt;
 
-        if (await TryAsync(() => _settings.SaveAsync(m), "Settings saved", "Billing changes apply to new sessions."))
+        bool languageChanged = !string.Equals(m.Language, L.Language, StringComparison.OrdinalIgnoreCase);
+        if (await TryAsync(() => _settings.SaveAsync(m), L.T("Settings saved"), L.T("Billing changes apply to new sessions.")))
         {
+            if (languageChanged && await _dialogs.ConfirmAsync(L.T("Restart to change the language?"),
+                    L.T("The app restarts now. Running sessions keep going; their timers are saved."), L.T("Restart now")))
+            {
+                App.Restart();
+                return;
+            }
             WeakReferenceMessenger.Default.Send(new DataChangedMessage(DataArea.Settings));
             if (!string.Equals(_theme.Current, m.Theme, StringComparison.OrdinalIgnoreCase)) _theme.Apply(m.Theme);
             else LoadFields();

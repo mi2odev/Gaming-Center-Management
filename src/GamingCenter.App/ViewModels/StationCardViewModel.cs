@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GamingCenter.Application.Common;
 using GamingCenter.Application.DTOs;
@@ -65,21 +66,21 @@ public sealed partial class StationCardViewModel(StationDto station) : Observabl
                 : StationDisplayStatus.Occupied;
             StatusLabel = Status switch
             {
-                StationDisplayStatus.TimeUp => s.Status == SessionStatus.AwaitingPayment ? "Awaiting payment" : "Time up",
-                StationDisplayStatus.Paused => "Paused",
-                _ => "Occupied",
+                StationDisplayStatus.TimeUp => s.Status == SessionStatus.AwaitingPayment ? L.T("Awaiting payment") : L.T("Time up"),
+                StationDisplayStatus.Paused => L.T("Paused"),
+                _ => L.T("Occupied"),
             };
             TimerText = remaining is { } rem && !timeUp ? Durations.Clock(rem) : Durations.Clock(s.PlayedTime(now));
             TimerBrush = timeUp ? "Danger" : s.Status == SessionStatus.Paused ? "Info" : endingSoon ? "Warning" : "Text";
             IsEndingSoon = endingSoon || timeUp;
 
-            var who = s.Customer?.Name ?? "Walk-in";
-            if (s.Controllers is { } ctrl && Station.HasControllerPricing && ctrl != Station.ControllerCount) who += $" · {ctrl} ctrl";
+            var who = s.Customer?.Name ?? L.T("Walk-in");
+            if (s.Controllers is { } ctrl && Station.HasControllerPricing && ctrl != Station.ControllerCount) who += " · " + L.F("{0} ctrl", ctrl);
             Line = s.Mode switch
             {
-                SessionMode.FixedDuration => $"Fixed {Durations.Minutes(s.PlannedMinutes ?? 0)} · {who}" + (endingSoon ? " · ending soon" : ""),
-                SessionMode.FixedBudget => $"Budget {Money.Format(s.Budget ?? 0)} · {who}",
-                _ => s.Status == SessionStatus.Paused && s.OpenPause is { } p ? $"Paused {p.StartTime:HH:mm} · {who}" : $"Open · {who}",
+                SessionMode.FixedDuration => L.F("Fixed {0} · {1}", Durations.Minutes(s.PlannedMinutes ?? 0), who) + (endingSoon ? " · " + L.T("ending soon") : ""),
+                SessionMode.FixedBudget => L.F("Budget {0} · {1}", Money.Format(s.Budget ?? 0), who),
+                _ => s.Status == SessionStatus.Paused && s.OpenPause is { } p ? L.F("Paused {0} · {1}", p.StartTime.ToString("HH:mm"), who) : L.F("Open · {0}", who),
             };
             CostText = Money.Format(s.TotalCost(now));
             HasProgress = s.AllowedTime(now) is not null;
@@ -94,28 +95,28 @@ public sealed partial class StationCardViewModel(StationDto station) : Observabl
             if (!Station.IsActive || Station.State == StationState.Maintenance)
             {
                 Status = StationDisplayStatus.Offline;
-                StatusLabel = Station.IsActive ? "Maintenance" : "Disabled";
+                StatusLabel = Station.IsActive ? L.T("Maintenance") : L.T("Disabled");
                 TimerText = "—";
                 TimerBrush = "Text.Faint";
-                Line = Station.IsActive ? "Under maintenance" : "Disabled by admin";
+                Line = Station.IsActive ? L.T("Under maintenance") : L.T("Disabled by admin");
                 CostText = "";
             }
             else if (Station.State == StationState.Reserved)
             {
                 Status = StationDisplayStatus.Reserved;
-                StatusLabel = "Reserved";
-                TimerText = Station.ReservedAt?.ToString("HH:mm") ?? "Reserved";
+                StatusLabel = L.T("Reserved");
+                TimerText = Station.ReservedAt?.ToString("HH:mm") ?? L.T("Reserved");
                 TimerBrush = "Warning";
-                Line = string.IsNullOrWhiteSpace(Station.ReservedFor) ? "Reserved" : $"Reserved · {Station.ReservedFor}";
+                Line = string.IsNullOrWhiteSpace(Station.ReservedFor) ? L.T("Reserved") : L.T("Reserved") + $" · {Station.ReservedFor}";
                 CostText = RateLabel;
             }
             else
             {
                 Status = StationDisplayStatus.Available;
-                StatusLabel = "Available";
-                TimerText = "Ready";
+                StatusLabel = L.T("Available");
+                TimerText = L.T("Ready");
                 TimerBrush = "Accent";
-                Line = "Tap to start";
+                Line = L.T("Tap to start");
                 CostText = RateLabel;
             }
         }

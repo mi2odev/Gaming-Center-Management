@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -62,14 +63,14 @@ public sealed record HistoryRowView(HistoryRow Row)
     public int SessionId => Row.SessionId;
     public string Receipt => Row.ReceiptNumber ?? "—";
     public string Station => Row.StationName;
-    public string Customer => Row.CustomerName;
+    public string Customer => L.T(Row.CustomerName);
     public string Time => Row.Mode == SessionMode.CounterSale ? $"{Row.StartTime:HH:mm}" : $"{Row.StartTime:HH:mm} → {Row.EndTime:HH:mm}";
     public string Date => Row.StartTime.ToString("dd/MM");
     public string Duration => Row.Mode == SessionMode.CounterSale ? "—" : Durations.Short(TimeSpan.FromSeconds(Row.PlayedSeconds));
     public string Gaming => Row.Mode == SessionMode.CounterSale ? "—" : Money.Format(Row.GamingTotal);
     public string Products => Row.ProductsTotal > 0 ? Money.Format(Row.ProductsTotal) : "—";
     public string Total => Money.Format(Row.Total);
-    public string Paid => Row.Status == SessionStatus.Cancelled ? "Cancelled" : Row.Method?.ToString() ?? "—";
+    public string Paid => Row.Status == SessionStatus.Cancelled ? L.T("Cancelled") : Row.Method is { } m ? L.T(m.ToString()) : "—";
     public bool IsCancelled => Row.Status == SessionStatus.Cancelled;
 }
 
@@ -88,7 +89,7 @@ public sealed partial class SessionsViewModel : PageViewModel, INavigationTarget
         _files = files;
     }
 
-    public override string Title => "Sessions";
+    public override string Title => L.T("Sessions");
 
     public ObservableCollection<HistoryRowView> Rows { get; } = [];
 
@@ -206,7 +207,7 @@ public sealed record PaymentRowView(PaymentRow Row)
     public string Receipt => Row.ReceiptNumber;
     public string Time => Row.PaidAt.ToString("dd/MM HH:mm");
     public string Station => Row.StationName;
-    public string Customer => Row.CustomerName;
+    public string Customer => L.T(Row.CustomerName);
     public string Gaming => Row.GamingAmount > 0 ? Money.Format(Row.GamingAmount) : "—";
     public string Products => Row.ProductsAmount > 0 ? Money.Format(Row.ProductsAmount) : "—";
     public string Total => Money.Format(Row.TotalAmount);
@@ -231,7 +232,7 @@ public sealed partial class SalesViewModel : PageViewModel
         _files = files;
     }
 
-    public override string Title => "Sales";
+    public override string Title => L.T("Sales");
 
     public ObservableCollection<PaymentRowView> Rows { get; } = [];
 

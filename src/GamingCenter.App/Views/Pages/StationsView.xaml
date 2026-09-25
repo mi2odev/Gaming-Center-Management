@@ -135,8 +135,9 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                         <StackPanel><TextBlock Text="Maximum controllers" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditMaxControllers, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="4"/></StackPanel>
-                                        <StackPanel Grid.Column="2"><TextBlock Text="Extra per controller / h" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditExtraRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}" c:Ui.Placeholder="100"/></StackPanel>
+                                        <StackPanel Grid.Column="2"><TextBlock Text="Own extra price / h (optional)" Style="{StaticResource T.Label}"/><TextBox Text="{Binding EditExtraRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}"/></StackPanel>
                                     </Grid>
+                                    <TextBlock Text="{Binding ExtraRateSource}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" Margin="0,6,0,0"/>
                                     <TextBlock Text="{Binding ControllerPricingHint}" Style="{StaticResource T.Muted}" Foreground="{DynamicResource Accent}" TextWrapping="Wrap" TextTrimming="None" Margin="0,10,0,0"
                                                Visibility="{Binding ControllerPricingHint, Converter={StaticResource HasValueToVis}}"/>
                                 </StackPanel>

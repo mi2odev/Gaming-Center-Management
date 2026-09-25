@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using CommunityToolkit.Mvvm.Messaging;
 using GamingCenter.App.ViewModels;
 using GamingCenter.Application.Common;
@@ -33,8 +34,8 @@ public sealed class SessionWorkflow(
         }
         var station = await stations.GetAsync(stationId);
         if (station is null) return;
-        if (!station.IsActive) { toasts.Info($"{station.Name} is disabled", "An administrator can enable it on the Gaming Stations page."); return; }
-        if (station.State == StationState.Maintenance) { toasts.Info($"{station.Name} is under maintenance", "Right-click the card and choose \"Back in service\"."); return; }
+        if (!station.IsActive) { toasts.Info(L.F("{0} is disabled", station.Name), L.T("An administrator can enable it on the Gaming Stations page.")); return; }
+        if (station.State == StationState.Maintenance) { toasts.Info(L.F("{0} is under maintenance", station.Name), L.T("Right-click the card and choose \"Back in service\".")); return; }
         await StartSessionAsync(station);
     }
 
@@ -44,11 +45,11 @@ public sealed class SessionWorkflow(
         if (session is not null)
         {
             store.Upsert(session);
-            toasts.Success($"Session started on {session.StationName}", session.Mode switch
+            toasts.Success(L.F("Session started on {0}", session.StationName), session.Mode switch
             {
-                SessionMode.FixedDuration => $"Fixed {Durations.Minutes(session.PlannedMinutes ?? 0)} · {Money.Format(session.GamingCost(session.StartTime))}",
-                SessionMode.FixedBudget => $"Budget {Money.Format(session.Budget ?? 0)} · max {Durations.Clock(session.AllowedTime(session.StartTime) ?? TimeSpan.Zero)}",
-                _ => $"Open session at {Money.Rate(session.HourlyRate)}",
+                SessionMode.FixedDuration => L.F("Fixed {0} · {1}", Durations.Minutes(session.PlannedMinutes ?? 0), Money.Format(session.GamingCost(session.StartTime))),
+                SessionMode.FixedBudget => L.F("Budget {0} · max {1}", Money.Format(session.Budget ?? 0), Durations.Clock(session.AllowedTime(session.StartTime) ?? TimeSpan.Zero)),
+                _ => L.F("Open session at {0}", Money.Rate(session.HourlyRate)),
             });
         }
         return session;

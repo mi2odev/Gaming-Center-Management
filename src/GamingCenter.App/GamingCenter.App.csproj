@@ -26,6 +26,7 @@
     <Resource Include="Resources\Fonts\*.ttf" />
     <Resource Include="Resources\Images\*.png" />
     <Resource Include="Resources\Images\app.ico" />
+    <Resource Include="Resources\Lang\*.json" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -26,6 +26,8 @@ public sealed class GamingStationType : Entity
     /// <summary>Short label used on image placeholders, e.g. "PS", "PC".</summary>
     public string Tag { get; set; } = "";
     public decimal DefaultHourlyRate { get; set; }
+    /// <summary>Price per hour for each extra controller on every station of this type (0 = use the Settings default).</summary>
+    public decimal ExtraControllerRate { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
 }

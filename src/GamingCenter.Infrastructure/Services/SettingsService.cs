@@ -43,6 +43,14 @@ public sealed class SettingsService(IDbContextFactory<GamingCenterDbContext> dbF
         await PersistAsync(settings, ct);
     }
 
+    public async Task SavePreferencesAsync(string? theme, string? language, CancellationToken ct = default)
+    {
+        var s = Current.Clone();
+        if (theme is not null) s.Theme = theme;
+        if (language is not null) s.Language = language;
+        await PersistAsync(s, ct);
+    }
+
     /// <summary>For background jobs (e.g. backup timestamp) that run without an admin session.</summary>
     internal async Task PersistAsync(AppSettings settings, CancellationToken ct)
     {

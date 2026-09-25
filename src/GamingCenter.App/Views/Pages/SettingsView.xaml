@@ -204,8 +204,8 @@
                         </RadioButton>
                     </StackPanel>
                     <TextBlock Text="Language" Style="{StaticResource SectionTitle}" Margin="0,28,0,0"/>
-                    <TextBlock Text="English in version 1. Text is kept in one place so French and Arabic can be added later." Style="{StaticResource SectionSub}"/>
-                    <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Model.Language}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Text="English, French or Arabic (right-to-left). The app restarts to apply the language." Style="{StaticResource SectionSub}"/>
+                    <ComboBox ItemsSource="{Binding Languages}" SelectedValuePath="Code" DisplayMemberPath="Name" SelectedValue="{Binding Model.Language}" Width="200" HorizontalAlignment="Left"/>
                 </StackPanel>
 
                 <!-- Backup -->

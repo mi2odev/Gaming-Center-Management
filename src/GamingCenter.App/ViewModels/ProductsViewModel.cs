@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -45,7 +46,7 @@ public sealed partial class ProductsViewModel : PageViewModel, INavigationTarget
         _dialogs = dialogs;
     }
 
-    public override string Title => "Products";
+    public override string Title => L.T("Products");
 
     public ObservableCollection<ProductRow> Rows { get; } = [];
     public ObservableCollection<string> Categories { get; } = ["All"];

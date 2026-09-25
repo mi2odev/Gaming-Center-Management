@@ -13,13 +13,14 @@ public static class ControllerPricing
     }
 
     /// <summary>
-    /// Effective controller plan for a station: its own extra price / maximum when set,
-    /// otherwise the defaults from Settings. Null when the station has no included controllers.
+    /// Effective controller plan for a station. The extra price comes from the station when it sets its own,
+    /// else from its type (same price for every console of that type), else from Settings.
+    /// Null when the station has no included controllers.
     /// </summary>
-    public static ControllerPlan? Resolve(int? included, int? max, decimal extraPerController, decimal defaultExtra, int defaultMaxExtra)
+    public static ControllerPlan? Resolve(int? included, int? max, decimal extraPerController, decimal typeExtra, decimal defaultExtra, int defaultMaxExtra)
     {
         if (included is not > 0) return null;
-        decimal extra = extraPerController > 0 ? extraPerController : defaultExtra;
+        decimal extra = extraPerController > 0 ? extraPerController : typeExtra > 0 ? typeExtra : defaultExtra;
         int maxCount = max is { } m && m > included ? m : included.Value + Math.Max(0, defaultMaxExtra);
         if (extra <= 0 || maxCount <= included) return null;
         return new ControllerPlan(included.Value, maxCount, extra);

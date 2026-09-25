@@ -15,7 +15,7 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         s.Id, s.Name, s.Number, s.StationTypeId, s.StationType?.Name ?? "", s.StationType?.Tag ?? "",
         s.Brand, s.Model, s.ImagePath, s.HourlyRate, s.Description, s.Location, s.ControllerCount,
         s.MaxControllers, s.ExtraControllerRate, s.State, s.ReservedFor, s.ReservedAt, s.IsActive,
-        ControllerPricing.Resolve(s.ControllerCount, s.MaxControllers, s.ExtraControllerRate,
+        ControllerPricing.Resolve(s.ControllerCount, s.MaxControllers, s.ExtraControllerRate, s.StationType?.ExtraControllerRate ?? 0,
             settings.Current.DefaultExtraControllerRate, settings.Current.DefaultMaxExtraControllers));
 
     public async Task<IReadOnlyList<StationDto>> GetAllAsync(bool includeInactive = true, CancellationToken ct = default)
@@ -162,7 +162,7 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         var counts = await db.Stations.Where(s => !s.IsDeleted).GroupBy(s => s.StationTypeId)
             .Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
         var types = await db.StationTypes.AsNoTracking().OrderBy(t => t.SortOrder).ThenBy(t => t.Name).ToListAsync(ct);
-        return types.Select(t => new StationTypeDto(t.Id, t.Name, t.Tag, t.DefaultHourlyRate, t.SortOrder, t.IsActive, counts.GetValueOrDefault(t.Id))).ToList();
+        return types.Select(t => new StationTypeDto(t.Id, t.Name, t.Tag, t.DefaultHourlyRate, t.SortOrder, t.IsActive, counts.GetValueOrDefault(t.Id), t.ExtraControllerRate)).ToList();
     }
 
     public async Task<StationTypeDto> SaveTypeAsync(SaveStationTypeRequest r, CancellationToken ct = default)
@@ -171,6 +171,7 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         var name = Required(r.Name, "Type name", 64);
         var tag = Required(string.IsNullOrWhiteSpace(r.Tag) ? name[..Math.Min(4, name.Length)] : r.Tag, "Tag", 8).ToUpperInvariant();
         if (r.DefaultHourlyRate < 0) throw new BusinessException("Default price cannot be negative.");
+        if (r.ExtraControllerRate < 0) throw new BusinessException("Extra controller price cannot be negative.");
 
         await using var db = await OpenAsync(ct);
         if (await db.StationTypes.AnyAsync(t => t.Id != (r.Id ?? 0) && t.Name.ToLower() == name.ToLower(), ct))
@@ -187,6 +188,13 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         type.Name = name;
         type.Tag = tag;
         type.DefaultHourlyRate = r.DefaultHourlyRate;
+        type.ExtraControllerRate = r.ExtraControllerRate;
+        if (r.ApplyToAllStations && r.Id is not null)
+        {
+            // One price for the whole type: stations drop their own extra-controller price.
+            foreach (var st in await db.Stations.Where(s => s.StationTypeId == type.Id && s.ExtraControllerRate != 0).ToListAsync(ct))
+                st.ExtraControllerRate = 0;
+        }
         type.IsActive = r.IsActive;
         await db.SaveChangesAsync(ct);
         return (await GetTypesAsync(ct)).First(t => t.Id == type.Id);
