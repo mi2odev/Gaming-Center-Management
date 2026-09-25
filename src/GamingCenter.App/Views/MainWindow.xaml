@@ -228,6 +228,8 @@
                             </Popup>
                         </Grid>
 
+                        <Button Content="Sell products" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Cart}" Margin="0,0,10,0"
+                                Command="{Binding SellProductsCommand}" ToolTip="Sell drinks and snacks without a gaming session (F2)"/>
                         <Button Content="Start session" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Plus}" Command="{Binding StartSessionCommand}"/>
                     </StackPanel>
                 </DockPanel>

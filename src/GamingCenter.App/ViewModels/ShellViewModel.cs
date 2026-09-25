@@ -132,6 +132,10 @@ public sealed partial class ShellViewModel : ObservableObject
     [RelayCommand]
     private Task StartSession() => _workflow.StartSessionAsync();
 
+    /// <summary>Sell drinks/snacks to someone who is not playing (counter sale, no station).</summary>
+    [RelayCommand]
+    private Task SellProducts() => _workflow.CounterSaleAsync();
+
     async partial void OnSearchTextChanged(string value)
     {
         _searchCts?.Cancel();

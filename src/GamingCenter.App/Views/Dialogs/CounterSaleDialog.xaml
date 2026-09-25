@@ -14,7 +14,10 @@
             </Grid.ColumnDefinitions>
             <DockPanel Margin="28,26">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
-                    <TextBlock Text="Counter sale" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+                    <StackPanel>
+                        <TextBlock Text="Sell products" Style="{StaticResource T.Base}" FontSize="17" FontWeight="SemiBold"/>
+                        <TextBlock Text="No gaming session needed. Click products to add them to the cart." Style="{StaticResource T.Muted}" Margin="0,3,0,0"/>
+                    </StackPanel>
                 </DockPanel>
                 <parts:ProductCatalog DataContext="{Binding Catalog}"/>
             </DockPanel>
