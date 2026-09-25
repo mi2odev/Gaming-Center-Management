@@ -34,9 +34,14 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
     private List<CustomerDto> _all = [];
 
     private readonly ShellNavigator _nav;
+    private readonly SessionWorkflow _workflow;
+    private readonly ICreditService _credits;
 
-    public CustomersViewModel(ICustomerService customers, DialogService dialogs, CurrentUserService user, FileDialogService files, ShellNavigator nav, ToastService toasts) : base(toasts)
+    public CustomersViewModel(ICustomerService customers, DialogService dialogs, CurrentUserService user, FileDialogService files, ShellNavigator nav,
+        SessionWorkflow workflow, ICreditService credits, ToastService toasts) : base(toasts)
     {
+        _workflow = workflow;
+        _credits = credits;
         _nav = nav;
         _customers = customers;
         _dialogs = dialogs;
@@ -135,6 +140,30 @@ public sealed partial class CustomersViewModel : PageViewModel, INavigationTarge
     private void OpenCredit()
     {
         if (EditId is { } id) _nav.Navigate(Page.Credits, id);
+    }
+
+    /// <summary>Customer eats or drinks without playing: sell products on their account.</summary>
+    [RelayCommand]
+    private async Task ChargeProducts()
+    {
+        if (EditId is not { } id) return;
+        _pendingSelect = id;
+        await _workflow.CounterSaleAsync(id);
+        await LoadAsync(ReloadAsync);
+    }
+
+    /// <summary>Charge a plain amount (something not in the product list).</summary>
+    [RelayCommand]
+    private async Task ChargeAmount()
+    {
+        if (EditId is not { } id) return;
+        var dlg = new ManualCreditViewModel(id, _user.IsAdmin, _credits, _customers, _dialogs);
+        if (await _dialogs.ShowAsync<CreditEntryDto>(dlg) is { } entry)
+        {
+            Toasts.Success(L.F("{0} added to {1}'s credit", Money.Format(entry.Amount), EditName), L.F("Now owes {0}", Money.Format(entry.BalanceAfter)));
+            _pendingSelect = id;
+            await LoadAsync(ReloadAsync);
+        }
     }
 
     [RelayCommand]

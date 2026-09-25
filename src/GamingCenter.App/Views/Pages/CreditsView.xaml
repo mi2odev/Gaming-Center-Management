@@ -13,8 +13,10 @@
                         <c:Icon Data="{StaticResource I.Search}" Width="15" Height="15" Foreground="{DynamicResource Text.Faint}" HorizontalAlignment="Left" Margin="12,0,0,0"/>
                     </Grid>
                     <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCommand}"/>
-                    <Button Content="Add old debt" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Plus}" Command="{Binding AddDebtCommand}"
-                            Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+                    <Button Content="Add amount" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Plus}" Margin="0,0,12,0" Command="{Binding AddDebtCommand}"
+                            ToolTip="Charge an amount to a customer (food not in the list, old debt…)"/>
+                    <Button Content="Charge products" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Cart}" Command="{Binding ChargeProductsCommand}"
+                            ToolTip="Sell products to the selected customer on credit, without a session"/>
                 </StackPanel>
                 <CheckBox Content="Show settled customers too" IsChecked="{Binding ShowSettled}" VerticalAlignment="Center"/>
             </DockPanel>

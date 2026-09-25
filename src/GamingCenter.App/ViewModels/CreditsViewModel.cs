@@ -49,12 +49,14 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
     private readonly DialogService _dialogs;
     private readonly CurrentUserService _user;
     private readonly FileDialogService _files;
+    private readonly SessionWorkflow _workflow;
     private List<CreditBalanceDto> _all = [];
     private int? _pendingSelect;
 
     public CreditsViewModel(ICreditService credits, ICustomerService customers, DialogService dialogs, CurrentUserService user,
-        FileDialogService files, ToastService toasts) : base(toasts)
+        FileDialogService files, SessionWorkflow workflow, ToastService toasts) : base(toasts)
     {
+        _workflow = workflow;
         _credits = credits;
         _customers = customers;
         _dialogs = dialogs;
@@ -141,13 +143,21 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
     [RelayCommand]
     private async Task AddDebt()
     {
-        var dlg = new ManualCreditViewModel(Selected?.Dto, _credits, _customers, _dialogs);
+        var dlg = new ManualCreditViewModel(Selected?.CustomerId, IsAdmin, _credits, _customers, _dialogs);
         if (await _dialogs.ShowAsync<CreditEntryDto>(dlg) is not null)
         {
             _pendingSelect = dlg.CustomerId;
             Toasts.Success("Credit updated");
             await ReloadAsync();
         }
+    }
+
+    /// <summary>Sell drinks/food to the selected customer and put it on their account (no session needed).</summary>
+    [RelayCommand]
+    private async Task ChargeProducts()
+    {
+        await _workflow.CounterSaleAsync(Selected?.CustomerId);
+        await ReloadAsync();
     }
 
     [RelayCommand]
@@ -198,12 +208,16 @@ public sealed partial class ManualCreditViewModel : DialogViewModel
 {
     private readonly ICreditService _credits;
 
-    public ManualCreditViewModel(CreditBalanceDto? preselected, ICreditService credits, ICustomerService customers, DialogService dialogs)
+    public ManualCreditViewModel(int? customerId, bool canReduce, ICreditService credits, ICustomerService customers, DialogService dialogs)
     {
         _credits = credits;
+        CanReduce = canReduce;
         Customer = new CustomerPickerViewModel(customers, dialogs);
-        if (preselected is not null) _ = Customer.SelectByIdAsync(preselected.CustomerId);
+        if (customerId is not null) _ = Customer.SelectByIdAsync(customerId);
     }
+
+    /// <summary>Operators can only add a charge; reducing or forgiving a debt is for admins.</summary>
+    public bool CanReduce { get; }
 
     public CustomerPickerViewModel Customer { get; }
     public int? CustomerId => Customer.SelectedId;
@@ -216,9 +230,10 @@ public sealed partial class ManualCreditViewModel : DialogViewModel
     private async Task Save()
     {
         if (Customer.SelectedId is not { } id) { Error = "Choose or create the customer."; return; }
-        if (!Money.TryParse(AmountText, out var amount) || amount <= 0) { Error = "Enter an amount."; return; }
+        if (!Money.TryParse(AmountText, out var amount) || amount <= 0) { Error = L.T("Enter an amount."); return; }
+        if (string.IsNullOrWhiteSpace(Note)) { Error = L.T("Write what it is for, e.g. \"Sandwich and coffee\"."); return; }
         CreditEntryDto? entry = null;
-        if (await RunAsync(async () => entry = await _credits.AddManualAsync(id, Reduce ? -amount : amount, Note)))
+        if (await RunAsync(async () => entry = await _credits.AddManualAsync(id, Reduce && CanReduce ? -amount : amount, Note)))
             Close(entry);
     }
 }

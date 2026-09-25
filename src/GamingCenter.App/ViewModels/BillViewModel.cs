@@ -400,6 +400,13 @@ public sealed partial class CounterSaleViewModel : PaymentDialogViewModel
 
     public ProductCatalogViewModel Catalog { get; }
     public ObservableCollection<CartLineViewModel> Cart { get; } = [];
+
+    /// <summary>Start as a sale on the customer's account: they eat or drink now and pay later.</summary>
+    public async Task ChargeToAsync(int customerId)
+    {
+        await Customer.SelectByIdAsync(customerId);
+        PayLater = true;
+    }
     public bool IsCartEmpty => Cart.Count == 0;
 
     private async Task LoadAsync()

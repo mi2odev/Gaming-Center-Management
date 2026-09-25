@@ -97,7 +97,8 @@ public sealed class CreditService(IDbContextFactory<GamingCenterDbContext> dbFac
 
     public async Task<CreditEntryDto> AddManualAsync(int customerId, decimal amount, string note, CancellationToken ct = default)
     {
-        RequireAdmin();
+        // Anyone can charge a customer; only an admin can reduce or forgive a debt.
+        if (amount < 0) RequireAdmin();
         if (amount == 0) throw new BusinessException("Enter an amount.");
         var text = Required(note, "Reason", 256);
         await using var db = await OpenAsync(ct);

@@ -382,6 +382,20 @@ public class SessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Operator_can_charge_an_amount_to_credit_but_not_forgive()
+    {
+        var karim = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Karim", null, null));
+        _t.User.User = new UserDto(2, "operator", "Operator", UserRole.Operator, true, null);
+
+        var entry = await _t.Credits.AddManualAsync(karim.Id, 250m, "Sandwich and coffee");
+        Assert.Equal(250m, entry.BalanceAfter);
+        await Assert.ThrowsAsync<BusinessException>(() => _t.Credits.AddManualAsync(karim.Id, -100m, "Forgive"));
+
+        _t.User.User = new UserDto(1, "admin", "Administrator", UserRole.Admin, true, null);
+        Assert.Equal(150m, (await _t.Credits.AddManualAsync(karim.Id, -100m, "Discount")).BalanceAfter);
+    }
+
+    [Fact]
     public async Task Controllers_outside_station_limits_are_refused()
     {
         var ps5 = await _t.Station("PS5 #04");

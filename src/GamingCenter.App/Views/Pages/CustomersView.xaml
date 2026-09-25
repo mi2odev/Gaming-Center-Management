@@ -70,6 +70,18 @@
                         <Button Content="Cancel" Style="{StaticResource Btn.Secondary}" Height="42" Margin="5,0" Command="{Binding CancelEditCommand}"/>
                         <Button Content="Save" Style="{StaticResource Btn.Primary}" Height="42" Margin="5,0" Command="{Binding SaveCommand}"/>
                     </UniformGrid>
+                    <Border Style="{StaticResource Notice.Info}" Margin="0,14,0,0" Visibility="{Binding EditId, Converter={StaticResource HasValueToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="Charge to credit" Style="{StaticResource T.Base}" FontWeight="SemiBold"/>
+                            <TextBlock Text="The customer takes something now and pays later, even without playing." Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" Margin="0,3,0,10"/>
+                            <UniformGrid Columns="2" Margin="-4,0">
+                                <Button Content="Products" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Cart}" Height="38" Margin="4,0" Command="{Binding ChargeProductsCommand}"
+                                        ToolTip="Pick drinks or food from the product list; stock goes down"/>
+                                <Button Content="Amount" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Plus}" Height="38" Margin="4,0" Command="{Binding ChargeAmountCommand}"
+                                        ToolTip="Type an amount and what it is for"/>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
                     <Button Content="Credit history / record payment →" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding OpenCreditCommand}"
                             Visibility="{Binding EditId, Converter={StaticResource HasValueToVis}}"/>
                     <Button Content="Delete customer" Style="{StaticResource Btn.LinkDanger}" HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding DeleteCommand}" Visibility="{Binding ShowDelete, Converter={StaticResource BoolToVis}}"/>

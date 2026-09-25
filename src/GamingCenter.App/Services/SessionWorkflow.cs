@@ -72,9 +72,12 @@ public sealed class SessionWorkflow(
         return paid;
     }
 
-    public async Task CounterSaleAsync()
+    /// <summary>Sell products without a session. With a customer, the sale starts as "pay later" on their account.</summary>
+    public async Task CounterSaleAsync(int? chargeToCustomerId = null)
     {
-        var paid = await dialogs.ShowAsync<bool>(Create<CounterSaleViewModel>());
+        var vm = Create<CounterSaleViewModel>();
+        if (chargeToCustomerId is { } id) await vm.ChargeToAsync(id);
+        var paid = await dialogs.ShowAsync<bool>(vm);
         if (paid) WeakReferenceMessenger.Default.Send(new DataChangedMessage(DataArea.Sessions));
     }
 
