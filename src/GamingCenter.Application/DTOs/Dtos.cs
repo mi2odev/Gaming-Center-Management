@@ -238,7 +238,38 @@ public sealed record ReportData(
     int? BusiestHour,
     decimal CreditGiven = 0,
     decimal CreditCollected = 0,
-    decimal Discounts = 0);
+    decimal Discounts = 0,
+    ReportExtras? Extras = null);
+
+/// <summary>A labelled total for report breakdowns (room, console type, category, payment method…).</summary>
+public sealed record NamedAmount(string Name, decimal Amount, int Count = 0, decimal Extra = 0);
+
+public sealed record StationUsage(string Name, string Type, string Room, int Sessions, TimeSpan PlayTime, decimal Revenue, double Occupancy);
+
+public sealed record CustomerSpend(string Name, int Visits, decimal Spent, decimal Owes);
+
+public sealed record OperatorTotal(string Name, int Receipts, decimal Collected, decimal Discounts);
+
+/// <summary>Detailed breakdowns for the Reports page and PDF.</summary>
+public sealed record ReportExtras(
+    IReadOnlyList<int> SessionsPerHour,
+    IReadOnlyList<decimal> RevenuePerWeekday,
+    IReadOnlyList<NamedAmount> PerRoom,
+    IReadOnlyList<NamedAmount> PerType,
+    IReadOnlyList<NamedAmount> PerCategory,
+    IReadOnlyList<NamedAmount> Methods,
+    IReadOnlyList<StationUsage> Stations,
+    IReadOnlyList<CustomerSpend> TopCustomers,
+    IReadOnlyList<OperatorTotal> Operators,
+    int Receipts,
+    int CounterSales,
+    decimal CounterSalesRevenue,
+    TimeSpan PlayTime,
+    double Occupancy,
+    int Customers,
+    int NewCustomers,
+    int WalkInSessions,
+    decimal UnpaidOnCredit);
 
 public enum SearchKind { Station, Product, Customer, Session }
 

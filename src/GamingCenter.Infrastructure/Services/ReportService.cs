@@ -23,7 +23,8 @@ public sealed class ReportService(
     private async Task<List<Payment>> LoadPaymentsAsync(GamingCenterDbContext db, DateTime from, DateTime to, CancellationToken ct) =>
         await db.Payments.AsNoTracking()
             .Where(p => p.PaidAt >= from && p.PaidAt < to)
-            .Include(p => p.Session!).ThenInclude(s => s.Products)
+            .Include(p => p.Session!).ThenInclude(s => s.Products).ThenInclude(l => l.Product!).ThenInclude(pr => pr.Category)
+            .Include(p => p.Session!).ThenInclude(s => s.Station!).ThenInclude(st => st.StationType)
             .Include(p => p.Session!).ThenInclude(s => s.Customer)
             .Include(p => p.User)
             .Include(p => p.Parts)
@@ -210,6 +211,8 @@ public sealed class ReportService(
         decimal creditCollected = -creditRows.Where(t => t.Kind == CreditKind.Repayment).Sum(t => t.Amount);
         int? busiestHour = gaming.Count == 0 ? null : gaming.GroupBy(s => s.StartTime.Hour).OrderByDescending(g => g.Count()).First().Key;
 
+        var extras = await BuildExtrasAsync(db, from, to, payments, gaming, lines, ct);
+
         return new ReportData(
             from, to,
             payments.Sum(p => p.TotalAmount),
@@ -220,7 +223,76 @@ public sealed class ReportService(
             gaming.Count == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(gaming.Average(s => s.PlayedSeconds)),
             previous.Sum(),
             perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour, creditGiven, creditCollected,
-            payments.Sum(p => p.DiscountAmount));
+            payments.Sum(p => p.DiscountAmount), extras);
+    }
+
+    private async Task<ReportExtras> BuildExtrasAsync(GamingCenterDbContext db, DateTime from, DateTime to,
+        List<Payment> payments, List<GamingSession> gaming, List<SessionProduct> lines, CancellationToken ct)
+    {
+        var perHour = new int[24];
+        foreach (var s in gaming) perHour[s.StartTime.Hour]++;
+
+        // Monday first.
+        var perWeekday = new decimal[7];
+        foreach (var p in payments) perWeekday[((int)p.PaidAt.DayOfWeek + 6) % 7] += p.TotalAmount;
+
+        static string Or(string? v, string fallback) => string.IsNullOrWhiteSpace(v) ? fallback : v.Trim();
+        var perRoom = gaming.GroupBy(s => Or(s.Station?.Location, "No room"))
+            .Select(g => new NamedAmount(g.Key, g.Sum(s => s.Total), g.Count(), (decimal)g.Sum(s => s.PlayedSeconds) / 3600m))
+            .OrderByDescending(x => x.Amount).ToList();
+        var perType = gaming.GroupBy(s => Or(s.Station?.StationType?.Name, "Other"))
+            .Select(g => new NamedAmount(g.Key, g.Sum(s => s.Total), g.Count(), (decimal)g.Sum(s => s.PlayedSeconds) / 3600m))
+            .OrderByDescending(x => x.Amount).ToList();
+        var perCategory = lines.GroupBy(l => Or(l.Product?.Category?.Name, "Other"))
+            .Select(g => new NamedAmount(g.Key, g.Sum(l => l.LineTotal), g.Sum(l => l.Quantity), g.Sum(l => l.LineProfit)))
+            .OrderByDescending(x => x.Amount).ToList();
+
+        var methods = Enum.GetValues<PaymentMethod>()
+            .Select(m => new NamedAmount(m.ToString(), payments.Sum(p => p.CollectedBy(m)), payments.Count(p => p.CollectedBy(m) > 0)))
+            .Where(x => x.Amount > 0).ToList();
+        decimal onCredit = payments.Sum(p => p.CreditAmount);
+        if (onCredit > 0) methods.Add(new NamedAmount("Credit", onCredit, payments.Count(p => p.CreditAmount > 0)));
+
+        // Occupancy: play time over the hours the active stations could have been used (up to now).
+        var end = to < Clock.Now ? to : Clock.Now;
+        double openHours = Math.Max(0, (end - from).TotalHours);
+        var stationRows = await db.Stations.AsNoTracking().Include(s => s.StationType)
+            .Where(s => !s.IsDeleted && s.IsActive).ToListAsync(ct);
+        long playSeconds = gaming.Sum(s => s.PlayedSeconds);
+        double occupancy = openHours <= 0 || stationRows.Count == 0 ? 0 : Math.Min(1, playSeconds / 3600.0 / (openHours * stationRows.Count));
+
+        var byStation = gaming.GroupBy(s => s.StationId).ToDictionary(g => g.Key ?? 0, g => g.ToList());
+        var stations = stationRows.Select(st =>
+            {
+                var list = byStation.GetValueOrDefault(st.Id) ?? [];
+                long secs = list.Sum(s => s.PlayedSeconds);
+                return new StationUsage(st.Name, st.StationType?.Name ?? "", st.Location ?? "", list.Count, TimeSpan.FromSeconds(secs),
+                    list.Sum(s => s.Total), openHours <= 0 ? 0 : Math.Min(1, secs / 3600.0 / openHours));
+            })
+            // Removed stations that still earned money in the period.
+            .Concat(gaming.Where(s => s.StationId is null || stationRows.All(r => r.Id != s.StationId)).GroupBy(s => s.StationName)
+                .Select(g => new StationUsage(g.Key, g.First().Station?.StationType?.Name ?? "", g.First().Station?.Location ?? "", g.Count(),
+                    TimeSpan.FromSeconds(g.Sum(s => s.PlayedSeconds)), g.Sum(s => s.Total), 0)))
+            .OrderByDescending(x => x.Revenue).ThenBy(x => x.Name).ToList();
+
+        var withCustomer = payments.Where(p => p.Session?.CustomerId is not null).ToList();
+        var customerIds = withCustomer.Select(p => p.Session!.CustomerId!.Value).Distinct().ToList();
+        var balances = (await db.CreditTransactions.AsNoTracking().Where(t => customerIds.Contains(t.CustomerId))
+                .Select(t => new { t.CustomerId, t.Amount }).ToListAsync(ct))
+            .GroupBy(t => t.CustomerId).ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+        var topCustomers = withCustomer.GroupBy(p => p.Session!.CustomerId!.Value)
+            .Select(g => new CustomerSpend(g.First().Session!.Customer?.Name ?? "?", g.Count(), g.Sum(p => p.TotalAmount), Math.Max(0, balances.GetValueOrDefault(g.Key))))
+            .OrderByDescending(x => x.Spent).Take(10).ToList();
+        int newCustomers = await db.Customers.CountAsync(c => !c.IsDeleted && c.CreatedAt >= from && c.CreatedAt < to, ct);
+
+        var operators = payments.GroupBy(p => p.User?.DisplayName ?? "—")
+            .Select(g => new OperatorTotal(g.Key, g.Count(), g.Sum(p => p.PaidNow), g.Sum(p => p.DiscountAmount)))
+            .OrderByDescending(x => x.Collected).ToList();
+
+        var counter = payments.Where(p => p.Session?.Mode == SessionMode.CounterSale).ToList();
+        return new ReportExtras(perHour, perWeekday, perRoom, perType, perCategory, methods, stations, topCustomers, operators,
+            payments.Count, counter.Count, counter.Sum(p => p.TotalAmount), TimeSpan.FromSeconds(playSeconds), occupancy,
+            customerIds.Count, newCustomers, gaming.Count(s => s.CustomerId is null), onCredit);
     }
 }
 

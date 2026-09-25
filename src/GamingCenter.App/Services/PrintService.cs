@@ -135,6 +135,43 @@ public sealed class PrintService(ISettingsService settings)
         doc.Blocks.Add(Heading("Product sales"));
         doc.Blocks.Add(Table(["Product", "Units", "Revenue", "Profit"],
             d.TopProducts.Select(x => new[] { x.Name, x.Units.ToString(), Money.Number(x.Revenue), Money.Number(x.Profit) }).ToList()));
+
+        if (d.Extras is { } e)
+        {
+            doc.Blocks.Add(Heading("More figures"));
+            doc.Blocks.Add(Table(["Metric", "Value"], [
+                ["Receipts", e.Receipts.ToString()],
+                ["Average ticket", e.Receipts == 0 ? "—" : Money.Format(d.TotalRevenue / e.Receipts)],
+                ["Play hours", $"{e.PlayTime.TotalHours:0.#}"],
+                ["Occupancy", $"{e.Occupancy:P0}"],
+                ["Customers (new)", $"{e.Customers} ({e.NewCustomers})"],
+                ["Walk-in sessions", e.WalkInSessions.ToString()],
+                ["Counter sales", $"{e.CounterSales} · {Money.Format(e.CounterSalesRevenue)}"],
+                ["Discounts given", Money.Format(d.Discounts)],
+                ["Left on credit", Money.Format(e.UnpaidOnCredit)],
+                ["Credit paid back", Money.Format(d.CreditCollected)],
+            ]));
+            doc.Blocks.Add(Heading("Payment methods"));
+            doc.Blocks.Add(Table(["Method", "Payments", "Amount"], e.Methods.Select(m => new[] { m.Name, m.Count.ToString(), Money.Number(m.Amount) }).ToList()));
+            doc.Blocks.Add(Heading("Revenue by room"));
+            doc.Blocks.Add(Table(["Room", "Sessions", "Hours", "Revenue"], e.PerRoom.Select(r => new[] { r.Name, r.Count.ToString(), r.Extra.ToString("0.#"), Money.Number(r.Amount) }).ToList()));
+            doc.Blocks.Add(Heading("Revenue by console type"));
+            doc.Blocks.Add(Table(["Type", "Sessions", "Hours", "Revenue"], e.PerType.Select(r => new[] { r.Name, r.Count.ToString(), r.Extra.ToString("0.#"), Money.Number(r.Amount) }).ToList()));
+            doc.Blocks.Add(Heading("Station usage"));
+            doc.Blocks.Add(Table(["Station", "Sessions", "Play time", "Revenue", "Occupancy"],
+                e.Stations.Select(s => new[] { s.Name, s.Sessions.ToString(), Durations.Short(s.PlayTime), Money.Number(s.Revenue), $"{s.Occupancy:P0}" }).ToList()));
+            doc.Blocks.Add(Heading("Product categories"));
+            doc.Blocks.Add(Table(["Category", "Units", "Revenue", "Profit"], e.PerCategory.Select(c => new[] { c.Name, c.Count.ToString(), Money.Number(c.Amount), Money.Number(c.Extra) }).ToList()));
+            string[] days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            doc.Blocks.Add(Heading("Revenue by weekday"));
+            doc.Blocks.Add(Table(["Day", "Revenue"], e.RevenuePerWeekday.Select((v, i) => new[] { days[i], Money.Number(v) }).ToList()));
+            doc.Blocks.Add(Heading("Sessions started per hour"));
+            doc.Blocks.Add(Table(["Hour", "Sessions"], e.SessionsPerHour.Select((n, h) => (n, h)).Where(x => x.n > 0).Select(x => new[] { $"{x.h:00}:00", x.n.ToString() }).ToList()));
+            doc.Blocks.Add(Heading("Top customers"));
+            doc.Blocks.Add(Table(["Customer", "Visits", "Spent", "Owes"], e.TopCustomers.Select(c => new[] { c.Name, c.Visits.ToString(), Money.Number(c.Spent), c.Owes > 0 ? Money.Number(c.Owes) : "" }).ToList()));
+            doc.Blocks.Add(Heading("Operators"));
+            doc.Blocks.Add(Table(["Operator", "Receipts", "Collected", "Discounts"], e.Operators.Select(o => new[] { o.Name, o.Receipts.ToString(), Money.Number(o.Collected), Money.Number(o.Discounts) }).ToList()));
+        }
         return doc;
     }
 
