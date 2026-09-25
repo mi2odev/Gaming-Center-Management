@@ -63,7 +63,9 @@ public sealed partial class ShellViewModel : ObservableObject
     private void OnThemeChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(IsLight));
-        _ = NavigateAsync(CurrentPageKey, null);
+        // Settings keeps unsaved edits; other pages reload so brushes picked in code follow the theme.
+        if (CurrentPage is SettingsViewModel settingsPage) settingsPage.SyncTheme();
+        else _ = NavigateAsync(CurrentPageKey, null);
     }
 
     /// <summary>Detaches from app-wide services so a signed-out shell stops reacting.</summary>

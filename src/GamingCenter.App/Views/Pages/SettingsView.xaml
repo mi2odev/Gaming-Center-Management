@@ -194,7 +194,7 @@
                 <!-- Appearance -->
                 <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=Appearance}">
                     <TextBlock Text="Theme" Style="{StaticResource SectionTitle}"/>
-                    <TextBlock Text="Dark is recommended for the gaming room." Style="{StaticResource SectionSub}"/>
+                    <TextBlock Text="Applies at once. Dark is recommended for the gaming room." Style="{StaticResource SectionSub}"/>
                     <StackPanel Orientation="Horizontal">
                         <RadioButton Style="{StaticResource OptionCard}" GroupName="Theme" Width="180" Margin="0,0,10,0" IsChecked="{Binding ThemeName, Converter={StaticResource Equals}, ConverterParameter=Dark}">
                             <TextBlock Text="Dark" FontWeight="SemiBold"/>
@@ -204,8 +204,9 @@
                         </RadioButton>
                     </StackPanel>
                     <TextBlock Text="Language" Style="{StaticResource SectionTitle}" Margin="0,28,0,0"/>
-                    <TextBlock Text="English, French or Arabic (right-to-left). The app restarts to apply the language." Style="{StaticResource SectionSub}"/>
-                    <ComboBox ItemsSource="{Binding Languages}" SelectedValuePath="Code" DisplayMemberPath="Name" SelectedValue="{Binding Model.Language}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Text="English, French or Arabic (right-to-left). Choosing one restarts the app." Style="{StaticResource SectionSub}"/>
+                    <ComboBox ItemsSource="{Binding Languages}" SelectedValuePath="Code" DisplayMemberPath="Name" SelectedValue="{Binding LanguageCode}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding LanguageError}" Style="{StaticResource T.Error}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <!-- Backup -->

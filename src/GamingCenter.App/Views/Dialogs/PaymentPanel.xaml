@@ -6,14 +6,15 @@
              xmlns:cm="clr-namespace:GamingCenter.Application.Common;assembly=GamingCenter.Application">
     <!-- Right column of design 1g. DataContext: PaymentDialogViewModel -->
     <DockPanel>
-        <StackPanel DockPanel.Dock="Bottom">
-            <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,0,0,10"/>
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
+            <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,0,0,10" TextWrapping="Wrap"
+                       Visibility="{Binding Error, Converter={StaticResource HasValueToVis}}"/>
             <Button Content="{Binding ConfirmText}" Style="{StaticResource Btn.Primary}" Height="48" FontSize="14" Command="{Binding ConfirmCommand}" IsDefault="True"/>
         </StackPanel>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,-8,0" Padding="0,0,8,0">
-        <StackPanel>
+        <StackPanel Margin="0,0,0,6">
             <TextBlock Text="Payment" Style="{StaticResource T.Section}"/>
-            <UniformGrid Columns="3" Margin="-4,16,-4,0">
+            <UniformGrid Columns="3" Margin="-4,12,-4,0">
                 <RadioButton Style="{StaticResource OptionCard}" Margin="4,0" GroupName="Method" HorizontalContentAlignment="Center"
                              IsChecked="{Binding Method, Converter={StaticResource Equals}, ConverterParameter=Cash}">
                     <TextBlock Text="Cash" FontWeight="SemiBold" FontSize="13"/>
@@ -28,7 +29,7 @@
                 </RadioButton>
             </UniformGrid>
 
-            <StackPanel Margin="0,18,0,0" Visibility="{Binding ShowAmountField, Converter={StaticResource BoolToVis}}">
+            <StackPanel Margin="0,14,0,0" Visibility="{Binding ShowAmountField, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="{Binding AmountLabel}" Style="{StaticResource T.Label}" FontSize="12" Margin="0,0,0,8"/>
                 <TextBox Text="{Binding ReceivedText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Big}"
                          c:Ui.Suffix="{x:Static cm:Money.CurrencySymbol}" c:Ui.SelectAllOnFocus="True" c:Ui.FocusOnLoad="True"/>
@@ -81,15 +82,20 @@
             <Button Content="Owe it instead → put the rest on credit" Style="{StaticResource Btn.LinkAccent}" HorizontalAlignment="Left" Margin="0,10,0,0" ToolTip="The customer will pay the difference another day"
                     Command="{Binding PutMissingOnCreditCommand}" Visibility="{Binding CanOfferCredit, Converter={StaticResource BoolToVis}}"/>
 
-            <CheckBox Content="Pay the rest later (credit)" IsChecked="{Binding PayLater}" Margin="0,18,0,0" FontSize="13" Foreground="{DynamicResource Warning}"/>
+            <CheckBox Content="Pay the rest later (credit)" IsChecked="{Binding PayLater}" Margin="0,16,0,0" FontSize="13" Foreground="{DynamicResource Warning}"/>
             <Border Style="{StaticResource Notice.Warning}" Margin="0,10,0,0" Visibility="{Binding PayLater, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="{Binding CreditText}" Style="{StaticResource T.Base}" FontSize="12" Foreground="{DynamicResource Warning}" TextWrapping="Wrap" TextTrimming="None" LineHeight="18"/>
             </Border>
 
-            <CheckBox Content="Print thermal receipt" IsChecked="{Binding PrintReceipt}" Margin="0,14,0,0"/>
-            <CheckBox Content="Attach to customer" IsChecked="{Binding AttachCustomer}" Margin="0,12,0,0" IsEnabled="{Binding PayLater, Converter={StaticResource Equals}, ConverterParameter=False}"/>
+            <WrapPanel Margin="0,12,0,0">
+                <CheckBox Content="Print thermal receipt" IsChecked="{Binding PrintReceipt}" Margin="0,0,20,4"/>
+                <CheckBox Content="Attach to customer" IsChecked="{Binding AttachCustomer}" Margin="0,0,0,4" IsEnabled="{Binding PayLater, Converter={StaticResource Equals}, ConverterParameter=False}"/>
+            </WrapPanel>
             <parts:CustomerPicker DataContext="{Binding Customer}" Margin="0,10,0,0"
                                   Visibility="{Binding DataContext.CustomerRequired, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+            <!-- Only the session bill sets a note; counter sales leave it empty. -->
+            <TextBlock Text="{Binding FooterNote, FallbackValue={x:Null}}" Style="{StaticResource T.Faint}" TextWrapping="Wrap" TextTrimming="None" LineHeight="16" Margin="0,14,0,4"
+                       Visibility="{Binding Text, RelativeSource={RelativeSource Self}, Converter={StaticResource HasValueToVis}}"/>
         </StackPanel>
         </ScrollViewer>
     </DockPanel>
