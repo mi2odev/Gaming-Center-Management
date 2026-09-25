@@ -24,6 +24,11 @@ public partial class MainWindow : Window
         {
             e.Handled = true;
         }
+        else if (e.Key == Key.F2 && Shell is { } shell && shell.Dialogs.Top is null)
+        {
+            shell.SellProductsCommand.Execute(null);
+            e.Handled = true;
+        }
         else if (e.Key == Key.K && Keyboard.Modifiers == ModifierKeys.Control)
         {
             SearchBox.Focus();

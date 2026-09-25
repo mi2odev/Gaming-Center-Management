@@ -9,7 +9,7 @@
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCommand}"/>
-                    <Button Content="New counter sale" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Cart}" Command="{Binding NewSaleCommand}"/>
+                    <Button Content="Sell products" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Cart}" Command="{Binding NewSaleCommand}"/>
                 </StackPanel>
                 <parts:PeriodPicker/>
             </DockPanel>
