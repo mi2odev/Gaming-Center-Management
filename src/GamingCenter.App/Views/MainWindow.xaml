@@ -115,6 +115,16 @@
                            Closed="OnUserMenuClosed">
                         <Border Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" CornerRadius="8" Padding="4" Margin="0,0,0,6" MinWidth="200">
                             <StackPanel>
+                                <TextBlock Text="Language" Style="{StaticResource T.Faint}" Margin="12,8,12,2"/>
+                                <ItemsControl ItemsSource="{Binding LanguageOptions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding Name}" Style="{StaticResource Btn.Link}" FontSize="13" Padding="12,7" HorizontalContentAlignment="Left" c:Ui.Icon="{StaticResource I.Globe}"
+                                                    Command="{Binding DataContext.SetLanguageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Code}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Height="1" Background="{DynamicResource Border}" Margin="8,4"/>
                                 <Button Content="Change password" Style="{StaticResource Btn.Link}" FontSize="13" Padding="12,9" HorizontalContentAlignment="Left" Command="{Binding ChangePasswordCommand}"/>
                                 <Button Content="Sign out" Style="{StaticResource Btn.Link}" FontSize="13" Padding="12,9" HorizontalContentAlignment="Left" c:Ui.Icon="{StaticResource I.Logout}" Command="{Binding SignOutCommand}"/>
                             </StackPanel>
@@ -187,6 +197,14 @@
                         </Grid>
 
                         <TextBlock Text="{Binding ClockText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                        <!-- Theme -->
+                        <Grid Margin="0,0,8,0">
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource I.Sun}" Command="{Binding ToggleThemeCommand}" ToolTip="Light mode"
+                                    Visibility="{Binding IsLight, Converter={StaticResource InvBoolToVis}}"/>
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource I.Moon}" Command="{Binding ToggleThemeCommand}" ToolTip="Dark mode"
+                                    Visibility="{Binding IsLight, Converter={StaticResource BoolToVis}}"/>
+                        </Grid>
 
                         <!-- Notifications -->
                         <Grid Margin="0,0,16,0">

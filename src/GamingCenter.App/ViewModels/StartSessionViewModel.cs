@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -44,11 +45,11 @@ public sealed partial class StartSessionViewModel : DialogViewModel
     private StationDto? _station;
 
     public bool HasStation => Station is not null;
-    public string StationName => Station?.Name ?? "Choose a station";
+    public string StationName => Station?.Name ?? L.T("Choose a station");
     public string StationSub => Station is null ? "" : string.Join(" · ", new[]
     {
         Station.TypeName, Station.Location,
-        Station.ControllerCount is { } c and > 0 ? $"{c} controller{(c > 1 ? "s" : "")}" : null,
+        Station.ControllerCount is { } c and > 0 ? L.F(c > 1 ? "{0} controllers" : "{0} controller", c) : null,
     }.Where(s => !string.IsNullOrWhiteSpace(s)));
     public string StationTag => Station?.Tag ?? "";
     public string? ImagePath => Station?.ImagePath;
@@ -65,15 +66,15 @@ public sealed partial class StartSessionViewModel : DialogViewModel
     private int _controllers = 2;
 
     partial void OnControllersChanged(int value) => Recalculate();
-    public string BillingLabel => $"billed {_settings.Current.BillingRules.UnitLabel}";
-    public string StartsNow => $"Starts now · {DateTime.Now:HH:mm}";
+    public string BillingLabel => L.F("billed {0}", L.T(_settings.Current.BillingRules.UnitLabel));
+    public string StartsNow => L.F("Starts now · {0}", DateTime.Now.ToString("HH:mm"));
     public string WarningHint
     {
         get
         {
             var cfg = _settings.Current;
-            var warn = cfg.WarnBeforeEndMinutes > 0 ? $"Warning at {cfg.WarnBeforeEndMinutes} min remaining" : "No warning before end";
-            return $"{warn} · session will {(cfg.AutoEndWhenTimeExpires ? "stop automatically" : "not auto-stop")}";
+            var warn = cfg.WarnBeforeEndMinutes > 0 ? L.F("Warning at {0} min remaining", cfg.WarnBeforeEndMinutes) : L.T("No warning before end");
+            return warn + " · " + (cfg.AutoEndWhenTimeExpires ? L.T("session will stop automatically") : L.T("session will not auto-stop"));
         }
     }
 
@@ -95,7 +96,7 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         foreach (var s in all.Where(s => s.State != StationState.Maintenance && store.ForStation(s.Id) is null))
             AvailableStations.Add(s);
         Station ??= AvailableStations.FirstOrDefault(s => s.State == StationState.Available) ?? AvailableStations.FirstOrDefault();
-        if (AvailableStations.Count == 0) Error = "No station is available right now.";
+        if (AvailableStations.Count == 0) Error = L.T("No station is available right now.");
     }
 
     partial void OnStationChanged(StationDto? value)
@@ -108,7 +109,7 @@ public sealed partial class StartSessionViewModel : DialogViewModel
             for (int n = plan.Included; n <= plan.Max; n++)
             {
                 var extra = value.RateFor(n) - value.HourlyRate;
-                ControllerOptions.Add(new ControllerOption(n, $"{n}", extra <= 0 ? "included" : $"+{Money.Number(extra)}/h"));
+                ControllerOptions.Add(new ControllerOption(n, $"{n}", extra <= 0 ? L.T("included") : $"+{Money.Number(extra)}/h"));
             }
             Controllers = plan.Included;
         }
@@ -128,16 +129,16 @@ public sealed partial class StartSessionViewModel : DialogViewModel
         if (int.TryParse(DurationText, out var minutes) && minutes > 0)
         {
             FixedPriceText = Money.Format(BillingCalculator.Cost(TimeSpan.FromMinutes(minutes), rate, rules));
-            FixedEndText = $"{Durations.Minutes(minutes)} · ends at {DateTime.Now.AddMinutes(minutes):HH:mm}";
+            FixedEndText = Durations.Minutes(minutes) + " · " + L.F("ends at {0}", DateTime.Now.AddMinutes(minutes).ToString("HH:mm"));
         }
-        else { FixedPriceText = "—"; FixedEndText = "Enter minutes"; }
+        else { FixedPriceText = "—"; FixedEndText = L.T("Enter minutes"); }
 
         if (Money.TryParse(BudgetText, out var budget) && budget > 0 && rate > 0)
         {
             MaxTimeText = Durations.Clock(BillingCalculator.TimeForBudget(budget, rate));
             MaxTimeHint = $"{Money.Number(budget)} ÷ {Money.Number(rate)}/h";
         }
-        else { MaxTimeText = "—"; MaxTimeHint = rate <= 0 ? "Free station" : "Enter an amount"; }
+        else { MaxTimeText = "—"; MaxTimeHint = rate <= 0 ? L.T("Free station") : L.T("Enter an amount"); }
     }
 
     [RelayCommand]
@@ -149,17 +150,17 @@ public sealed partial class StartSessionViewModel : DialogViewModel
     [RelayCommand]
     private async Task Start()
     {
-        if (Station is null) { Error = "Choose a station."; return; }
+        if (Station is null) { Error = L.T("Choose a station."); return; }
         int? minutes = null;
         decimal? budget = null;
         if (Mode == SessionMode.FixedDuration)
         {
-            if (!int.TryParse(DurationText, out var m) || m <= 0) { Error = "Enter the duration in minutes."; return; }
+            if (!int.TryParse(DurationText, out var m) || m <= 0) { Error = L.T("Enter the duration in minutes."); return; }
             minutes = m;
         }
         else if (Mode == SessionMode.FixedBudget)
         {
-            if (!Money.TryParse(BudgetText, out var b) || b <= 0) { Error = "Enter the customer's budget."; return; }
+            if (!Money.TryParse(BudgetText, out var b) || b <= 0) { Error = L.T("Enter the customer's budget."); return; }
             budget = b;
         }
 

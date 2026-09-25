@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -31,7 +32,7 @@ public sealed partial class PromptViewModel(string title, string label, string? 
     [RelayCommand]
     private void Confirm()
     {
-        if (string.IsNullOrWhiteSpace(Value)) { Error = $"{Label} is required."; return; }
+        if (string.IsNullOrWhiteSpace(Value)) { Error = L.F("{0} is required.", Label); return; }
         Close(Value.Trim());
     }
 }
@@ -40,7 +41,7 @@ public sealed record ReserveResult(string? Name, DateTime? At);
 
 public sealed partial class ReserveViewModel(string stationName) : DialogViewModel
 {
-    public string Title => $"Reserve {stationName}";
+    public string Title => L.F("Reserve {0}", stationName);
 
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _time = DateTime.Now.AddMinutes(30 - DateTime.Now.Minute % 30).ToString("HH:mm");
@@ -51,7 +52,7 @@ public sealed partial class ReserveViewModel(string stationName) : DialogViewMod
         DateTime? at = null;
         if (!string.IsNullOrWhiteSpace(Time))
         {
-            if (!TimeSpan.TryParse(Time, out var t) || t < TimeSpan.Zero || t >= TimeSpan.FromDays(1)) { Error = "Enter a time like 20:00."; return; }
+            if (!TimeSpan.TryParse(Time, out var t) || t < TimeSpan.Zero || t >= TimeSpan.FromDays(1)) { Error = L.T("Enter a time like 20:00."); return; }
             at = DateTime.Today + t;
             if (at < DateTime.Now.AddMinutes(-5)) at = at.Value.AddDays(1);
         }
@@ -92,8 +93,8 @@ public sealed partial class CustomerPickerViewModel(ICustomerService customers, 
     private CustomerDto? _selected;
 
     public bool HasSelection => Selected is not null;
-    public string SelectedLabel => Selected is null ? "Walk-in" : string.IsNullOrWhiteSpace(Selected.Phone) ? Selected.Name : $"{Selected.Name} · {Selected.Phone}";
-    public string? DebtLabel => Selected is { Balance: > 0 } c ? $"owes {Money.Format(c.Balance)}" : null;
+    public string SelectedLabel => Selected is null ? L.T("Walk-in") : string.IsNullOrWhiteSpace(Selected.Phone) ? Selected.Name : $"{Selected.Name} · {Selected.Phone}";
+    public string? DebtLabel => Selected is { Balance: > 0 } c ? L.F("owes {0}", Money.Format(c.Balance)) : null;
 
     public int? SelectedId => Selected?.Id;
 
@@ -152,7 +153,7 @@ public sealed partial class ProductTileViewModel(ProductDto product) : Observabl
     public string? ImagePath => Product.ImagePath;
     public bool IsLow => Product.IsLowStock;
     public bool IsOut => Product.Stock <= 0;
-    public string StockLabel => Product.Stock <= 0 ? "Out of stock" : IsLow ? $"Low · {Product.Stock} left" : $"{Product.Stock} in stock";
+    public string StockLabel => Product.Stock <= 0 ? L.T("Out of stock") : IsLow ? L.F("Low · {0} left", Product.Stock) : L.F("{0} in stock", Product.Stock);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InCart))]

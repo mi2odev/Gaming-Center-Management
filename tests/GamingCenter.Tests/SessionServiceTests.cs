@@ -319,6 +319,38 @@ public class SessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Type_extra_controller_price_applies_to_every_console_of_the_type()
+    {
+        var ps5a = await _t.Station("PS5 #01");
+        var ps5b = await _t.Station("PS5 #02");
+        var type = (await _t.Stations.GetTypesAsync()).First(t => t.Id == ps5a.StationTypeId);
+
+        // Keep station prices: stations that set their own still use it.
+        await _t.Stations.SaveTypeAsync(new SaveStationTypeRequest(type.Id, type.Name, type.Tag, type.DefaultHourlyRate, true, 150m));
+        Assert.Equal(150m, (await _t.Stations.GetTypesAsync()).First(t => t.Id == type.Id).ExtraControllerRate);
+
+        // One price for the whole type: every PS5 now adds 150/h per extra controller.
+        await _t.Stations.SaveTypeAsync(new SaveStationTypeRequest(type.Id, type.Name, type.Tag, type.DefaultHourlyRate, true, 150m, ApplyToAllStations: true));
+        foreach (var st in (await _t.Stations.GetAllAsync()).Where(s => s.StationTypeId == type.Id && s.HasControllerPricing))
+            Assert.Equal(150m, st.Plan!.ExtraPerController);
+
+        var s1 = await _t.Sessions.StartAsync(new StartSessionRequest(ps5a.Id, null, SessionMode.Open, null, null, Controllers: 4));
+        Assert.Equal(600m, s1.HourlyRate);
+        var s2 = await _t.Sessions.StartAsync(new StartSessionRequest(ps5b.Id, null, SessionMode.Open, null, null));
+        s2 = await _t.Sessions.ChangeControllersAsync(s2.Id, 3);
+        Assert.Equal(450m, s2.HourlyRate);
+    }
+
+    [Fact]
+    public void Station_price_beats_type_price_beats_settings_default()
+    {
+        Assert.Equal(120m, Domain.Billing.ControllerPricing.Resolve(2, 4, 120m, 150m, 100m, 2)!.ExtraPerController);
+        Assert.Equal(150m, Domain.Billing.ControllerPricing.Resolve(2, 4, 0m, 150m, 100m, 2)!.ExtraPerController);
+        Assert.Equal(100m, Domain.Billing.ControllerPricing.Resolve(2, 4, 0m, 0m, 100m, 2)!.ExtraPerController);
+        Assert.Null(Domain.Billing.ControllerPricing.Resolve(2, 4, 0m, 0m, 0m, 2));
+    }
+
+    [Fact]
     public async Task Controllers_outside_station_limits_are_refused()
     {
         var ps5 = await _t.Station("PS5 #04");

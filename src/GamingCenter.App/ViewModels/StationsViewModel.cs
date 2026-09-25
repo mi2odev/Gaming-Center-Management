@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -33,11 +34,13 @@ public sealed partial class StationsViewModel : PageViewModel
     private readonly FileDialogService _files;
     private readonly DialogService _dialogs;
     private readonly LiveSessionStore _store;
+    private readonly ISettingsService _settings;
     private List<StationRow> _all = [];
 
     public StationsViewModel(IStationService stations, IImageStore images, FileDialogService files, DialogService dialogs,
-        LiveSessionStore store, ToastService toasts) : base(toasts)
+        LiveSessionStore store, ISettingsService settings, ToastService toasts) : base(toasts)
     {
+        _settings = settings;
         _stations = stations;
         _images = images;
         _files = files;
@@ -45,7 +48,7 @@ public sealed partial class StationsViewModel : PageViewModel
         _store = store;
     }
 
-    public override string Title => "Gaming Stations";
+    public override string Title => L.T("Gaming Stations");
 
     public ObservableCollection<StationRow> Rows { get; } = [];
     public ObservableCollection<StationTypeDto> Types { get; } = [];
@@ -159,19 +162,29 @@ public sealed partial class StationsViewModel : PageViewModel
     private void UpdateControllerHint()
     {
         ControllerPricingHint = "";
+        var typeExtra = EditType?.ExtraControllerRate ?? 0;
+        ExtraRateSource = typeExtra > 0
+            ? L.F("Empty = {0} price: {1} (same for every {0})", EditType!.Name, Money.Rate(typeExtra))
+            : L.F("Empty = default from Settings: {0}", Money.Rate(_settings.Current.DefaultExtraControllerRate));
         if (!int.TryParse(EditControllers, out var inc) || inc <= 0) return;
-        if (!int.TryParse(EditMaxControllers, out var max) || max <= inc) return;
-        if (!Money.TryParse(EditExtraRate, out var extra) || extra <= 0) return;
-        if (!Money.TryParse(EditRate, out var rate)) return;
-        var parts = new List<string> { $"{inc} controllers {Money.Rate(rate)}" };
-        for (int n = inc + 1; n <= max; n++)
-            parts.Add($"{n} → {Money.Rate(Domain.Billing.ControllerPricing.RateFor(rate, inc, extra, n))}");
+        decimal ownExtra = 0;
+        if (!string.IsNullOrWhiteSpace(EditExtraRate) && !Money.TryParse(EditExtraRate, out ownExtra)) return;
+        int? max = int.TryParse(EditMaxControllers, out var m) ? m : null;
+        var plan = Domain.Billing.ControllerPricing.Resolve(inc, max, ownExtra, typeExtra,
+            _settings.Current.DefaultExtraControllerRate, _settings.Current.DefaultMaxExtraControllers);
+        if (plan is null || !Money.TryParse(EditRate, out var rate)) return;
+        var parts = new List<string> { L.F("{0} controllers {1}", inc, Money.Rate(rate)) };
+        for (int n = inc + 1; n <= plan.Max; n++)
+            parts.Add($"{n} → {Money.Rate(plan.RateFor(rate, n))}");
         ControllerPricingHint = string.Join(" · ", parts);
     }
+
+    [ObservableProperty] private string _extraRateSource = "";
     partial void OnEditModelChanged(string value) => EditTag = !string.IsNullOrWhiteSpace(value) && value.Length <= 5 ? value.ToUpperInvariant() : EditType?.Tag ?? "";
 
     partial void OnEditTypeChanged(StationTypeDto? value)
     {
+        UpdateControllerHint();
         if (value is null) return;
         if (EditId is null && string.IsNullOrWhiteSpace(EditRate)) EditRate = Money.Number(value.DefaultHourlyRate).Replace(",", "");
         OnEditModelChanged(EditModel);
@@ -325,7 +338,12 @@ public sealed partial class StationTypesViewModel : DialogViewModel
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _tag = "";
     [ObservableProperty] private string _rate = "";
+    [ObservableProperty] private string _extraRate = "";
+    [ObservableProperty] private bool _applyToAll = true;
     [ObservableProperty] private bool _isActive = true;
+    [ObservableProperty] private string _saveText = L.T("Add type");
+
+    partial void OnEditIdChanged(int? value) => SaveText = L.T(value is null ? "Add type" : "Save");
 
     private async Task LoadAsync()
     {
@@ -343,6 +361,8 @@ public sealed partial class StationTypesViewModel : DialogViewModel
         Name = t.Name;
         Tag = t.Tag;
         Rate = Money.Number(t.DefaultHourlyRate).Replace(",", "");
+        ExtraRate = t.ExtraControllerRate > 0 ? Money.Number(t.ExtraControllerRate).Replace(",", "") : "";
+        ApplyToAll = true;
         IsActive = t.IsActive;
     }
 
@@ -353,14 +373,17 @@ public sealed partial class StationTypesViewModel : DialogViewModel
         Name = "";
         Tag = "";
         Rate = "";
+        ExtraRate = "";
+        ApplyToAll = true;
         IsActive = true;
     }
 
     [RelayCommand]
     private async Task Save()
     {
-        if (!Money.TryParse(string.IsNullOrWhiteSpace(Rate) ? "0" : Rate, out var rate)) { Error = "Enter a valid default price."; return; }
-        if (await RunAsync(() => _stations.SaveTypeAsync(new SaveStationTypeRequest(EditId, Name, Tag, rate, IsActive))))
+        if (!Money.TryParse(string.IsNullOrWhiteSpace(Rate) ? "0" : Rate, out var rate)) { Error = L.T("Enter a valid default price."); return; }
+        if (!Money.TryParse(string.IsNullOrWhiteSpace(ExtraRate) ? "0" : ExtraRate, out var extra) || extra < 0) { Error = L.T("Enter a valid price per extra controller."); return; }
+        if (await RunAsync(() => _stations.SaveTypeAsync(new SaveStationTypeRequest(EditId, Name, Tag, rate, IsActive, extra, ApplyToAll))))
         {
             New();
             await LoadAsync();

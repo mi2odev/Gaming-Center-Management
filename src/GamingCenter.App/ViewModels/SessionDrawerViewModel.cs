@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -65,11 +66,11 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
     [ObservableProperty] private string _statusLine = "";
     [ObservableProperty] private string _statusBrush = "Status.Occupied";
     [ObservableProperty] private string _subtitle = "";
-    [ObservableProperty] private string _timerLabel = "Play time";
+    [ObservableProperty] private string _timerLabel = L.T("Play time");
     [ObservableProperty] private string _timerText = "";
     [ObservableProperty] private string _timerBrush = "Text";
     [ObservableProperty] private string _gamingText = "";
-    [ObservableProperty] private string _gamingLabel = "Gaming cost so far";
+    [ObservableProperty] private string _gamingLabel = L.T("Gaming cost so far");
     [ObservableProperty] private string _consumptionText = "";
     [ObservableProperty] private string _totalText = "";
     [ObservableProperty] private string _pauseSummary = "";
@@ -83,7 +84,7 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
     public string StationName => Session.StationName;
     public bool IsPaused => Session.Status == SessionStatus.Paused;
     public bool IsStopped => Session.Status == SessionStatus.AwaitingPayment;
-    public string PauseButtonText => IsPaused ? "Resume" : "Pause";
+    public string PauseButtonText => IsPaused ? L.T("Resume") : L.T("Pause");
 
     protected override void OnClosed()
     {
@@ -121,15 +122,15 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
 
         var mode = s.Mode switch
         {
-            SessionMode.FixedDuration => "FIXED DURATION",
-            SessionMode.FixedBudget => "FIXED BUDGET",
-            _ => "OPEN SESSION",
+            SessionMode.FixedDuration => L.T("FIXED DURATION"),
+            SessionMode.FixedBudget => L.T("FIXED BUDGET"),
+            _ => L.T("OPEN SESSION"),
         };
         var state = s.Status switch
         {
-            SessionStatus.Paused => "PAUSED",
-            SessionStatus.AwaitingPayment => "TIME UP · AWAITING PAYMENT",
-            _ => "OCCUPIED",
+            SessionStatus.Paused => L.T("PAUSED"),
+            SessionStatus.AwaitingPayment => L.T("TIME UP · AWAITING PAYMENT"),
+            _ => L.T("OCCUPIED"),
         };
         StatusLine = $"{state} · {mode}";
         StatusBrush = s.Status switch
@@ -138,22 +139,22 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
             SessionStatus.AwaitingPayment => "Status.TimeUp",
             _ => "Status.Occupied",
         };
-        Subtitle = $"{s.Customer?.Name ?? "Walk-in"} · started {s.StartTime:HH:mm} · {Money.Rate(s.HourlyRate)} locked";
+        Subtitle = L.F("{0} · started {1} · {2} locked", s.Customer?.Name ?? L.T("Walk-in"), s.StartTime.ToString("HH:mm"), Money.Rate(s.HourlyRate));
         ModeDetail = s.Mode switch
         {
-            SessionMode.FixedDuration => $"Purchased {Durations.Minutes(s.PlannedMinutes ?? 0)}",
-            SessionMode.FixedBudget => $"Budget {Money.Format(s.Budget ?? 0)} · max {Durations.Clock(s.AllowedTime(DateTime.Now) ?? TimeSpan.Zero)}",
-            _ => $"Billed {s.Rules.UnitLabel}",
+            SessionMode.FixedDuration => L.F("Purchased {0}", Durations.Minutes(s.PlannedMinutes ?? 0)),
+            SessionMode.FixedBudget => L.F("Budget {0} · max {1}", Money.Format(s.Budget ?? 0), Durations.Clock(s.AllowedTime(DateTime.Now) ?? TimeSpan.Zero)),
+            _ => L.F("Billed {0}", L.T(s.Rules.UnitLabel)),
         };
 
         var st = s.Station;
-        var plan = st is null ? null : Domain.Billing.ControllerPricing.Resolve(st.ControllerCount, st.MaxControllers, st.ExtraControllerRate,
+        var plan = st is null ? null : Domain.Billing.ControllerPricing.Resolve(st.ControllerCount, st.MaxControllers, st.ExtraControllerRate, st.StationType?.ExtraControllerRate ?? 0,
             _settings.Current.DefaultExtraControllerRate, _settings.Current.DefaultMaxExtraControllers);
         CanChangeControllers = plan is not null && s.Status != SessionStatus.AwaitingPayment;
-        ControllersText = s.Controllers is { } n ? $"{n} controller{(n == 1 ? "" : "s")}" : "";
+        ControllersText = s.Controllers is { } n ? L.F(n == 1 ? "{0} controller" : "{0} controllers", n) : "";
         ControllersNote = plan is not null
-            ? $"{plan.Included} included · +{Money.Number(plan.ExtraPerController)}/h each extra · max {plan.Max}"
-              + (s.RateChanges.Count > 0 ? $" · changed {s.RateChanges.Count}×, earlier time keeps its rate" : "")
+            ? L.F("{0} included · +{1}/h each extra · max {2}", plan.Included, Money.Number(plan.ExtraPerController), plan.Max)
+              + (s.RateChanges.Count > 0 ? " · " + L.F("changed {0}×, earlier time keeps its rate", s.RateChanges.Count) : "")
             : "";
 
         Lines.Clear();
@@ -173,13 +174,13 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         bool timeUp = s.IsTimeUp(now) || s.Status == SessionStatus.AwaitingPayment;
         if (remaining is { } r && !timeUp)
         {
-            TimerLabel = "Remaining";
+            TimerLabel = L.T("Remaining");
             TimerText = Durations.Clock(r);
             TimerBrush = s.Status == SessionStatus.Paused ? "Info" : r <= TimeSpan.FromMinutes(10) ? "Warning" : "Text";
         }
         else
         {
-            TimerLabel = timeUp && s.AllowedTime(now) is not null ? $"Time up · overtime {Durations.Clock(s.Overtime(now))}" : "Play time";
+            TimerLabel = timeUp && s.AllowedTime(now) is not null ? L.F("Time up · overtime {0}", Durations.Clock(s.Overtime(now))) : L.T("Play time");
             TimerText = Durations.Clock(s.PlayedTime(now));
             TimerBrush = timeUp ? "Danger" : s.Status == SessionStatus.Paused ? "Info" : "Text";
         }
@@ -187,9 +188,9 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         Progress = s.Progress(now);
         GamingLabel = s.Mode switch
         {
-            SessionMode.FixedDuration => "Gaming (purchased time)",
-            SessionMode.FixedBudget => "Gaming used of budget",
-            _ => "Gaming cost so far",
+            SessionMode.FixedDuration => L.T("Gaming (purchased time)"),
+            SessionMode.FixedBudget => L.T("Gaming used of budget"),
+            _ => L.T("Gaming cost so far"),
         };
         GamingText = Money.Format(s.GamingCost(now));
         ConsumptionText = Money.Format(s.ProductsCost());
@@ -199,9 +200,9 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         {
             Pauses.Clear();
             foreach (var p in s.Pauses.OrderBy(p => p.StartTime))
-                Pauses.Add(new PauseRow($"{p.StartTime:HH:mm} → {(p.EndTime is { } e ? e.ToString("HH:mm") : "now")}", Durations.Long(p.DurationAt(s.ClockAt(now)))));
+                Pauses.Add(new PauseRow($"{p.StartTime:HH:mm} → {(p.EndTime is { } e ? e.ToString("HH:mm") : L.T("now"))}", Durations.Long(p.DurationAt(s.ClockAt(now)))));
         }
-        PauseSummary = $"Wall clock {Durations.Clock(s.WallTime(now))} · paused {Durations.Short(s.PausedTime(now))} · play {Durations.Clock(s.PlayedTime(now))}";
+        PauseSummary = L.F("Wall clock {0} · paused {1} · play {2}", Durations.Clock(s.WallTime(now)), Durations.Short(s.PausedTime(now)), Durations.Clock(s.PlayedTime(now)));
     }
 
     private async Task AddProductAsync(ProductTileViewModel tile)
@@ -243,7 +244,7 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
     {
         int current = Session.Controllers ?? Session.Station?.ControllerCount ?? 2;
         if (await RunAsync(async () => _store.Upsert(await _sessions.ChangeControllersAsync(_sessionId, current + delta))))
-            _toasts.Info($"{Session.StationName}: {Session.Controllers} controllers", $"Now {Money.Rate(Session.HourlyRate)} from {DateTime.Now:HH:mm}");
+            _toasts.Info($"{Session.StationName}: " + L.F("{0} controllers", Session.Controllers), L.F("Now {0} from {1}", Money.Rate(Session.HourlyRate), DateTime.Now.ToString("HH:mm")));
     }
 
     [RelayCommand]
@@ -278,7 +279,7 @@ public sealed partial class SessionDrawerViewModel : DialogViewModel
         if (await RunAsync(() => _sessions.CancelAsync(_sessionId, reason)))
         {
             _store.Remove(_sessionId);
-            _toasts.Info($"{StationName} session cancelled", "Products were returned to stock. Nothing was charged.");
+            _toasts.Info(L.F("{0} session cancelled", StationName), L.T("Products were returned to stock. Nothing was charged."));
             Close();
         }
     }
@@ -305,16 +306,16 @@ public sealed partial class ExtendSessionViewModel : DialogViewModel
         _modeBudget = "500";
     }
 
-    public string Title => $"Extend {_session.StationName}";
+    public string Title => L.F("Extend {0}", _session.StationName);
     public string CurrentMode => _session.Mode switch
     {
-        SessionMode.FixedDuration => $"Fixed duration · {Durations.Minutes(_session.PlannedMinutes ?? 0)} purchased",
-        SessionMode.FixedBudget => $"Fixed budget · {Money.Format(_session.Budget ?? 0)}",
-        _ => "Open session · pays actual time",
+        SessionMode.FixedDuration => L.F("Fixed duration · {0} purchased", Durations.Minutes(_session.PlannedMinutes ?? 0)),
+        SessionMode.FixedBudget => L.F("Fixed budget · {0}", Money.Format(_session.Budget ?? 0)),
+        _ => L.T("Open session · pays actual time"),
     };
     public bool CanAddTime => _session.Mode == SessionMode.FixedDuration;
     public bool CanAddMoney => _session.Mode == SessionMode.FixedBudget;
-    public string PlayedText => $"Played so far {Durations.Clock(_session.PlayedTime(DateTime.Now))}";
+    public string PlayedText => L.F("Played so far {0}", Durations.Clock(_session.PlayedTime(DateTime.Now)));
 
     [ObservableProperty] private string _tab;
     [ObservableProperty] private string _minutesText = "30";

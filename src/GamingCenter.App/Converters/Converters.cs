@@ -34,6 +34,7 @@ public sealed class HasValueToVisibilityConverter : IValueConverter
             null => false,
             string s => !string.IsNullOrWhiteSpace(s),
             int i => i != 0,
+            decimal d => d != 0,
             System.Collections.ICollection c => c.Count > 0,
             _ => true,
         };

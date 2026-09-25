@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using GamingCenter.App.Localization;
 using GamingCenter.App.Services;
 using GamingCenter.App.ViewModels;
 using GamingCenter.App.Views;
@@ -52,7 +53,11 @@ public partial class App : System.Windows.Application
             await using (var db = await Services.GetRequiredService<IDbContextFactory<GamingCenterDbContext>>().CreateDbContextAsync())
                 await DbInitializer.InitializeAsync(db, config.GetValue("Database:SeedDemoData", true));
 
-            await Services.GetRequiredService<ISettingsService>().LoadAsync();
+            var settings = Services.GetRequiredService<ISettingsService>();
+            await settings.LoadAsync();
+            L.Load(settings.Current.Language);
+            L.RegisterAutoTranslation();
+            if (L.IsRtl) Resources["Font.UI"] = new System.Windows.Media.FontFamily("Segoe UI");
             Services.GetRequiredService<ThemeService>().ApplyFromSettings();
             Services.GetRequiredService<NotificationCenter>(); // starts watching sessions
             Services.GetRequiredService<MaintenanceService>().Start();
@@ -118,10 +123,18 @@ public partial class App : System.Windows.Application
         return builder.Build();
     }
 
+    /// <summary>Starts a fresh copy of the app and closes this one (used after changing language or restoring a backup).</summary>
+    public static void Restart()
+    {
+        var exe = Environment.ProcessPath;
+        if (exe is not null) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = true });
+        Current.Shutdown();
+    }
+
     private void ShowLogin()
     {
         var vm = Services.GetRequiredService<LoginViewModel>();
-        var window = new LoginWindow { DataContext = vm };
+        var window = new LoginWindow { DataContext = vm, FlowDirection = L.Direction };
         vm.SignedIn += async (_, _) =>
         {
             await ShowMainAsync();
@@ -137,7 +150,7 @@ public partial class App : System.Windows.Application
     private async Task ShowMainAsync()
     {
         var shell = Services.GetRequiredService<ShellViewModel>();
-        var window = new MainWindow { DataContext = shell };
+        var window = new MainWindow { DataContext = shell, FlowDirection = L.Direction };
         shell.SignOutRequested += (_, _) =>
         {
             Services.GetRequiredService<CurrentUserService>().User = null;

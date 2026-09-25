@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -29,9 +30,9 @@ public sealed record CreditEntryRow(CreditEntryDto Dto)
     public string Date => Dto.At.ToString("dd/MM/yyyy HH:mm");
     public string What => Dto.Kind switch
     {
-        CreditKind.UnpaidBill => Dto.ReceiptNumber is { } r ? $"Unpaid bill #{r}" : "Unpaid bill",
-        CreditKind.Repayment => $"Paid back · {Dto.Method}",
-        _ => Dto.Amount >= 0 ? "Added by hand" : "Reduced by hand",
+        CreditKind.UnpaidBill => Dto.ReceiptNumber is { } r ? L.F("Unpaid bill #{0}", r) : L.T("Unpaid bill"),
+        CreditKind.Repayment => L.F("Paid back · {0}", L.T(Dto.Method?.ToString() ?? "")),
+        _ => Dto.Amount >= 0 ? L.T("Added by hand") : L.T("Reduced by hand"),
     };
     public string Note => Dto.Note ?? "";
     public string Amount => (Dto.Amount > 0 ? "+" : "−") + Money.Format(Math.Abs(Dto.Amount));
@@ -61,7 +62,7 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
         _files = files;
     }
 
-    public override string Title => "Credits";
+    public override string Title => L.T("Credits");
     public bool IsAdmin => _user.IsAdmin;
 
     public ObservableCollection<CreditRow> Rows { get; } = [];
@@ -95,9 +96,9 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
         _all = (await _credits.GetBalancesAsync(ShowSettled)).ToList();
         var owing = _all.Where(b => b.Balance > 0).ToList();
         TotalText = Money.Format(owing.Sum(b => b.Balance));
-        CountText = $"{owing.Count} customer{(owing.Count == 1 ? "" : "s")} owe money";
+        CountText = L.F(owing.Count == 1 ? "{0} customer owes money" : "{0} customers owe money", owing.Count);
         var oldest = owing.Where(b => b.LastCreditAt is not null).OrderBy(b => b.LastCreditAt).FirstOrDefault();
-        OldestText = oldest is null ? "—" : $"{oldest.Name} · since {oldest.LastCreditAt:dd/MM}";
+        OldestText = oldest is null ? "—" : oldest.Name + " · " + L.F("since {0}", oldest.LastCreditAt?.ToString("dd/MM"));
         ApplyFilter();
     }
 

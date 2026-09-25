@@ -45,7 +45,7 @@ public sealed class SessionService(
         await using var db = await OpenAsync(ct);
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        var station = await db.Stations.FirstOrDefaultAsync(s => s.Id == request.StationId && !s.IsDeleted, ct)
+        var station = await db.Stations.Include(s => s.StationType).FirstOrDefaultAsync(s => s.Id == request.StationId && !s.IsDeleted, ct)
             ?? throw new BusinessException("Station not found.");
         if (!station.IsActive) throw new BusinessException($"{station.Name} is disabled.");
         if (station.State == StationState.Maintenance) throw new BusinessException($"{station.Name} is under maintenance.");
@@ -168,7 +168,7 @@ public sealed class SessionService(
         MutateAsync(sessionId, async (db, s) =>
         {
             if (s.Status == SessionStatus.AwaitingPayment) throw new BusinessException("Time is up. Extend the session before changing controllers.");
-            var station = await db.Stations.FirstOrDefaultAsync(x => x.Id == s.StationId, ct) ?? throw new BusinessException("Station not found.");
+            var station = await db.Stations.Include(x => x.StationType).FirstOrDefaultAsync(x => x.Id == s.StationId, ct) ?? throw new BusinessException("Station not found.");
             if (PlanFor(station) is not { } plan)
                 throw new BusinessException($"{station.Name} has no included controllers. Set \"Controllers included\" on the Gaming Stations page.");
             int n = ValidControllers(station, plan, controllers);
@@ -196,7 +196,7 @@ public sealed class SessionService(
     }
 
     private ControllerPlan? PlanFor(GamingStation station) =>
-        ControllerPricing.Resolve(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate,
+        ControllerPricing.Resolve(station.ControllerCount, station.MaxControllers, station.ExtraControllerRate, station.StationType?.ExtraControllerRate ?? 0,
             settings.Current.DefaultExtraControllerRate, settings.Current.DefaultMaxExtraControllers);
 
     private static int ValidControllers(GamingStation station, ControllerPlan plan, int controllers)

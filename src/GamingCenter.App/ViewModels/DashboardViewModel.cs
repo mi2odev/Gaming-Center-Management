@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -36,7 +37,7 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         _nav = nav;
     }
 
-    public override string Title => "Dashboard";
+    public override string Title => L.T("Dashboard");
 
     public ObservableCollection<StationCardViewModel> Cards { get; } = [];
 
@@ -119,19 +120,19 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         {
             var pct = (s.Revenue - s.RevenueYesterday) / s.RevenueYesterday * 100m;
             RevenueTrendUp = pct >= 0;
-            RevenueTrend = $"{(pct >= 0 ? "+" : "")}{pct:0}% vs yesterday";
+            RevenueTrend = L.F("{0}% vs yesterday", $"{(pct >= 0 ? "+" : "")}{pct:0}");
         }
-        else RevenueTrend = s.Revenue > 0 ? "First sales today" : "No sales yet today";
+        else RevenueTrend = s.Revenue > 0 ? L.T("First sales today") : L.T("No sales yet today");
         GamingText = Money.Number(s.GamingRevenue);
-        GamingSub = s.Sessions == 0 ? "No sessions yet" : $"{s.Sessions} sessions · avg {Durations.Short(s.AverageSession)}";
+        GamingSub = s.Sessions == 0 ? L.T("No sessions yet") : L.F("{0} sessions · avg {1}", s.Sessions, Durations.Short(s.AverageSession));
         ProductsText = Money.Number(s.ProductRevenue);
-        ProductsSub = $"Est. profit {Money.Format(s.ProductProfit)}";
-        if (s.Discounts > 0) GamingSub += $" · discounts {Money.Format(s.Discounts)}";
+        ProductsSub = L.F("Est. profit {0}", Money.Format(s.ProductProfit));
+        if (s.Discounts > 0) GamingSub += " · " + L.F("discounts {0}", Money.Format(s.Discounts));
         MostUsed = s.MostUsedStation ?? "—";
-        MostUsedSub = s.MostUsedStation is null ? "No completed sessions" :
-            $"{Durations.Short(s.MostUsedStationTime)}" + (s.MostSoldProduct is null ? "" : $" · {s.MostSoldProduct} top seller");
+        MostUsedSub = s.MostUsedStation is null ? L.T("No completed sessions") :
+            $"{Durations.Short(s.MostUsedStationTime)}" + (s.MostSoldProduct is null ? "" : " · " + L.F("{0} top seller", s.MostSoldProduct));
         LowStockCount = s.LowStock.Count;
-        LowStockSub = s.LowStock.Count == 0 ? "All products stocked" : string.Join(" · ", s.LowStock.Take(3).Select(p => $"{p.Name} {p.Stock}"));
+        LowStockSub = s.LowStock.Count == 0 ? L.T("All products stocked") : string.Join(" · ", s.LowStock.Take(3).Select(p => $"{p.Name} {p.Stock}"));
     }
 
     private void OnStoreChanged(object? sender, EventArgs e)
@@ -160,7 +161,7 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         CountOccupied = _all.Count(c => c.IsActive);
         CountReserved = _all.Count(c => c.Status == StationDisplayStatus.Reserved);
         CountOffline = _all.Count(c => c.Status == StationDisplayStatus.Offline);
-        ActiveSub = $"{CountAvailable} available · {CountReserved} reserved";
+        ActiveSub = L.F("{0} available · {1} reserved", CountAvailable, CountReserved);
     }
 
     private void ApplyFilter()
@@ -223,17 +224,17 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         {
             await _stations.SetStateAsync(card.Id, StationState.Reserved, r.Name, r.At);
             await ReloadStationsAsync();
-        }, $"{card.Name} reserved");
+        }, L.F("{0} reserved", card.Name));
     }
 
     [RelayCommand]
-    private Task ClearReservation(StationCardViewModel card) => SetStateAsync(card, StationState.Available, $"{card.Name} is available");
+    private Task ClearReservation(StationCardViewModel card) => SetStateAsync(card, StationState.Available, L.F("{0} is available", card.Name));
 
     [RelayCommand]
-    private Task Maintenance(StationCardViewModel card) => SetStateAsync(card, StationState.Maintenance, $"{card.Name} set to maintenance");
+    private Task Maintenance(StationCardViewModel card) => SetStateAsync(card, StationState.Maintenance, L.F("{0} set to maintenance", card.Name));
 
     [RelayCommand]
-    private Task BackInService(StationCardViewModel card) => SetStateAsync(card, StationState.Available, $"{card.Name} is back in service");
+    private Task BackInService(StationCardViewModel card) => SetStateAsync(card, StationState.Available, L.F("{0} is back in service", card.Name));
 
     private Task SetStateAsync(StationCardViewModel card, StationState state, string message) =>
         TryAsync(async () =>

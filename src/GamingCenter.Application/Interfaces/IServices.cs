@@ -131,6 +131,8 @@ public interface ISettingsService
     event EventHandler<AppSettings>? Changed;
     Task LoadAsync(CancellationToken ct = default);
     Task SaveAsync(AppSettings settings, CancellationToken ct = default);
+    /// <summary>Theme and language are personal choices any signed-in user may change.</summary>
+    Task SavePreferencesAsync(string? theme, string? language, CancellationToken ct = default);
 }
 
 public interface IBackupService

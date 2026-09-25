@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GamingCenter.App.Services;
 

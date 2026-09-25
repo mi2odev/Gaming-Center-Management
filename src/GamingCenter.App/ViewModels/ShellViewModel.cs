@@ -1,3 +1,4 @@
+using GamingCenter.App.Localization;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -59,7 +60,11 @@ public sealed partial class ShellViewModel : ObservableObject
     private void OnNavigationRequested(Page page, object? parameter) => _ = NavigateAsync(page, parameter);
     private void OnTick(object? sender, DateTime now) => ClockText = now.ToString("ddd dd MMM · HH:mm");
     private void OnSettingsChanged(object? sender, Application.Common.AppSettings s) { CenterName = s.CenterName; LogoPath = s.LogoPath; }
-    private void OnThemeChanged(object? sender, EventArgs e) => _ = NavigateAsync(CurrentPageKey, null);
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsLight));
+        _ = NavigateAsync(CurrentPageKey, null);
+    }
 
     /// <summary>Detaches from app-wide services so a signed-out shell stops reacting.</summary>
     private void Detach()
@@ -77,7 +82,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
     public bool IsAdmin => User.IsAdmin;
     public string UserName => User.User?.DisplayName ?? "";
-    public string UserRole => User.User?.IsAdmin == true ? "Admin" : "Operator";
+    public string UserRole => User.User?.IsAdmin == true ? L.T("Admin") : L.T("Operator");
     public string UserInitials => User.User?.Initials ?? "";
 
     [ObservableProperty] private PageViewModel? _currentPage;
@@ -195,6 +200,31 @@ public sealed partial class ShellViewModel : ObservableObject
     [RelayCommand]
     private void ToggleUserMenu() => IsUserMenuOpen = !IsUserMenuOpen;
 
+    public bool IsLight => _theme.Current == "Light";
+
+    /// <summary>Quick light/dark switch in the top bar; remembered for next time.</summary>
+    [RelayCommand]
+    private async Task ToggleTheme()
+    {
+        var next = IsLight ? "Dark" : "Light";
+        try { await _settings.SavePreferencesAsync(next, null); } catch (Exception ex) { Toasts.Error(L.T("Could not save"), ErrorText.For(ex)); }
+        _theme.Apply(next);
+    }
+
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = L.Languages.Select(l => new LanguageOption(l.Code, l.Name)).ToList();
+
+    [RelayCommand]
+    private async Task SetLanguage(string code)
+    {
+        IsUserMenuOpen = false;
+        if (string.Equals(code, L.Language, StringComparison.OrdinalIgnoreCase)) return;
+        if (!await Dialogs.ConfirmAsync(L.T("Restart to change the language?"),
+                L.T("The app restarts now. Running sessions keep going; their timers are saved."), L.T("Restart now"))) return;
+        try { await _settings.SavePreferencesAsync(null, code); }
+        catch (Exception ex) { Toasts.Error(L.T("Could not save"), ErrorText.For(ex)); return; }
+        App.Restart();
+    }
+
     [RelayCommand]
     private async Task ChangePassword()
     {
@@ -241,12 +271,12 @@ public sealed partial class LoginViewModel(IAuthService auth, CurrentUserService
     {
         if (IsBusy) return;
         Error = null;
-        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrEmpty(Password)) { Error = "Enter your username and password."; return; }
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrEmpty(Password)) { Error = L.T("Enter your username and password."); return; }
         IsBusy = true;
         try
         {
             var u = await auth.LoginAsync(Username, Password);
-            if (u is null) { Error = "Wrong username or password, or the account is disabled."; Password = ""; return; }
+            if (u is null) { Error = L.T("Wrong username or password, or the account is disabled."); Password = ""; return; }
             user.User = u;
             Password = "";
             SignedIn?.Invoke(this, EventArgs.Empty);
@@ -265,7 +295,7 @@ public sealed partial class ChangePasswordViewModel(IUserService users, ToastSer
     [RelayCommand]
     private async Task Save()
     {
-        if (NewPassword != Confirm) { Error = "The new passwords do not match."; return; }
+        if (NewPassword != Confirm) { Error = L.T("The new passwords do not match."); return; }
         if (await RunAsync(() => users.ChangeOwnPasswordAsync(Current, NewPassword)))
         {
             toasts.Success("Password changed");
