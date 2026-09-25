@@ -55,6 +55,7 @@ public partial class App : System.Windows.Application
 
             var settings = Services.GetRequiredService<ISettingsService>();
             await settings.LoadAsync();
+            UiState.Init(Services.GetRequiredService<IDataPaths>().DataFolder);
             L.Load(settings.Current.Language);
             L.RegisterAutoTranslation();
             if (L.IsRtl) Resources["Font.UI"] = new System.Windows.Media.FontFamily("Segoe UI");

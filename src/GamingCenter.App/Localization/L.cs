@@ -85,8 +85,15 @@ public static class L
     /// </summary>
     public static void RegisterAutoTranslation()
     {
+        // WPF only sends Loaded to elements that have their own Loaded handler, so a class handler on Loaded
+        // misses most text. SizeChanged is raised for every element the first time it is laid out.
+        EventManager.RegisterClassHandler(typeof(FrameworkElement), FrameworkElement.SizeChangedEvent, new SizeChangedEventHandler((s, e) => OnLoaded(s, e)), true);
         EventManager.RegisterClassHandler(typeof(FrameworkElement), FrameworkElement.LoadedEvent, new RoutedEventHandler(OnLoaded), true);
     }
+
+    /// <summary>Set once an element has been translated, so resizing does not redo the work.</summary>
+    private static readonly DependencyProperty DoneProperty =
+        DependencyProperty.RegisterAttached("Done", typeof(bool), typeof(L), new PropertyMetadata(false));
 
     private static bool IsLiteral(DependencyObject d, DependencyProperty p)
     {
@@ -98,7 +105,8 @@ public static class L
 
     private static void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (Language == "en" || sender is not FrameworkElement fe) return;
+        if (Language == "en" || sender is not FrameworkElement fe || (bool)fe.GetValue(DoneProperty)) return;
+        fe.SetValue(DoneProperty, true);
 
         switch (fe)
         {

@@ -230,7 +230,7 @@ public sealed partial class ReportsViewModel : PageViewModel
 
     public override string Title => L.T("Reports");
 
-    [ObservableProperty] private string _period = "Week";
+    [ObservableProperty] private string _period = UiState.Get("Reports.Period", "Week");
     [ObservableProperty] private DateTime _anchor = DateTime.Today;
     [ObservableProperty] private DateTime? _customFrom = DateTime.Today.AddDays(-30);
     [ObservableProperty] private DateTime? _customTo = DateTime.Today;
@@ -262,6 +262,7 @@ public sealed partial class ReportsViewModel : PageViewModel
 
     partial void OnPeriodChanged(string value)
     {
+        UiState.Set("Reports.Period", value);
         Anchor = DateTime.Today;
         OnPropertyChanged(nameof(IsCustom));
         _ = LoadAsync(ReloadAsync);
@@ -499,7 +500,8 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     public override string Title => L.T("Settings");
 
-    [ObservableProperty] private string _section = "General";
+    [ObservableProperty] private string _section = UiState.Get("Settings.Section", "General");
+    partial void OnSectionChanged(string value) => UiState.Set("Settings.Section", value);
     [ObservableProperty] private AppSettings _model;
     [ObservableProperty] private string _preview = "";
     [ObservableProperty] private string _backupInfo = "";

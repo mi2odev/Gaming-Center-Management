@@ -93,7 +93,7 @@ public sealed partial class SessionsViewModel : PageViewModel, INavigationTarget
 
     public ObservableCollection<HistoryRowView> Rows { get; } = [];
 
-    [ObservableProperty] private string _period = "Today";
+    [ObservableProperty] private string _period = UiState.Get("Sessions.Period", "Today");
     [ObservableProperty] private DateTime? _customFrom = DateTime.Today.AddDays(-7);
     [ObservableProperty] private DateTime? _customTo = DateTime.Today;
     [ObservableProperty] private string _search = "";
@@ -135,6 +135,7 @@ public sealed partial class SessionsViewModel : PageViewModel, INavigationTarget
 
     partial void OnPeriodChanged(string value)
     {
+        UiState.Set("Sessions.Period", value);
         OnPropertyChanged(nameof(IsCustom));
         _ = LoadAsync(ReloadAsync);
     }
@@ -236,7 +237,7 @@ public sealed partial class SalesViewModel : PageViewModel
 
     public ObservableCollection<PaymentRowView> Rows { get; } = [];
 
-    [ObservableProperty] private string _period = "Today";
+    [ObservableProperty] private string _period = UiState.Get("Sales.Period", "Today");
     [ObservableProperty] private DateTime? _customFrom = DateTime.Today.AddDays(-7);
     [ObservableProperty] private DateTime? _customTo = DateTime.Today;
     [ObservableProperty] private PaymentRowView? _selected;
@@ -255,6 +256,7 @@ public sealed partial class SalesViewModel : PageViewModel
 
     partial void OnPeriodChanged(string value)
     {
+        UiState.Set("Sales.Period", value);
         OnPropertyChanged(nameof(IsCustom));
         _ = LoadAsync(ReloadAsync);
     }

@@ -41,9 +41,9 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
 
     public ObservableCollection<StationCardViewModel> Cards { get; } = [];
 
-    [ObservableProperty] private string _filter = "All";
-    [ObservableProperty] private string _sort = "Room";
-    [ObservableProperty] private string _viewMode = "Grid";
+    [ObservableProperty] private string _filter = UiState.Get("Dashboard.Filter", "All");
+    [ObservableProperty] private string _sort = UiState.Get("Dashboard.Sort", "Room");
+    [ObservableProperty] private string _viewMode = UiState.Get("Dashboard.View", "Grid");
 
     [ObservableProperty] private int _countAll;
     [ObservableProperty] private int _countAvailable;
@@ -151,8 +151,9 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         if (now - _lastStats > TimeSpan.FromMinutes(1)) _ = TryAsync(LoadStatsAsync);
     }
 
-    partial void OnFilterChanged(string value) => ApplyFilter();
-    partial void OnSortChanged(string value) => ApplyFilter();
+    partial void OnFilterChanged(string value) { UiState.Set("Dashboard.Filter", value); ApplyFilter(); }
+    partial void OnSortChanged(string value) { UiState.Set("Dashboard.Sort", value); ApplyFilter(); }
+    partial void OnViewModeChanged(string value) => UiState.Set("Dashboard.View", value);
 
     private void UpdateCounts()
     {

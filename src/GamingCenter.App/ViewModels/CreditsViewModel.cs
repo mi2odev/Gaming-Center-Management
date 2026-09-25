@@ -71,7 +71,7 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
     public ObservableCollection<CreditEntryRow> History { get; } = [];
 
     [ObservableProperty] private string _search = "";
-    [ObservableProperty] private bool _showSettled;
+    [ObservableProperty] private bool _showSettled = UiState.GetBool("Credits.ShowSettled", false);
     [ObservableProperty] private CreditRow? _selected;
     [ObservableProperty] private string _totalText = "";
     [ObservableProperty] private string _countText = "";
@@ -91,7 +91,7 @@ public sealed partial class CreditsViewModel : PageViewModel, INavigationTarget
     }
 
     partial void OnSearchChanged(string value) => ApplyFilter();
-    partial void OnShowSettledChanged(bool value) => _ = LoadAsync(ReloadAsync);
+    partial void OnShowSettledChanged(bool value) { UiState.Set("Credits.ShowSettled", value); _ = LoadAsync(ReloadAsync); }
 
     private async Task ReloadAsync()
     {
