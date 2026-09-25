@@ -97,8 +97,10 @@ public sealed partial class StationsViewModel : PageViewModel
         Types.Clear();
         foreach (var t in types.Where(t => t.IsActive || t.Id == keepTypeId || list.Any(s => s.StationTypeId == t.Id))) Types.Add(t);
         if (keepTypeId is not null) EditType = Types.FirstOrDefault(t => t.Id == keepTypeId);
+        var keepLocation = EditLocation;
         Locations.Clear();
-        foreach (var l in list.Select(s => s.Location).Where(l => !string.IsNullOrWhiteSpace(l)).Distinct().Order()) Locations.Add(l!);
+        foreach (var r in await _stations.GetRoomsAsync()) Locations.Add(r.Name);
+        EditLocation = keepLocation;
         Summary = $"{_all.Count} stations · {_all.Count(r => !r.Station.IsActive)} disabled";
         ApplyFilter();
     }
@@ -312,6 +314,13 @@ public sealed partial class StationsViewModel : PageViewModel
     }
 
     [RelayCommand]
+    private async Task ManageRooms()
+    {
+        await _dialogs.ShowAsync(new RoomsViewModel(_stations, _dialogs));
+        await ReloadAsync();
+    }
+
+    [RelayCommand]
     private async Task ManageTypes()
     {
         await _dialogs.ShowAsync(new StationTypesViewModel(_stations, _dialogs));
@@ -396,4 +405,103 @@ public sealed partial class StationTypesViewModel : DialogViewModel
         if (!await _dialogs.ConfirmAsync($"Delete type {t.Name}?", "Only types that were never used can be deleted.", "Delete", true)) return;
         if (await RunAsync(() => _stations.DeleteTypeAsync(t.Id))) await LoadAsync();
     }
+}
+
+/// <summary>Add, rename and delete rooms (Room A, VIP…).</summary>
+public sealed partial class RoomsViewModel : DialogViewModel
+{
+    private readonly IStationService _stations;
+    private readonly DialogService _dialogs;
+
+    public RoomsViewModel(IStationService stations, DialogService dialogs)
+    {
+        _stations = stations;
+        _dialogs = dialogs;
+        _ = LoadAsync();
+    }
+
+    public ObservableCollection<RoomDto> Rooms { get; } = [];
+
+    [ObservableProperty] private int? _editId;
+    [ObservableProperty] private string _name = "";
+    [ObservableProperty] private string _saveText = L.T("Add room");
+
+    partial void OnEditIdChanged(int? value) => SaveText = L.T(value is null ? "Add room" : "Rename");
+
+    private async Task LoadAsync()
+    {
+        await RunAsync(async () =>
+        {
+            Rooms.Clear();
+            foreach (var r in await _stations.GetRoomsAsync()) Rooms.Add(r);
+        });
+    }
+
+    [RelayCommand]
+    private void Edit(RoomDto r)
+    {
+        EditId = r.Id;
+        Name = r.Name;
+        Error = null;
+    }
+
+    [RelayCommand]
+    private void New()
+    {
+        EditId = null;
+        Name = "";
+        Error = null;
+    }
+
+    [RelayCommand]
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(Name)) { Error = L.T("Enter the room name."); return; }
+        if (await RunAsync(() => _stations.SaveRoomAsync(EditId, Name)))
+        {
+            New();
+            await LoadAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task Delete(RoomDto r)
+    {
+        string? moveTo = null;
+        if (r.StationCount > 0)
+        {
+            var pick = new DeleteRoomViewModel(r, Rooms.Where(x => x.Id != r.Id).Select(x => x.Name).ToList());
+            if (await _dialogs.ShowAsync<string>(pick) is not { } choice) return;
+            moveTo = choice.Length == 0 ? null : choice;
+        }
+        else if (!await _dialogs.ConfirmAsync(L.F("Delete room {0}?", r.Name), L.T("It has no stations."), L.T("Delete"), true)) return;
+
+        if (await RunAsync(() => _stations.DeleteRoomAsync(r.Id, moveTo)))
+        {
+            if (EditId == r.Id) New();
+            await LoadAsync();
+        }
+    }
+}
+
+/// <summary>Asks where the stations of a deleted room go. Result: room name, or "" for no room.</summary>
+public sealed partial class DeleteRoomViewModel : DialogViewModel
+{
+    public DeleteRoomViewModel(RoomDto room, IReadOnlyList<string> otherRooms)
+    {
+        Title = L.F("Delete room {0}?", room.Name);
+        Message = L.F(room.StationCount == 1 ? "{0} station is in this room. Move it to:" : "{0} stations are in this room. Move them to:", room.StationCount);
+        Targets = [.. otherRooms, NoRoom];
+        Target = otherRooms.FirstOrDefault() ?? NoRoom;
+    }
+
+    public static string NoRoom => L.T("No room");
+    public string Title { get; }
+    public string Message { get; }
+    public IReadOnlyList<string> Targets { get; }
+
+    [ObservableProperty] private string _target;
+
+    [RelayCommand]
+    private void Confirm() => Close(Target == NoRoom ? "" : Target);
 }

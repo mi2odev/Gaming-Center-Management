@@ -45,6 +45,13 @@ public interface IStationService
     Task<IReadOnlyList<StationTypeDto>> GetTypesAsync(CancellationToken ct = default);
     Task<StationTypeDto> SaveTypeAsync(SaveStationTypeRequest request, CancellationToken ct = default);
     Task DeleteTypeAsync(int id, CancellationToken ct = default);
+
+    /// <summary>Rooms, including any room name typed on a station that is not in the list yet.</summary>
+    Task<IReadOnlyList<RoomDto>> GetRoomsAsync(CancellationToken ct = default);
+    /// <summary>Adds a room, or renames one (its stations follow the new name).</summary>
+    Task<RoomDto> SaveRoomAsync(int? id, string name, CancellationToken ct = default);
+    /// <summary>Deletes a room; its stations move to <paramref name="moveStationsTo"/> (null = no room).</summary>
+    Task DeleteRoomAsync(int id, string? moveStationsTo, CancellationToken ct = default);
 }
 
 public interface ISessionService

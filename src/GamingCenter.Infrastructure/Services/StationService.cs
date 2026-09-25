@@ -211,6 +211,88 @@ public sealed class StationService(IDbContextFactory<GamingCenterDbContext> dbFa
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<IReadOnlyList<RoomDto>> GetRoomsAsync(CancellationToken ct = default)
+    {
+        await using var db = await OpenAsync(ct);
+        var rooms = await db.Rooms.ToListAsync(ct);
+        var used = await db.Stations.Where(s => !s.IsDeleted && s.Location != null && s.Location != "")
+            .Select(s => s.Location!).ToListAsync(ct);
+
+        // Room names typed on stations (older data, or typed in the editor) join the list.
+        var missing = used.Select(n => n.Trim()).Where(n => n.Length > 0)
+            .DistinctBy(n => n.ToLowerInvariant())
+            .Where(n => !rooms.Any(r => string.Equals(r.Name, n, StringComparison.OrdinalIgnoreCase)))
+            .Order(StringComparer.CurrentCultureIgnoreCase).ToList();
+        if (missing.Count > 0)
+        {
+            int order = rooms.Count == 0 ? 0 : rooms.Max(r => r.SortOrder);
+            foreach (var n in missing)
+            {
+                var room = new Room { Name = n, SortOrder = ++order };
+                db.Rooms.Add(room);
+                rooms.Add(room);
+            }
+            await db.SaveChangesAsync(ct);
+        }
+
+        return rooms
+            .OrderBy(r => r.SortOrder).ThenBy(r => r.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(r => new RoomDto(r.Id, r.Name, r.SortOrder, used.Count(u => string.Equals(u.Trim(), r.Name, StringComparison.OrdinalIgnoreCase))))
+            .ToList();
+    }
+
+    public async Task<RoomDto> SaveRoomAsync(int? id, string name, CancellationToken ct = default)
+    {
+        RequireAdmin();
+        name = Required(name, "Room name", 64);
+        await using var db = await OpenAsync(ct);
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var rooms = await db.Rooms.ToListAsync(ct);
+        if (rooms.Any(r => r.Id != (id ?? 0) && string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)))
+            throw new BusinessException($"A room named \"{name}\" already exists.");
+
+        Room room;
+        if (id is { } roomId)
+        {
+            room = rooms.FirstOrDefault(r => r.Id == roomId) ?? throw new BusinessException("Room not found.");
+            var old = room.Name;
+            if (old != name)
+            {
+                // Rename everywhere, including removed stations so history reads the same.
+                foreach (var st in await db.Stations.Where(s => s.Location != null).ToListAsync(ct))
+                    if (string.Equals(st.Location!.Trim(), old, StringComparison.OrdinalIgnoreCase)) st.Location = name;
+            }
+        }
+        else
+        {
+            room = new Room { SortOrder = rooms.Count == 0 ? 1 : rooms.Max(r => r.SortOrder) + 1 };
+            db.Rooms.Add(room);
+        }
+        room.Name = name;
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return (await GetRoomsAsync(ct)).First(r => r.Id == room.Id);
+    }
+
+    public async Task DeleteRoomAsync(int id, string? moveStationsTo, CancellationToken ct = default)
+    {
+        RequireAdmin();
+        await using var db = await OpenAsync(ct);
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var room = await db.Rooms.FirstOrDefaultAsync(r => r.Id == id, ct) ?? throw new BusinessException("Room not found.");
+        var target = string.IsNullOrWhiteSpace(moveStationsTo) ? null : moveStationsTo.Trim();
+        if (target is not null && string.Equals(target, room.Name, StringComparison.OrdinalIgnoreCase))
+            throw new BusinessException("Choose another room for its stations.");
+        if (target is not null && !await db.Rooms.AnyAsync(r => r.Name == target, ct))
+            db.Rooms.Add(new Room { Name = target, SortOrder = (await db.Rooms.MaxAsync(r => (int?)r.SortOrder, ct) ?? 0) + 1 });
+
+        foreach (var st in await db.Stations.Where(s => !s.IsDeleted && s.Location != null).ToListAsync(ct))
+            if (string.Equals(st.Location!.Trim(), room.Name, StringComparison.OrdinalIgnoreCase)) st.Location = target;
+        db.Rooms.Remove(room);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+    }
+
     private static async Task EnsureNoLiveSessionAsync(GamingCenterDbContext db, GamingStation s, CancellationToken ct)
     {
         bool live = await db.Sessions.AnyAsync(x => x.StationId == s.Id &&

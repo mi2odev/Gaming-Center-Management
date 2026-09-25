@@ -19,6 +19,7 @@
                         <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="Filter by name, type, room…" Padding="34,0,12,0"/>
                         <c:Icon Data="{StaticResource I.Search}" Width="15" Height="15" Foreground="{DynamicResource Text.Faint}" HorizontalAlignment="Left" Margin="12,0,0,0"/>
                     </Grid>
+                    <Button Content="Rooms" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ManageRoomsCommand}" ToolTip="Add, rename or delete rooms"/>
                     <Button Content="Manage types" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ManageTypesCommand}"/>
                     <Button Content="Add station" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Plus}" Command="{Binding AddCommand}"/>
                 </StackPanel>

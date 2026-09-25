@@ -26,6 +26,8 @@
     <DataTemplate DataType="{x:Type vm:BillViewModel}"><d:BillDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:CounterSaleViewModel}"><d:CounterSaleDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:StationTypesViewModel}"><d:StationTypesDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:RoomsViewModel}"><d:RoomsDialog/></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:DeleteRoomViewModel}"><d:DeleteRoomDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:ProductEditorViewModel}"><d:ProductEditorDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:ReceiveStockViewModel}"><d:ReceiveStockDialog/></DataTemplate>
     <DataTemplate DataType="{x:Type vm:CategoriesViewModel}"><d:CategoriesDialog/></DataTemplate>
