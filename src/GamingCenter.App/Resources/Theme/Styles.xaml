@@ -471,6 +471,15 @@
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="3"/>
     </Style>
+    <!-- Small rounded counter used inside segments, e.g. "Available [12]" -->
+    <Style x:Key="CountBadge" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Bg.Selected}"/>
+        <Setter Property="CornerRadius" Value="999"/>
+        <Setter Property="Padding" Value="7,1"/>
+        <Setter Property="Margin" Value="8,0,0,0"/>
+        <Setter Property="MinWidth" Value="22"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
     <Style x:Key="Segment" TargetType="RadioButton">
         <Setter Property="FontFamily" Value="{DynamicResource Font.UI}"/>
         <Setter Property="FontSize" Value="12"/>
