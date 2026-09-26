@@ -105,7 +105,7 @@
                 <UniformGrid Grid.ColumnSpan="3" Rows="1" Columns="4" Margin="-8,0">
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
                         <StackPanel>
-                            <TextBlock Text="Total revenue" Style="{StaticResource T.Muted}"/>
+                            <TextBlock Text="Total revenue" Style="{StaticResource T.Muted}" ToolTip="Money received: payments at the till plus credit paid back. The unpaid part of a bill counts on the day it is paid."/>
                             <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding TotalText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
                             <TextBlock Text="{Binding TrendText}" Margin="0,4,0,0">
                                 <TextBlock.Style>

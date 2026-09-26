@@ -209,11 +209,19 @@ public sealed record DashboardStats(
     string? MostSoldProduct,
     int MostSoldProductUnits,
     IReadOnlyList<ProductDto> LowStock,
-    decimal Discounts = 0);
+    decimal Discounts = 0,
+    decimal CreditRepaid = 0,
+    decimal CreditLeft = 0);
 
-public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products, decimal Discounts = 0)
+/// <summary>A customer paying back what they owed (counts as income on the day it is paid).</summary>
+public sealed record RepaymentRow(DateTime At, string CustomerName, decimal Amount, PaymentMethod Method, string? Operator);
+
+/// <summary>
+/// One day (or month) of income. Money left on credit is not income yet; it counts on the day the customer pays it back.
+/// </summary>
+public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products, decimal Discounts = 0, decimal Credit = 0, decimal Repaid = 0)
 {
-    public decimal Total => Gaming + Products - Discounts;
+    public decimal Total => Gaming + Products - Discounts - Credit + Repaid;
 }
 
 public sealed record StationRevenue(string Name, decimal Revenue, TimeSpan PlayTime, int Sessions);
@@ -239,7 +247,8 @@ public sealed record ReportData(
     decimal CreditGiven = 0,
     decimal CreditCollected = 0,
     decimal Discounts = 0,
-    ReportExtras? Extras = null);
+    ReportExtras? Extras = null,
+    decimal Sales = 0);
 
 /// <summary>A labelled total for report breakdowns (room, console type, category, payment method…).</summary>
 public sealed record NamedAmount(string Name, decimal Amount, int Count = 0, decimal Extra = 0);

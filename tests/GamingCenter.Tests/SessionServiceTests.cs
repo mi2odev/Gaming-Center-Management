@@ -432,6 +432,37 @@ public class SessionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Credit_counts_as_income_on_the_day_it_is_paid_back()
+    {
+        var st = await _t.Station("PS5 #01");
+        var sami = await _t.Customers.SaveAsync(new SaveCustomerRequest(null, "Sami", null, null));
+        var day1 = _t.Clock.Now.Date;
+        var s = await _t.Sessions.StartAsync(new StartSessionRequest(st.Id, null, SessionMode.Open, null, null));
+        _t.Clock.Now = _t.Clock.Now.AddHours(2);                        // 600 DA, pays 200, 400 on credit
+        await _t.Sessions.CompleteAsync(new CompleteSessionRequest(s.Id, _t.Clock.Now, PaymentMethod.Cash, 200m, sami.Id, PayNow: 200m));
+
+        var first = await _t.Reports.GetDashboardStatsAsync(day1);
+        Assert.Equal(200m, first.Revenue);
+        Assert.Equal(400m, first.CreditLeft);
+
+        _t.Clock.Now = day1.AddDays(1).AddHours(15);                    // next day he pays back 400 by card
+        await _t.Credits.RecordRepaymentAsync(sami.Id, 400m, PaymentMethod.Card, null);
+
+        var second = await _t.Reports.GetDashboardStatsAsync(day1.AddDays(1));
+        Assert.Equal(400m, second.Revenue);
+        Assert.Equal(400m, second.CreditRepaid);
+        Assert.Equal(200m, second.RevenueYesterday);
+
+        var report = await _t.Reports.GetReportAsync(day1, day1.AddDays(2), false);
+        Assert.Equal(600m, report.TotalRevenue);                        // 200 + 400, never counted twice
+        Assert.Equal(600m, report.Sales);
+        Assert.Equal(200m, report.PerDay[0].Total);
+        Assert.Equal(400m, report.PerDay[1].Total);
+        Assert.Equal(400m, report.MethodTotals[PaymentMethod.Card]);
+        Assert.Equal(400m, (await _t.Reports.GetRepaymentsAsync(day1.AddDays(1), day1.AddDays(2))).Single().Amount);
+    }
+
+    [Fact]
     public async Task Controllers_outside_station_limits_are_refused()
     {
         var ps5 = await _t.Station("PS5 #04");

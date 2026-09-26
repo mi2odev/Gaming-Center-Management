@@ -124,6 +124,8 @@ public interface IReportService
     Task<IReadOnlyList<HistoryRow>> GetHistoryAsync(DateTime from, DateTime to, string? search = null, CancellationToken ct = default);
     Task<ReceiptDto?> GetReceiptAsync(int sessionId, CancellationToken ct = default);
     Task<IReadOnlyList<PaymentRow>> GetPaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default);
+    /// <summary>Credit paid back by customers in the period.</summary>
+    Task<IReadOnlyList<RepaymentRow>> GetRepaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default);
     Task<ReportData> GetReportAsync(DateTime from, DateTime to, bool groupByMonth, CancellationToken ct = default);
 }
 

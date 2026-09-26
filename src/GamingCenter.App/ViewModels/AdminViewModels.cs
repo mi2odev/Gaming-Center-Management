@@ -365,7 +365,9 @@ public sealed partial class ReportsViewModel : PageViewModel
         }
         else { TrendUp = true; TrendText = L.T("No data for previous period"); }
         GamingText = Money.Number(d.GamingRevenue);
-        GamingShare = d.TotalRevenue > 0 ? L.F("{0}% of total", $"{d.GamingRevenue / d.TotalRevenue * 100:0}") : "—";
+        var sold = d.GamingRevenue + d.ProductRevenue;
+        GamingShare = sold > 0 ? L.F("{0}% of sales", $"{d.GamingRevenue / sold * 100:0}") : "—";
+        if (d.CreditCollected > 0) TrendText += " · " + L.F("incl. {0} credit paid back", Money.Format(d.CreditCollected));
         ProductText = Money.Number(d.ProductRevenue);
         ProfitText = L.F("Est. profit {0}", Money.Format(d.ProductProfit));
         SessionsText = d.Sessions.ToString();
@@ -377,7 +379,7 @@ public sealed partial class ReportsViewModel : PageViewModel
         var max = d.PerDay.Count == 0 ? 0 : d.PerDay.Max(x => x.Total);
         foreach (var x in d.PerDay)
             Bars.Add(new BarItem(x.Label, x.Total >= 1000 ? $"{x.Total / 1000m:0.#}k" : Money.Number(x.Total),
-                max > 0 ? (double)(x.Total / max) : 0, x.Total > 0 ? (double)(x.Products / x.Total) : 0));
+                max > 0 ? (double)(Math.Max(0, x.Total) / max) : 0, x.Gaming + x.Products > 0 ? (double)(x.Products / (x.Gaming + x.Products)) : 0));
 
         Stations.Clear();
         var smax = d.PerStation.Count == 0 ? 0 : d.PerStation.Max(x => x.Revenue);
@@ -420,7 +422,7 @@ public sealed partial class ReportsViewModel : PageViewModel
 
     private void ShowExtras(ReportData d, ReportExtras x)
     {
-        AvgTicketText = x.Receipts == 0 ? "—" : Money.Number(d.TotalRevenue / x.Receipts);
+        AvgTicketText = x.Receipts == 0 ? "—" : Money.Number(d.Sales / x.Receipts);
         AvgTicketSub = L.F(x.Receipts == 1 ? "{0} receipt" : "{0} receipts", x.Receipts)
             + (d.Sessions > 0 ? " · " + L.F("{0} per session", Money.Format(d.GamingRevenue / d.Sessions)) : "");
         PlayHoursText = $"{x.PlayTime.TotalHours:0.#}";
@@ -475,7 +477,8 @@ public sealed partial class ReportsViewModel : PageViewModel
         var path = _files.SaveCsv($"report-{_data.From:yyyyMMdd}-{_data.To.AddDays(-1):yyyyMMdd}.csv");
         if (path is null) return;
         await TryAsync(() => CsvWriter.WriteAsync(path, _data.PerDay, [
-            new("Date", x => x.Day.ToString("yyyy-MM-dd")), new("Gaming", x => x.Gaming), new("Products", x => x.Products), new("Total", x => x.Total),
+            new("Date", x => x.Day.ToString("yyyy-MM-dd")), new("Gaming", x => x.Gaming), new("Products", x => x.Products), new("Discounts", x => x.Discounts),
+            new("Left on credit", x => x.Credit), new("Credit paid back", x => x.Repaid), new("Money received", x => x.Total),
         ]), "Export complete", path);
     }
 
