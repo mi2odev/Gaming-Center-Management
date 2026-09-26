@@ -637,7 +637,9 @@ public class SessionServiceTests : IDisposable
         Assert.Equal(300m, stats.Revenue);
         Assert.Equal(5m, stats.Discounts);
         var report = await _t.Reports.GetReportAsync(_t.Clock.Now.Date, _t.Clock.Now.Date.AddDays(1), false);
-        Assert.Equal(300m, report.PerDay.Single().Total);
+        Assert.Equal(24, report.PerDay.Count);                      // one day is shown hour by hour
+        Assert.Equal(300m, report.PerDay.Sum(b => b.Total));
+        Assert.Equal(300m, report.PerDay.Single(b => b.Total > 0).Total);
 
         await Assert.ThrowsAsync<BusinessException>(() => _t.Sessions.CounterSaleAsync(new CounterSaleRequest(
             [new CartLine(pepsi.Id, 1)], PaymentMethod.Cash, 0, null, Discount: 500m)));

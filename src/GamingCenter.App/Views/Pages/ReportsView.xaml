@@ -49,11 +49,17 @@
     <!-- Design 1k -->
     <DockPanel Margin="32,24,32,0">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Margin="0,0,12,0" Command="{Binding ExportCsvCommand}"/>
-                <Button Content="Products CSV" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ExportProductsCommand}"/>
-                <Button Content="Stations CSV" Style="{StaticResource Btn.Secondary}" Margin="0,0,12,0" Command="{Binding ExportStationsCommand}"/>
-                <Button Content="Export PDF" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Printer}" Command="{Binding ExportPdfCommand}"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
+                <Button Content="Export PDF" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Printer}" Margin="0,0,10,0" Command="{Binding ExportPdfCommand}"/>
+                <Button Content="Export CSV" Style="{StaticResource Btn.Secondary}" c:Ui.Icon="{StaticResource I.Download}" Click="OnExportClick" ToolTip="Revenue, products or stations">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Revenue per day" Command="{Binding ExportCsvCommand}"/>
+                            <MenuItem Header="Products" Command="{Binding ExportProductsCommand}"/>
+                            <MenuItem Header="Station usage" Command="{Binding ExportStationsCommand}"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Border Style="{StaticResource SegmentHost}">
@@ -74,11 +80,11 @@
                     <TextBlock Text="→" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="8,0"/>
                     <DatePicker SelectedDate="{Binding CustomTo}" Width="130"/>
                 </StackPanel>
-                <TextBlock Text="{Binding RangeText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                <TextBlock Text="{Binding RangeText}" Style="{StaticResource T.Mono}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center" Margin="14,0,0,0" TextTrimming="None"/>
             </StackPanel>
         </DockPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,0,24">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,24">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
@@ -109,7 +115,7 @@
                         <StackPanel>
                             <TextBlock Text="Total revenue" Style="{StaticResource T.Muted}" ToolTip="Money received: payments at the till plus credit paid back. The unpaid part of a bill counts on the day it is paid."/>
                             <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding TotalText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
-                            <TextBlock Text="{Binding TrendText}" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding TrendText}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource T.Muted}">
                                         <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
@@ -117,6 +123,8 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
+                            <TextBlock Text="{Binding TotalNote}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Visibility="{Binding TotalNote, Converter={StaticResource HasValueToVis}}"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
@@ -188,14 +196,26 @@
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
                         <StackPanel>
                             <TextBlock Text="Discounts given" Style="{StaticResource T.Muted}"/>
-                            <TextBlock Text="{Binding DiscountsText}" Style="{StaticResource KpiValue}" Foreground="{DynamicResource Warning}"/>
+                            <TextBlock Text="{Binding DiscountsText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource KpiValue}">
+                                        <Style.Triggers><DataTrigger Binding="{Binding HasDiscounts}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Warning}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBlock Text="paid less than the bill" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="18,16">
                         <StackPanel>
                             <TextBlock Text="Left on credit" Style="{StaticResource T.Muted}"/>
-                            <TextBlock Text="{Binding CreditText}" Style="{StaticResource KpiValue}" Foreground="{DynamicResource Danger}"/>
+                            <TextBlock Text="{Binding CreditText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource KpiValue}">
+                                        <Style.Triggers><DataTrigger Binding="{Binding HasCredit}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Danger}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBlock Text="{Binding CreditSub}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
