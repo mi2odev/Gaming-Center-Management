@@ -209,6 +209,17 @@ public sealed class ReportService(
                     bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back));
             }
         }
+        else if (span <= TimeSpan.FromDays(1))
+        {
+            // A single day reads better hour by hour than as one tall bar.
+            for (var h = from; h < to; h = h.AddHours(1))
+            {
+                var bucket = payments.Where(p => p.PaidAt >= h && p.PaidAt < h.AddHours(1)).ToList();
+                var back = repayments.Where(r => r.At >= h && r.At < h.AddHours(1)).Sum(r => r.Amount);
+                perDay.Add(new DayRevenue(h, h.Hour % 3 == 0 ? h.ToString("HH'h'", culture) : "", bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount),
+                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back));
+            }
+        }
         else
         {
             var days = (int)Math.Ceiling(span.TotalDays);
@@ -267,12 +278,16 @@ public sealed class ReportService(
             .Where(s => s.StartTime >= from && s.StartTime < to && s.Mode != SessionMode.CounterSale && s.Status != SessionStatus.Cancelled)
             .Select(s => s.StartedByUserId).ToListAsync(ct);
 
+        bool hourly = !groupByMonth && to - from <= TimeSpan.FromDays(1);
         int Bucket(DateTime at)
         {
             for (int i = 0; i < buckets.Count; i++)
             {
                 var b = buckets[i].Day;
-                if (groupByMonth ? b.Year == at.Year && b.Month == at.Month : b.Date == at.Date) return i;
+                bool match = groupByMonth ? b.Year == at.Year && b.Month == at.Month
+                    : hourly ? at >= b && at < b.AddHours(1)
+                    : b.Date == at.Date;
+                if (match) return i;
             }
             return -1;
         }

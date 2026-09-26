@@ -322,6 +322,9 @@ public sealed partial class ReportsViewModel : PageViewModel
     [ObservableProperty] private string _busiestText = "";
     [ObservableProperty] private string _bestDayText = "";
     [ObservableProperty] private string _accountsSummary = "";
+    [ObservableProperty] private string _totalNote = "";
+    [ObservableProperty] private bool _hasDiscounts;
+    [ObservableProperty] private bool _hasCredit;
 
     public ObservableCollection<BarItem> HourBars { get; } = [];
     public ObservableCollection<BarItem> WeekdayBars { get; } = [];
@@ -395,18 +398,18 @@ public sealed partial class ReportsViewModel : PageViewModel
         GamingText = Money.Number(d.GamingRevenue);
         var sold = d.GamingRevenue + d.ProductRevenue;
         GamingShare = sold > 0 ? L.F("{0}% of sales", $"{d.GamingRevenue / sold * 100:0}") : "—";
-        if (d.CreditCollected > 0) TrendText += " · " + L.F("incl. {0} credit paid back", Money.Format(d.CreditCollected));
+        TotalNote = d.CreditCollected > 0 ? L.F("incl. {0} credit paid back", Money.Format(d.CreditCollected)) : "";
         ProductText = Money.Number(d.ProductRevenue);
         ProfitText = L.F("Est. profit {0}", Money.Format(d.ProductProfit));
         SessionsText = d.Sessions.ToString();
         var days = Math.Max(1, (to - from).TotalDays);
         SessionsSub = d.Sessions == 0 ? L.T("No sessions") : L.F("avg {0} · {1} per day", Durations.Short(d.AverageSession), (d.Sessions / days).ToString("0.#"));
-        ChartTitle = L.T(byMonth ? "Revenue per month" : "Revenue per day");
+        ChartTitle = L.T(byMonth ? "Revenue per month" : to - from <= TimeSpan.FromDays(1) ? "Revenue per hour" : "Revenue per day");
 
         Bars.Clear();
         var max = d.PerDay.Count == 0 ? 0 : d.PerDay.Max(x => x.Total);
         foreach (var x in d.PerDay)
-            Bars.Add(new BarItem(x.Label, x.Total >= 1000 ? $"{x.Total / 1000m:0.#}k" : Money.Number(x.Total),
+            Bars.Add(new BarItem(x.Label, x.Total == 0 ? "" : x.Total >= 1000 ? $"{x.Total / 1000m:0.#}k" : Money.Number(x.Total),
                 max > 0 ? (double)(Math.Max(0, x.Total) / max) : 0, x.Gaming + x.Products > 0 ? (double)(x.Products / (x.Gaming + x.Products)) : 0));
 
         Stations.Clear();
@@ -461,6 +464,8 @@ public sealed partial class ReportsViewModel : PageViewModel
         CounterText = Money.Number(x.CounterSalesRevenue);
         CounterSub = L.F(x.CounterSales == 1 ? "{0} sale without session" : "{0} sales without session", x.CounterSales);
         DiscountsText = Money.Number(d.Discounts);
+        HasDiscounts = d.Discounts > 0;
+        HasCredit = x.UnpaidOnCredit > 0;
         CreditText = Money.Number(x.UnpaidOnCredit);
         CreditSub = L.F("paid back {0}", Money.Format(d.CreditCollected));
 
