@@ -57,6 +57,7 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
     [ObservableProperty] private bool _revenueTrendUp = true;
     [ObservableProperty] private string _gamingText = "0";
     [ObservableProperty] private string _gamingSub = "";
+    [ObservableProperty] private string _revenueNote = "";
     [ObservableProperty] private string _productsText = "0";
     [ObservableProperty] private string _productsSub = "";
     [ObservableProperty] private string _activeSub = "";
@@ -123,6 +124,10 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
             RevenueTrend = L.F("{0}% vs yesterday", $"{(pct >= 0 ? "+" : "")}{pct:0}");
         }
         else RevenueTrend = s.Revenue > 0 ? L.T("First sales today") : L.T("No sales yet today");
+        var notes = new List<string>();
+        if (s.CreditRepaid > 0) notes.Add(L.F("incl. {0} credit paid back", Money.Format(s.CreditRepaid)));
+        if (s.CreditLeft > 0) notes.Add(L.F("{0} left on credit", Money.Format(s.CreditLeft)));
+        RevenueNote = string.Join(" · ", notes);
         GamingText = Money.Number(s.GamingRevenue);
         GamingSub = s.Sessions == 0 ? L.T("No sessions yet") : L.F("{0} sessions · avg {1}", s.Sessions, Durations.Short(s.AverageSession));
         ProductsText = Money.Number(s.ProductRevenue);

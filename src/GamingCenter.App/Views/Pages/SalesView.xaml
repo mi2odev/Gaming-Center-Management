@@ -14,12 +14,13 @@
                 <parts:PeriodPicker/>
             </DockPanel>
 
-            <UniformGrid DockPanel.Dock="Top" Rows="1" Columns="5" Margin="-7,0,-7,20">
-                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="{Binding CountText}" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding TotalText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
+            <UniformGrid DockPanel.Dock="Top" Rows="1" Columns="6" Margin="-7,0,-7,20">
+                <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="{Binding CountText}" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding TotalText}" Style="{StaticResource T.StatValue}" FontSize="24"/><TextBlock Text="{Binding ReceivedText}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Accent}" Margin="0,2,0,0"/></StackPanel></Border>
                 <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Cash" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding CashText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
                 <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Card" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding CardText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
                 <Border Style="{StaticResource Card}" Margin="7,0"><StackPanel><TextBlock Text="Other" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding OtherText}" Style="{StaticResource T.StatValue}" FontSize="24"/></StackPanel></Border>
                 <Border Style="{StaticResource Card.Warning}" Margin="7,0"><StackPanel><TextBlock Text="Left on credit" Style="{StaticResource T.Muted}" Foreground="{DynamicResource Warning}"/><TextBlock Text="{Binding CreditText}" Style="{StaticResource T.StatValue}" FontSize="24" Foreground="{DynamicResource Warning}"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="7,0" ToolTip="Old credit that customers paid back in this period. It is counted as income on the day it is paid and is included in Cash / Card / Other."><StackPanel><TextBlock Text="Credit paid back" Style="{StaticResource T.Muted}"/><TextBlock Text="{Binding RepaidText}" Style="{StaticResource T.StatValue}" FontSize="24" Foreground="{DynamicResource Accent}"/></StackPanel></Border>
             </UniformGrid>
 
             <Grid DockPanel.Dock="Top" Margin="14,0,14,6">

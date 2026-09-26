@@ -78,6 +78,9 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
+                    <TextBlock Text="{Binding RevenueNote}" Style="{StaticResource StatSub}" Foreground="{DynamicResource Text.Muted}" TextWrapping="Wrap"
+                               Visibility="{Binding RevenueNote, Converter={StaticResource HasValueToVis}}"
+                               ToolTip="Money received today: payments at the till plus credit paid back. The unpaid part of a bill counts when it is paid."/>
                 </StackPanel>
             </Border>
             <Border>

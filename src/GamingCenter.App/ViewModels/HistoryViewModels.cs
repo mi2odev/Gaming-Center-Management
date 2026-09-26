@@ -246,6 +246,8 @@ public sealed partial class SalesViewModel : PageViewModel
     [ObservableProperty] private string _cashText = "";
     [ObservableProperty] private string _cardText = "";
     [ObservableProperty] private string _otherText = "";
+    [ObservableProperty] private string _repaidText = "";
+    [ObservableProperty] private string _receivedText = "";
     [ObservableProperty] private string _creditText = "";
     [ObservableProperty] private string _countText = "";
     [ObservableProperty] private bool _isEmpty;
@@ -267,14 +269,19 @@ public sealed partial class SalesViewModel : PageViewModel
     {
         var (from, to) = Periods.Range(Period, DateTime.Today, CustomFrom, CustomTo);
         _rows = (await _reports.GetPaymentsAsync(from, to)).ToList();
+        var repaid = await _reports.GetRepaymentsAsync(from, to);
         Rows.Clear();
         foreach (var r in _rows) Rows.Add(new PaymentRowView(r));
         TotalText = Money.Format(_rows.Sum(r => r.TotalAmount));
         // Cash/Card/Other show money actually collected; the unpaid part is shown as credit.
-        CashText = Money.Format(_rows.Sum(r => r.CashCollected));
-        CardText = Money.Format(_rows.Sum(r => r.CardCollected));
-        OtherText = Money.Format(_rows.Sum(r => r.OtherCollected));
+        // Credit paid back is money received in this period, so it joins its payment method.
+        decimal Back(PaymentMethod m) => repaid.Where(r => r.Method == m).Sum(r => r.Amount);
+        CashText = Money.Format(_rows.Sum(r => r.CashCollected) + Back(PaymentMethod.Cash));
+        CardText = Money.Format(_rows.Sum(r => r.CardCollected) + Back(PaymentMethod.Card));
+        OtherText = Money.Format(_rows.Sum(r => r.OtherCollected) + Back(PaymentMethod.Other));
         CreditText = Money.Format(_rows.Sum(r => r.CreditAmount));
+        RepaidText = Money.Format(repaid.Sum(r => r.Amount));
+        ReceivedText = L.F("Money received {0}", Money.Format(_rows.Sum(r => r.TotalAmount - r.CreditAmount) + repaid.Sum(r => r.Amount)));
         CountText = $"{_rows.Count} payments";
         IsEmpty = _rows.Count == 0;
         Selected = Rows.FirstOrDefault();
