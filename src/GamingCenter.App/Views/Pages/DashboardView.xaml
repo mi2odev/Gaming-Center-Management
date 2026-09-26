@@ -151,21 +151,40 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Stations" Style="{StaticResource T.Section}" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                <RadioButton Style="{StaticResource Chip}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=All}">
-                    <TextBlock><Run Text="All · "/><Run Text="{Binding CountAll, Mode=OneWay}"/></TextBlock>
-                </RadioButton>
-                <RadioButton Style="{StaticResource Chip}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Available}">
-                    <StackPanel Orientation="Horizontal"><Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Available}" Margin="0,0,6,0"/><TextBlock><Run Text="Available · "/><Run Text="{Binding CountAvailable, Mode=OneWay}"/></TextBlock></StackPanel>
-                </RadioButton>
-                <RadioButton Style="{StaticResource Chip}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Occupied}">
-                    <StackPanel Orientation="Horizontal"><Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Occupied}" Margin="0,0,6,0"/><TextBlock><Run Text="Occupied · "/><Run Text="{Binding CountOccupied, Mode=OneWay}"/></TextBlock></StackPanel>
-                </RadioButton>
-                <RadioButton Style="{StaticResource Chip}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Reserved}">
-                    <StackPanel Orientation="Horizontal"><Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Reserved}" Margin="0,0,6,0"/><TextBlock><Run Text="Reserved · "/><Run Text="{Binding CountReserved, Mode=OneWay}"/></TextBlock></StackPanel>
-                </RadioButton>
-                <RadioButton Style="{StaticResource Chip}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Offline}">
-                    <StackPanel Orientation="Horizontal"><Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Offline}" Margin="0,0,6,0"/><TextBlock><Run Text="Offline · "/><Run Text="{Binding CountOffline, Mode=OneWay}"/></TextBlock></StackPanel>
-                </RadioButton>
+                <Border Style="{StaticResource SegmentHost}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource Segment}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=All}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="All" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource CountBadge}"><TextBlock Text="{Binding CountAll}" Style="{StaticResource T.Mono}" FontSize="11" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></Border>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Available}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Available}" Margin="0,0,7,0" VerticalAlignment="Center"/><TextBlock Text="Available" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource CountBadge}"><TextBlock Text="{Binding CountAvailable}" Style="{StaticResource T.Mono}" FontSize="11" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></Border>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Occupied}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Occupied}" Margin="0,0,7,0" VerticalAlignment="Center"/><TextBlock Text="Occupied" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource CountBadge}"><TextBlock Text="{Binding CountOccupied}" Style="{StaticResource T.Mono}" FontSize="11" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></Border>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Reserved}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Reserved}" Margin="0,0,7,0" VerticalAlignment="Center"/><TextBlock Text="Reserved" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource CountBadge}"><TextBlock Text="{Binding CountReserved}" Style="{StaticResource T.Mono}" FontSize="11" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></Border>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource Segment}" GroupName="Filter" IsChecked="{Binding Filter, Converter={StaticResource Equals}, ConverterParameter=Offline}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource Dot}" Fill="{DynamicResource Status.Offline}" Margin="0,0,7,0" VerticalAlignment="Center"/><TextBlock Text="Offline" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource CountBadge}"><TextBlock Text="{Binding CountOffline}" Style="{StaticResource T.Mono}" FontSize="11" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></Border>
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </DockPanel>
 
