@@ -257,7 +257,10 @@ public sealed record StationUsage(string Name, string Type, string Room, int Ses
 
 public sealed record CustomerSpend(string Name, int Visits, decimal Spent, decimal Owes);
 
-public sealed record OperatorTotal(string Name, int Receipts, decimal Collected, decimal Discounts);
+/// <summary>What one user account did in the period: money taken in (by method), money given away, work done.</summary>
+public sealed record OperatorTotal(string Name, int Receipts, decimal Collected, decimal Discounts,
+    string Role = "", decimal Cash = 0, decimal Card = 0, decimal Other = 0, decimal Repaid = 0, decimal CreditGiven = 0,
+    int SessionsStarted = 0, decimal Sales = 0, IReadOnlyList<decimal>? PerBucket = null);
 
 /// <summary>Detailed breakdowns for the Reports page and PDF.</summary>
 public sealed record ReportExtras(

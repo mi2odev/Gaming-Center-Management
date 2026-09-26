@@ -425,7 +425,15 @@ public class SessionServiceTests : IDisposable
         Assert.Equal(x.UnpaidOnCredit, top.Owes);
         Assert.Equal(1, x.Customers);
         Assert.Equal(1, x.NewCustomers);
-        Assert.Equal(300m, x.Operators.Single().Collected);
+        var admin = x.Operators.Single();
+        Assert.Equal(300m, admin.Collected);
+        Assert.Equal(300m, admin.Card);
+        Assert.Equal(0m, admin.Cash);
+        Assert.Equal(x.UnpaidOnCredit, admin.CreditGiven);
+        Assert.Equal(1, admin.SessionsStarted);
+        Assert.Equal(2, admin.Receipts);
+        Assert.Equal("Admin", admin.Role);
+        Assert.Equal(300m, admin.PerBucket!.Sum());
         Assert.Equal(1, x.Stations.Single(st => st.Name == "PS5 #01").Sessions);
         Assert.Contains(x.PerCategory, c => c.Count == 2);
         Assert.Equal(report.TotalRevenue, x.RevenuePerWeekday.Sum());
@@ -459,6 +467,13 @@ public class SessionServiceTests : IDisposable
         Assert.Equal(200m, report.PerDay[0].Total);
         Assert.Equal(400m, report.PerDay[1].Total);
         Assert.Equal(400m, report.MethodTotals[PaymentMethod.Card]);
+        var account = report.Extras!.Operators.Single();
+        Assert.Equal(600m, account.Collected);                      // 200 cash on day 1 + 400 card paid back on day 2
+        Assert.Equal(200m, account.Cash);
+        Assert.Equal(400m, account.Card);
+        Assert.Equal(400m, account.Repaid);
+        Assert.Equal(400m, account.CreditGiven);
+        Assert.Equal([200m, 400m], account.PerBucket!);
         Assert.Equal(400m, (await _t.Reports.GetRepaymentsAsync(day1.AddDays(1), day1.AddDays(2))).Single().Amount);
     }
 

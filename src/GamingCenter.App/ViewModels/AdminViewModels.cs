@@ -227,12 +227,39 @@ public sealed record CustomerSpendRow(CustomerSpend C)
     public string Owes => C.Owes > 0 ? L.F("owes {0}", Money.Format(C.Owes)) : "";
 }
 
-public sealed record OperatorRow(OperatorTotal O)
+/// <summary>One user account on the Reports page: what they took in and what they gave away.</summary>
+public sealed record OperatorRow(OperatorTotal O, decimal AllCollected, decimal MaxCollected, decimal MaxBucket, IReadOnlyList<string> BucketLabels)
 {
     public string Name => O.Name;
+    public string Initials => string.Concat(O.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    public string Role => string.IsNullOrEmpty(O.Role) ? "" : L.T(O.Role);
     public string Receipts => L.F(O.Receipts == 1 ? "{0} receipt" : "{0} receipts", O.Receipts);
     public string Collected => Money.Number(O.Collected);
     public string Discounts => O.Discounts > 0 ? L.F("discounts {0}", Money.Format(O.Discounts)) : "";
+
+    /// <summary>Share of all money taken in by every account.</summary>
+    public string ShareText => AllCollected > 0 ? L.F("{0} of all money taken", (O.Collected / AllCollected).ToString("P0")) : "";
+    public double Rank => MaxCollected > 0 ? (double)(O.Collected / MaxCollected) : 0;
+
+    // Split of their money by method (fractions of their own total).
+    public double CashFrac => O.Collected > 0 ? (double)(O.Cash / O.Collected) : 0;
+    public double CardFrac => O.Collected > 0 ? (double)(O.Card / O.Collected) : 0;
+    public double OtherFrac => O.Collected > 0 ? (double)(O.Other / O.Collected) : 0;
+    public string CashText => Money.Number(O.Cash);
+    public string CardText => Money.Number(O.Card);
+    public string OtherText => Money.Number(O.Other);
+
+    public string SalesText => Money.Format(O.Sales);
+    public string SessionsText => O.SessionsStarted.ToString();
+    public string ReceiptsCount => O.Receipts.ToString();
+    public string RepaidText => Money.Format(O.Repaid);
+    public string DiscountText => Money.Format(O.Discounts);
+    public string CreditGivenText => Money.Format(O.CreditGiven);
+    public bool GaveAway => O.Discounts > 0 || O.CreditGiven > 0;
+
+    /// <summary>Money taken per day (or month), on the same scale for every account so they can be compared.</summary>
+    public IReadOnlyList<BarItem> Bars { get; } = (O.PerBucket ?? []).Select((v, i) => new BarItem(
+        i < BucketLabels.Count ? BucketLabels[i] : "", v == 0 ? "" : Money.Format(v), MaxBucket > 0 ? (double)(v / MaxBucket) : 0, 0)).ToList();
 }
 
 /// <summary>Revenue reports (design 1k) for day, week, month, year or a custom range.</summary>
@@ -294,6 +321,7 @@ public sealed partial class ReportsViewModel : PageViewModel
     [ObservableProperty] private string _creditSub = "";
     [ObservableProperty] private string _busiestText = "";
     [ObservableProperty] private string _bestDayText = "";
+    [ObservableProperty] private string _accountsSummary = "";
 
     public ObservableCollection<BarItem> HourBars { get; } = [];
     public ObservableCollection<BarItem> WeekdayBars { get; } = [];
@@ -467,7 +495,14 @@ public sealed partial class ReportsViewModel : PageViewModel
         TopCustomers.Clear();
         foreach (var c in x.TopCustomers) TopCustomers.Add(new CustomerSpendRow(c));
         Operators.Clear();
-        foreach (var o in x.Operators) Operators.Add(new OperatorRow(o));
+        var allCollected = x.Operators.Sum(o => o.Collected);
+        var maxCollected = x.Operators.Count == 0 ? 0 : x.Operators.Max(o => o.Collected);
+        var maxBucket = x.Operators.SelectMany(o => o.PerBucket ?? []).DefaultIfEmpty(0).Max();
+        // Label only a few bars when there are many (a month has 30).
+        int step = Math.Max(1, d.PerDay.Count / 8);
+        var labels = d.PerDay.Select((b, i) => i % step == 0 ? b.Label : "").ToList();
+        foreach (var o in x.Operators) Operators.Add(new OperatorRow(o, allCollected, maxCollected, maxBucket, labels));
+        AccountsSummary = x.Operators.Count == 0 ? "" : L.F(x.Operators.Count == 1 ? "{0} account · {1} taken in" : "{0} accounts · {1} taken in", x.Operators.Count, Money.Format(allCollected));
     }
 
     [RelayCommand]

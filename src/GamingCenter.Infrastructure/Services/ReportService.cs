@@ -240,7 +240,7 @@ public sealed class ReportService(
         decimal creditCollected = -creditRows.Where(t => t.Kind == CreditKind.Repayment).Sum(t => t.Amount);
         int? busiestHour = gaming.Count == 0 ? null : gaming.GroupBy(s => s.StartTime.Hour).OrderByDescending(g => g.Count()).First().Key;
 
-        var extras = await BuildExtrasAsync(db, from, to, payments, repayments, gaming, lines, ct);
+        var extras = await BuildExtrasAsync(db, from, to, payments, repayments, gaming, lines, perDay, groupByMonth, ct);
 
         return new ReportData(
             from, to,
@@ -255,8 +255,51 @@ public sealed class ReportService(
             payments.Sum(p => p.DiscountAmount), extras, payments.Sum(p => p.TotalAmount));
     }
 
+    /// <summary>Per user account: money taken in by method (payments and credit paid back), discounts and credit given, sessions started.</summary>
+    private static async Task<List<OperatorTotal>> OperatorTotalsAsync(GamingCenterDbContext db, DateTime from, DateTime to,
+        List<Payment> payments, List<DayRevenue> buckets, bool groupByMonth, CancellationToken ct)
+    {
+        var users = await db.Users.AsNoTracking().ToDictionaryAsync(u => u.Id, ct);
+        var repaid = await db.CreditTransactions.AsNoTracking()
+            .Where(t => t.Kind == CreditKind.Repayment && t.At >= from && t.At < to)
+            .Select(t => new { t.UserId, t.At, t.Amount, t.Method }).ToListAsync(ct);
+        var started = await db.Sessions.AsNoTracking()
+            .Where(s => s.StartTime >= from && s.StartTime < to && s.Mode != SessionMode.CounterSale && s.Status != SessionStatus.Cancelled)
+            .Select(s => s.StartedByUserId).ToListAsync(ct);
+
+        int Bucket(DateTime at)
+        {
+            for (int i = 0; i < buckets.Count; i++)
+            {
+                var b = buckets[i].Day;
+                if (groupByMonth ? b.Year == at.Year && b.Month == at.Month : b.Date == at.Date) return i;
+            }
+            return -1;
+        }
+
+        var ids = payments.Select(p => p.UserId).Concat(repaid.Select(r => r.UserId)).Concat(started).Distinct().ToList();
+        var result = new List<OperatorTotal>();
+        foreach (var id in ids)
+        {
+            var mine = payments.Where(p => p.UserId == id).ToList();
+            var back = repaid.Where(r => r.UserId == id).ToList();
+            decimal By(PaymentMethod m) => mine.Sum(p => p.CollectedBy(m)) + back.Where(r => (r.Method ?? PaymentMethod.Cash) == m).Sum(r => -r.Amount);
+            var perBucket = new decimal[buckets.Count];
+            foreach (var p in mine) { int i = Bucket(p.PaidAt); if (i >= 0) perBucket[i] += p.PaidNow; }
+            foreach (var r in back) { int i = Bucket(r.At); if (i >= 0) perBucket[i] += -r.Amount; }
+
+            var user = id is { } uid ? users.GetValueOrDefault(uid) : null;
+            decimal cash = By(PaymentMethod.Cash), card = By(PaymentMethod.Card), other = By(PaymentMethod.Other);
+            result.Add(new OperatorTotal(user?.DisplayName ?? "—", mine.Count, cash + card + other, mine.Sum(p => p.DiscountAmount),
+                user?.Role.ToString() ?? "", cash, card, other, back.Sum(r => -r.Amount), mine.Sum(p => p.CreditAmount),
+                started.Count(s => s == id), mine.Sum(p => p.TotalAmount), perBucket));
+        }
+        return result.OrderByDescending(o => o.Collected).ThenBy(o => o.Name).ToList();
+    }
+
     private async Task<ReportExtras> BuildExtrasAsync(GamingCenterDbContext db, DateTime from, DateTime to,
-        List<Payment> payments, List<RepaymentRow> repayments, List<GamingSession> gaming, List<SessionProduct> lines, CancellationToken ct)
+        List<Payment> payments, List<RepaymentRow> repayments, List<GamingSession> gaming, List<SessionProduct> lines,
+        List<DayRevenue> buckets, bool groupByMonth, CancellationToken ct)
     {
         var perHour = new int[24];
         foreach (var s in gaming) perHour[s.StartTime.Hour]++;
@@ -316,11 +359,7 @@ public sealed class ReportService(
             .OrderByDescending(x => x.Spent).Take(10).ToList();
         int newCustomers = await db.Customers.CountAsync(c => !c.IsDeleted && c.CreatedAt >= from && c.CreatedAt < to, ct);
 
-        var operators = payments.Select(p => (Name: p.User?.DisplayName ?? "—", Receipt: 1, Collected: p.PaidNow, Discount: p.DiscountAmount))
-            .Concat(repayments.Select(r => (Name: r.Operator ?? "—", Receipt: 0, Collected: r.Amount, Discount: 0m)))
-            .GroupBy(x => x.Name)
-            .Select(g => new OperatorTotal(g.Key, g.Sum(x => x.Receipt), g.Sum(x => x.Collected), g.Sum(x => x.Discount)))
-            .OrderByDescending(x => x.Collected).ToList();
+        var operators = await OperatorTotalsAsync(db, from, to, payments, buckets, groupByMonth, ct);
 
         var counter = payments.Where(p => p.Session?.Mode == SessionMode.CounterSale).ToList();
         return new ReportExtras(perHour, perWeekday, perRoom, perType, perCategory, methods, stations, topCustomers, operators,
