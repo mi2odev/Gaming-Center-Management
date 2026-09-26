@@ -169,8 +169,10 @@ public sealed class PrintService(ISettingsService settings)
             doc.Blocks.Add(Table(["Hour", "Sessions"], e.SessionsPerHour.Select((n, h) => (n, h)).Where(x => x.n > 0).Select(x => new[] { $"{x.h:00}:00", x.n.ToString() }).ToList()));
             doc.Blocks.Add(Heading("Top customers"));
             doc.Blocks.Add(Table(["Customer", "Visits", "Spent", "Owes"], e.TopCustomers.Select(c => new[] { c.Name, c.Visits.ToString(), Money.Number(c.Spent), c.Owes > 0 ? Money.Number(c.Owes) : "" }).ToList()));
-            doc.Blocks.Add(Heading("Operators"));
-            doc.Blocks.Add(Table(["Operator", "Receipts", "Collected", "Discounts"], e.Operators.Select(o => new[] { o.Name, o.Receipts.ToString(), Money.Number(o.Collected), Money.Number(o.Discounts) }).ToList()));
+            doc.Blocks.Add(Heading("Accounts"));
+            doc.Blocks.Add(Table(["Account", "Receipts", "Cash", "Card", "Other", "Taken in", "Credit paid back", "Discounts", "Left on credit"],
+                e.Operators.Select(o => new[] { o.Name, o.Receipts.ToString(), Money.Number(o.Cash), Money.Number(o.Card), Money.Number(o.Other),
+                    Money.Number(o.Collected), Money.Number(o.Repaid), Money.Number(o.Discounts), Money.Number(o.CreditGiven) }).ToList()));
         }
         return doc;
     }

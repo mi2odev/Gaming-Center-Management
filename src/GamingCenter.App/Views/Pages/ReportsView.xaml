@@ -33,6 +33,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}}"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="1" Text="{Binding Value}" Style="{StaticResource T.Mono}" FontSize="10" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                 <Border Grid.Row="2" Background="{DynamicResource Accent}" CornerRadius="4,4,0,0" MaxWidth="48" MinHeight="2"/>
@@ -425,7 +427,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="14" Style="{StaticResource Card}" Padding="22,20">
+                <Border Grid.Row="16" Grid.ColumnSpan="3" Style="{StaticResource Card}" Padding="22,20">
                     <StackPanel>
                         <DockPanel>
                             <TextBlock DockPanel.Dock="Right" Text="spent in this period" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
@@ -433,9 +435,10 @@
                         </DockPanel>
                         <TextBlock Text="No customers yet." Style="{StaticResource T.Muted}" Margin="0,12,0,0" Visibility="{Binding TopCustomers.Count, Converter={StaticResource NoValueToVis}}"/>
                         <ItemsControl ItemsSource="{Binding TopCustomers}" Margin="0,10,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" VerticalAlignment="Top"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,8">
+                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,8" Margin="0,0,24,0">
                                         <DockPanel>
                                             <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
                                                 <TextBlock Text="{Binding Spent}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right"/>
@@ -453,27 +456,129 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="14" Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                <!-- Accounts: what each user took in and gave away -->
+                <Border Grid.Row="14" Grid.ColumnSpan="3" Style="{StaticResource Card}" Padding="22,20">
                     <StackPanel>
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="money collected" Style="{StaticResource T.Muted}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Operators" Style="{StaticResource T.Section}"/>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Cash" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="6,0,14,0"/>
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource Info}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Card" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="6,0,14,0"/>
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource Neutral}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Other" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}" Margin="6,0,0,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Accounts" Style="{StaticResource T.Section}"/>
+                                <TextBlock Text="{Binding AccountsSummary}" Style="{StaticResource T.Muted}" Margin="0,2,0,0"/>
+                            </StackPanel>
                         </DockPanel>
-                        <TextBlock Text="No payments in this period." Style="{StaticResource T.Muted}" Margin="0,12,0,0" Visibility="{Binding Operators.Count, Converter={StaticResource NoValueToVis}}"/>
-                        <ItemsControl ItemsSource="{Binding Operators}" Margin="0,10,0,0">
+                        <TextBlock Text="No payments in this period." Style="{StaticResource T.Muted}" Margin="0,14,0,0" Visibility="{Binding Operators.Count, Converter={StaticResource NoValueToVis}}"/>
+
+                        <!-- Ranking: who took in the most -->
+                        <ItemsControl ItemsSource="{Binding Operators}" Margin="0,16,0,4">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,0,0,1" Padding="0,8">
-                                        <DockPanel>
-                                            <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding Collected}" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="{Binding Discounts}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Warning}" HorizontalAlignment="Right"/>
-                                            </StackPanel>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium"/>
-                                                <TextBlock Text="{Binding Receipts}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/>
-                                            </StackPanel>
-                                        </DockPanel>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/><ColumnDefinition Width="130"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        <Border Grid.Column="1" Height="14" CornerRadius="4" Background="{DynamicResource Border}" ClipToBounds="True" VerticalAlignment="Center">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding Rank, Converter={StaticResource FractionStar}}"/>
+                                                    <ColumnDefinition Width="{Binding Rank, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- The account's bar, split by cash / card / other -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{Binding CashFrac, Converter={StaticResource FractionStar}}"/>
+                                                        <ColumnDefinition Width="{Binding CardFrac, Converter={StaticResource FractionStar}}"/>
+                                                        <ColumnDefinition Width="{Binding OtherFrac, Converter={StaticResource FractionStar}}"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Background="{DynamicResource Accent}"/>
+                                                    <Border Grid.Column="1" Background="{DynamicResource Info}"/>
+                                                    <Border Grid.Column="2" Background="{DynamicResource Neutral}"/>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Grid.Column="2" Style="{StaticResource T.MonoStrong}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Run Text="{Binding Collected, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="11" Foreground="{DynamicResource Text.Muted}"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- One card per account -->
+                        <ItemsControl ItemsSource="{Binding Operators}" Margin="-8,8,-8,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3" VerticalAlignment="Top"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="8" Padding="18,16" CornerRadius="12" Background="{DynamicResource Bg.App}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                                        <StackPanel>
+                                            <DockPanel>
+                                                <Border Width="38" Height="38" CornerRadius="19" Background="{DynamicResource Accent.Soft}" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding Initials}" Style="{StaticResource T.Base}" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource T.Base}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding Role}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/>
+                                                </StackPanel>
+                                            </DockPanel>
+
+                                            <TextBlock Text="Money taken in" Style="{StaticResource T.Muted}" Margin="0,14,0,0"/>
+                                            <TextBlock Style="{StaticResource T.StatValue}" FontSize="26"><Run Text="{Binding Collected, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="12" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
+                                            <TextBlock Text="{Binding ShareText}" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Accent}"/>
+
+                                            <!-- Cash / card / other split -->
+                                            <Border Height="8" CornerRadius="4" Background="{DynamicResource Border}" ClipToBounds="True" Margin="0,12,0,6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{Binding CashFrac, Converter={StaticResource FractionStar}}"/>
+                                                        <ColumnDefinition Width="{Binding CardFrac, Converter={StaticResource FractionStar}}"/>
+                                                        <ColumnDefinition Width="{Binding OtherFrac, Converter={StaticResource FractionStar}}"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Background="{DynamicResource Accent}"/>
+                                                    <Border Grid.Column="1" Background="{DynamicResource Info}"/>
+                                                    <Border Grid.Column="2" Background="{DynamicResource Neutral}"/>
+                                                </Grid>
+                                            </Border>
+                                            <UniformGrid Columns="3">
+                                                <StackPanel><TextBlock Text="Cash" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/><TextBlock Text="{Binding CashText}" Style="{StaticResource T.Mono}" FontSize="12"/></StackPanel>
+                                                <StackPanel><TextBlock Text="Card" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/><TextBlock Text="{Binding CardText}" Style="{StaticResource T.Mono}" FontSize="12"/></StackPanel>
+                                                <StackPanel><TextBlock Text="Other" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/><TextBlock Text="{Binding OtherText}" Style="{StaticResource T.Mono}" FontSize="12"/></StackPanel>
+                                            </UniformGrid>
+
+                                            <!-- Money taken per day -->
+                                            <ItemsControl ItemsSource="{Binding Bars}" Height="70" Margin="0,14,0,0">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="1,0" ToolTip="{Binding Value}" Background="Transparent">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}, ConverterParameter=rest}"/>
+                                                                <RowDefinition Height="{Binding Height, Converter={StaticResource FractionStar}}"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                            </Grid.RowDefinitions>
+                                                            <Border Grid.Row="1" Background="{DynamicResource Accent}" CornerRadius="2,2,0,0" MinHeight="1" Opacity="0.85"/>
+                                                            <TextBlock Grid.Row="2" Text="{Binding Label}" Style="{StaticResource T.Faint}" FontSize="9" Foreground="{DynamicResource Text.Faint}" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- Work and money given away -->
+                                            <Border BorderBrush="{DynamicResource Row.Divider}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,10,0,0">
+                                                <StackPanel>
+                                                    <DockPanel Margin="0,0,0,4"><TextBlock DockPanel.Dock="Right" Text="{Binding ReceiptsCount}" Style="{StaticResource T.Mono}" FontSize="12"/><TextBlock Text="Receipts" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                    <DockPanel Margin="0,0,0,4"><TextBlock DockPanel.Dock="Right" Text="{Binding SessionsText}" Style="{StaticResource T.Mono}" FontSize="12"/><TextBlock Text="Sessions started" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                    <DockPanel Margin="0,0,0,4"><TextBlock DockPanel.Dock="Right" Text="{Binding SalesText}" Style="{StaticResource T.Mono}" FontSize="12"/><TextBlock Text="Bills closed" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                    <DockPanel Margin="0,0,0,4"><TextBlock DockPanel.Dock="Right" Text="{Binding RepaidText}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Accent}"/><TextBlock Text="Credit paid back to them" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                    <DockPanel Margin="0,0,0,4"><TextBlock DockPanel.Dock="Right" Text="{Binding DiscountText}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Warning}"/><TextBlock Text="Discounts given" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                    <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding CreditGivenText}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Danger}"/><TextBlock Text="Left on credit" Style="{StaticResource T.Faint}" Foreground="{DynamicResource Text.Muted}"/></DockPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
