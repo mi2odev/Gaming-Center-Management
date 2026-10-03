@@ -123,12 +123,20 @@ public sealed class PrintService(ISettingsService settings)
             ["Gaming revenue", Money.Format(d.GamingRevenue)],
             ["Product revenue", Money.Format(d.ProductRevenue)],
             ["Estimated product profit", Money.Format(d.ProductProfit)],
+            ["Expenses", Money.Format(d.Expenses)],
+            ["Net profit (revenue − expenses)", Money.Format(d.NetProfit)],
             ["Sessions", d.Sessions.ToString()],
             ["Average session", Durations.Short(d.AverageSession)],
         ]));
         doc.Blocks.Add(Heading("Revenue per day"));
-        doc.Blocks.Add(Table(["Day", "Gaming", "Products", "Total"],
-            d.PerDay.Select(x => new[] { x.Day.ToString("ddd dd/MM"), Money.Number(x.Gaming), Money.Number(x.Products), Money.Number(x.Total) }).ToList()));
+        doc.Blocks.Add(Table(["Day", "Gaming", "Products", "Total", "Expenses", "Net"],
+            d.PerDay.Select(x => new[] { x.Day.ToString("ddd dd/MM"), Money.Number(x.Gaming), Money.Number(x.Products), Money.Number(x.Total),
+                Money.Number(x.Expenses), Money.Number(x.Net) }).ToList()));
+        if (d.ExpensesByCategory is { Count: > 0 } spent)
+        {
+            doc.Blocks.Add(Heading("Expenses by category"));
+            doc.Blocks.Add(Table(["Category", "Expenses", "Amount"], spent.Select(c => new[] { c.Name, c.Count.ToString(), Money.Number(c.Amount) }).ToList()));
+        }
         doc.Blocks.Add(Heading("Revenue per station"));
         doc.Blocks.Add(Table(["Station", "Sessions", "Play time", "Revenue"],
             d.PerStation.Select(x => new[] { x.Name, x.Sessions.ToString(), Durations.Short(x.PlayTime), Money.Number(x.Revenue) }).ToList()));

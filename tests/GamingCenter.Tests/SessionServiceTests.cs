@@ -33,6 +33,7 @@ public sealed class TestDb : IDisposable
     public ReportService Reports { get; }
     public CustomerService Customers { get; }
     public CreditService Credits { get; }
+    public ExpenseService Expenses { get; }
 
     public TestDb()
     {
@@ -50,6 +51,7 @@ public sealed class TestDb : IDisposable
         Products = new ProductService(Factory, Clock, User);
         Customers = new CustomerService(Factory, Clock, User);
         Credits = new CreditService(Factory, Clock, User);
+        Expenses = new ExpenseService(Factory, Clock, User);
         Reports = new ReportService(Factory, Clock, User, Settings, Products);
     }
 

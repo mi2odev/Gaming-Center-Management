@@ -110,7 +110,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- KPIs -->
-                <UniformGrid Grid.ColumnSpan="3" Rows="1" Columns="4" Margin="-8,0">
+                <UniformGrid Grid.ColumnSpan="3" Rows="1" Columns="5" Margin="-8,0">
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
                         <StackPanel>
                             <TextBlock Text="Total revenue" Style="{StaticResource T.Muted}" ToolTip="Money received: payments at the till plus credit paid back. The unpaid part of a bill counts on the day it is paid."/>
@@ -139,6 +139,21 @@
                             <TextBlock Text="Product revenue" Style="{StaticResource T.Muted}"/>
                             <TextBlock Style="{StaticResource T.StatValue}" FontSize="30"><Run Text="{Binding ProductText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/></TextBlock>
                             <TextBlock Text="{Binding ProfitText}" Style="{StaticResource T.Muted}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">
+                        <StackPanel>
+                            <TextBlock Text="Net profit" Style="{StaticResource T.Muted}" ToolTip="Total revenue minus expenses (new equipment, rent, bills…) added on the Expenses page"/>
+                            <TextBlock FontSize="30">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource T.StatValue}">
+                                        <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding NetNegative}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Danger}"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Run Text="{Binding NetText, Mode=OneWay}"/> <Run Text="{x:Static cm:Money.CurrencySymbol}" FontFamily="{DynamicResource Font.UI}" FontSize="13" Foreground="{DynamicResource Text.Muted}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding ExpensesText}" Style="{StaticResource T.Muted}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource Card}" Margin="8,0" Padding="20,18">

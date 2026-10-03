@@ -325,6 +325,9 @@ public sealed partial class ReportsViewModel : PageViewModel
     [ObservableProperty] private string _totalNote = "";
     [ObservableProperty] private bool _hasDiscounts;
     [ObservableProperty] private bool _hasCredit;
+    [ObservableProperty] private string _netText = "";
+    [ObservableProperty] private string _expensesText = "";
+    [ObservableProperty] private bool _netNegative;
 
     public ObservableCollection<BarItem> HourBars { get; } = [];
     public ObservableCollection<BarItem> WeekdayBars { get; } = [];
@@ -401,6 +404,9 @@ public sealed partial class ReportsViewModel : PageViewModel
         TotalNote = d.CreditCollected > 0 ? L.F("incl. {0} credit paid back", Money.Format(d.CreditCollected)) : "";
         ProductText = Money.Number(d.ProductRevenue);
         ProfitText = L.F("Est. profit {0}", Money.Format(d.ProductProfit));
+        NetText = Money.Number(d.NetProfit);
+        NetNegative = d.NetProfit < 0;
+        ExpensesText = d.Expenses > 0 ? L.F("Expenses {0}", Money.Format(d.Expenses)) : L.T("No expenses");
         SessionsText = d.Sessions.ToString();
         var days = Math.Max(1, (to - from).TotalDays);
         SessionsSub = d.Sessions == 0 ? L.T("No sessions") : L.F("avg {0} · {1} per day", Durations.Short(d.AverageSession), (d.Sessions / days).ToString("0.#"));
@@ -433,10 +439,12 @@ public sealed partial class ReportsViewModel : PageViewModel
         if (d.TotalRevenue > 0)
             parts.Add(string.Join(" · ", d.MethodTotals.OrderByDescending(kv => kv.Value).Select(kv => $"{L.T(kv.Key.ToString())} {kv.Value / d.TotalRevenue:P0}")));
         if (d.Discounts > 0) parts.Add(L.F("Discounts given {0}", Money.Format(d.Discounts)));
+        if (d.ExpensesByCategory is { Count: > 0 } spent)
+            parts.Add(L.F("Biggest expense: {0} ({1})", L.T(spent[0].Name), Money.Format(spent[0].Amount)));
         if (d.CreditGiven > 0 || d.CreditCollected > 0)
             parts.Add(L.F("Credit given {0} · paid back {1}", Money.Format(d.CreditGiven), Money.Format(d.CreditCollected)));
         Insights = string.Join(" · ", parts);
-        IsEmpty = d.TotalRevenue == 0 && d.Sessions == 0;
+        IsEmpty = d.TotalRevenue == 0 && d.Sessions == 0 && d.Expenses == 0;
         if (d.Extras is { } extras) ShowExtras(d, extras);
     }
 
@@ -519,6 +527,7 @@ public sealed partial class ReportsViewModel : PageViewModel
         await TryAsync(() => CsvWriter.WriteAsync(path, _data.PerDay, [
             new("Date", x => x.Day.ToString("yyyy-MM-dd")), new("Gaming", x => x.Gaming), new("Products", x => x.Products), new("Discounts", x => x.Discounts),
             new("Left on credit", x => x.Credit), new("Credit paid back", x => x.Repaid), new("Money received", x => x.Total),
+            new("Expenses", x => x.Expenses), new("Net profit", x => x.Net),
         ]), "Export complete", path);
     }
 

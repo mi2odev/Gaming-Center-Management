@@ -20,6 +20,7 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
     public DbSet<SessionRateChange> SessionRateChanges => Set<SessionRateChange>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
+    public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<ApplicationSetting> Settings => Set<ApplicationSetting>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -140,6 +141,14 @@ public sealed class GamingCenterDbContext(DbContextOptions<GamingCenterDbContext
             e.Property(x => x.Note).HasMaxLength(256);
             e.HasIndex(x => new { x.CustomerId, x.At });
             e.HasIndex(x => x.At);
+        });
+
+        b.Entity<Expense>(e =>
+        {
+            e.Property(x => x.Description).HasMaxLength(128);
+            e.Property(x => x.Note).HasMaxLength(500);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(x => x.Date);
         });
 
         b.Entity<ApplicationSetting>(e =>

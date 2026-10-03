@@ -107,7 +107,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [RelayCommand]
     private Task Navigate(Page page) => NavigateAsync(page, null);
 
-    private static readonly HashSet<Page> AdminPages = [Page.Stations, Page.Products, Page.Reports, Page.Users, Page.Settings];
+    private static readonly HashSet<Page> AdminPages = [Page.Stations, Page.Products, Page.Expenses, Page.Reports, Page.Users, Page.Settings];
 
     public async Task NavigateAsync(Page page, object? parameter)
     {
@@ -125,6 +125,7 @@ public sealed partial class ShellViewModel : ObservableObject
             Page.Customers => _services.GetRequiredService<CustomersViewModel>(),
             Page.Credits => _services.GetRequiredService<CreditsViewModel>(),
             Page.Sales => _services.GetRequiredService<SalesViewModel>(),
+            Page.Expenses => _services.GetRequiredService<ExpensesViewModel>(),
             Page.Reports => _services.GetRequiredService<ReportsViewModel>(),
             Page.Users => _services.GetRequiredService<UsersViewModel>(),
             Page.Settings => _services.GetRequiredService<SettingsViewModel>(),

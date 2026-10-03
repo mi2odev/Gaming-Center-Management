@@ -118,6 +118,15 @@ public interface ICreditService
     Task<CreditEntryDto> AddManualAsync(int customerId, decimal amount, string note, CancellationToken ct = default);
 }
 
+/// <summary>Money the owner spends on the center (equipment, rent, bills…). Admin only.</summary>
+public interface IExpenseService
+{
+    /// <summary>Expenses dated in [from, to), newest first.</summary>
+    Task<IReadOnlyList<ExpenseDto>> GetAsync(DateTime from, DateTime to, CancellationToken ct = default);
+    Task<ExpenseDto> SaveAsync(SaveExpenseRequest request, CancellationToken ct = default);
+    Task DeleteAsync(int id, CancellationToken ct = default);
+}
+
 public interface IReportService
 {
     Task<DashboardStats> GetDashboardStatsAsync(DateTime day, CancellationToken ct = default);
@@ -127,6 +136,8 @@ public interface IReportService
     /// <summary>Credit paid back by customers in the period.</summary>
     Task<IReadOnlyList<RepaymentRow>> GetRepaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default);
     Task<ReportData> GetReportAsync(DateTime from, DateTime to, bool groupByMonth, CancellationToken ct = default);
+    /// <summary>Money received in the period: paid at the till (not the part left on credit) plus credit paid back.</summary>
+    Task<decimal> GetIncomeAsync(DateTime from, DateTime to, CancellationToken ct = default);
 }
 
 public interface ISearchService

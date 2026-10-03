@@ -50,6 +50,12 @@ public sealed class ReportService(
         return paid.Sum(p => p.TotalAmount - p.CreditAmount) - repaid.Sum();
     }
 
+    public async Task<decimal> GetIncomeAsync(DateTime from, DateTime to, CancellationToken ct = default)
+    {
+        await using var db = await OpenAsync(ct);
+        return await IncomeAsync(db, from, to, ct);
+    }
+
     public async Task<IReadOnlyList<RepaymentRow>> GetRepaymentsAsync(DateTime from, DateTime to, CancellationToken ct = default)
     {
         await using var db = await OpenAsync(ct);
@@ -192,6 +198,8 @@ public sealed class ReportService(
         var span = to - from;
         var previous = await IncomeAsync(db, from - span, from, ct);
         var repayments = await LoadRepaymentsAsync(db, from, to, ct);
+        var expenses = await db.Expenses.AsNoTracking().Where(e => e.Date >= from && e.Date < to)
+            .Select(e => new { e.Date, e.Amount, e.Category }).ToListAsync(ct);
 
         var sessions = payments.Select(p => p.Session!).ToList();
         var gaming = sessions.Where(s => s.Mode != SessionMode.CounterSale).ToList();
@@ -205,8 +213,9 @@ public sealed class ReportService(
             {
                 var bucket = payments.Where(p => p.PaidAt.Year == m.Year && p.PaidAt.Month == m.Month).ToList();
                 var back = repayments.Where(r => r.At.Year == m.Year && r.At.Month == m.Month).Sum(r => r.Amount);
+                var spent = expenses.Where(e => e.Date.Year == m.Year && e.Date.Month == m.Month).Sum(e => e.Amount);
                 perDay.Add(new DayRevenue(m, m.ToString("MMM", culture), bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount),
-                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back));
+                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back, spent));
             }
         }
         else if (span <= TimeSpan.FromDays(1))
@@ -216,8 +225,9 @@ public sealed class ReportService(
             {
                 var bucket = payments.Where(p => p.PaidAt >= h && p.PaidAt < h.AddHours(1)).ToList();
                 var back = repayments.Where(r => r.At >= h && r.At < h.AddHours(1)).Sum(r => r.Amount);
+                var spent = expenses.Where(e => e.Date >= h && e.Date < h.AddHours(1)).Sum(e => e.Amount);
                 perDay.Add(new DayRevenue(h, h.Hour % 3 == 0 ? h.ToString("HH'h'", culture) : "", bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount),
-                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back));
+                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back, spent));
             }
         }
         else
@@ -227,9 +237,10 @@ public sealed class ReportService(
             {
                 var bucket = payments.Where(p => p.PaidAt.Date == d).ToList();
                 var back = repayments.Where(r => r.At.Date == d).Sum(r => r.Amount);
+                var spent = expenses.Where(e => e.Date.Date == d).Sum(e => e.Amount);
                 var label = days <= 7 ? d.ToString("ddd", culture) : d.ToString("dd", culture);
                 perDay.Add(new DayRevenue(d, label, bucket.Sum(p => p.GamingAmount), bucket.Sum(p => p.ProductsAmount),
-                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back));
+                    bucket.Sum(p => p.DiscountAmount), bucket.Sum(p => p.CreditAmount), back, spent));
             }
         }
 
@@ -251,6 +262,10 @@ public sealed class ReportService(
         decimal creditCollected = -creditRows.Where(t => t.Kind == CreditKind.Repayment).Sum(t => t.Amount);
         int? busiestHour = gaming.Count == 0 ? null : gaming.GroupBy(s => s.StartTime.Hour).OrderByDescending(g => g.Count()).First().Key;
 
+        var expensesByCategory = expenses.GroupBy(e => e.Category)
+            .Select(g => new NamedAmount(g.Key.ToString(), g.Sum(e => e.Amount), g.Count()))
+            .OrderByDescending(x => x.Amount).ToList();
+
         var extras = await BuildExtrasAsync(db, from, to, payments, repayments, gaming, lines, perDay, groupByMonth, ct);
 
         return new ReportData(
@@ -263,7 +278,8 @@ public sealed class ReportService(
             gaming.Count == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(gaming.Average(s => s.PlayedSeconds)),
             previous,
             perDay, perStation, topProducts, modeCounts, methodTotals, busiestHour, creditGiven, creditCollected,
-            payments.Sum(p => p.DiscountAmount), extras, payments.Sum(p => p.TotalAmount));
+            payments.Sum(p => p.DiscountAmount), extras, payments.Sum(p => p.TotalAmount),
+            expenses.Sum(e => e.Amount), expensesByCategory);
     }
 
     /// <summary>Per user account: money taken in by method (payments and credit paid back), discounts and credit given, sessions started.</summary>

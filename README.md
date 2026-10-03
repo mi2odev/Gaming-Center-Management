@@ -130,7 +130,8 @@ Right-click a card to pause/resume, add a product, end and bill, reserve, clear 
 ### Admin
 - **Gaming Stations:** add, edit, change price, change image, disable/enable, delete (soft). **Manage types** adds new categories (e.g. "VR") without touching code. Disabled or deleted stations keep their history.
 - **Products:** categories, purchase and selling price, margin, stock and minimum stock, image, receive stock, stock count adjustment, disable, delete (soft). Every stock change is written to `StockMovements`.
-- **Reports:** daily, weekly, monthly, yearly or custom. Shows total, gaming and product revenue, estimated product profit, sessions, average duration, revenue per day or month, revenue per station, top products, session-mode split, busiest hour and payment methods. Export to CSV (Excel), or to PDF via the print dialog.
+- **Expenses:** record what you spend on the center: a new TV, a console or controller, rent, electricity, internet, repairs, salaries, supplies. Each expense has a description, price, category, day and an optional note, and can be edited or deleted. The page shows what was spent in the period, the money received, the **net profit** (money received − spent), and a breakdown by category. Export to CSV.
+- **Reports:** daily, weekly, monthly, yearly or custom. Shows total, gaming and product revenue, estimated product profit, **net profit after expenses**, sessions, average duration, revenue per day or month, revenue per station, top products, session-mode split, busiest hour and payment methods. Export to CSV (Excel), or to PDF via the print dialog.
 - **Users:** Admin / Operator roles. There must always be at least one active admin.
 - **Settings:** center name, logo, address, phone, currency, billing rules, receipt printer and paper width, footer, warning thresholds, auto-end, long-session alert, low-stock alerts, theme (dark/light, also the sun/moon button in the top bar), language (English, Français, العربية; also from the user menu at the bottom of the sidebar, and the app restarts), and automatic daily backup (hour, folder, how many to keep). Also *Back up now* and *Restore* (with confirmation, a safety copy, and an automatic restart).
 
@@ -142,7 +143,7 @@ Right-click a card to pause/resume, add a product, end and bill, reserve, clear 
 | Dashboard, session history, sales, customers | ✓ | ✓ |
 | Counter sales (products without a station) | ✓ | ✓ |
 | Stations, products, prices, stock | ✓ | — |
-| Reports, users, settings, backup/restore | ✓ | — |
+| Expenses, reports, users, settings, backup/restore | ✓ | — |
 | Delete customers | ✓ | — |
 
 Admin-only rules are enforced in the service layer, not just hidden in the UI. Payments and completed sessions are never deleted.
@@ -180,7 +181,7 @@ GamingCenter.sln
 - **Future multi-computer version:** the UI depends only on the `Application` interfaces. A networked version can swap `Infrastructure` for a server- or API-backed implementation (or point EF at a server database) without touching view models.
 
 ### Entities
-`CreditTransaction` (customer credit ledger: unpaid bills +, repayments −), `User`, `GamingStationType`, `GamingStation`, `PriceHistory`, `Customer`, `ProductCategory`, `Product`, `StockMovement`, `GamingSession` (also used for counter sales, with no station), `SessionPause`, `SessionProduct` (name, price and cost are copied at sale time), `Payment` (one per session, and it is the receipt: number `yyyy-MMdd-NNN`), `ApplicationSetting` (key/value).
+`CreditTransaction` (customer credit ledger: unpaid bills +, repayments −), `User`, `GamingStationType`, `GamingStation`, `PriceHistory`, `Customer`, `ProductCategory`, `Product`, `StockMovement`, `GamingSession` (also used for counter sales, with no station), `SessionPause`, `SessionProduct` (name, price and cost are copied at sale time), `Expense` (money the owner spent: equipment, rent, bills…), `Payment` (one per session, and it is the receipt: number `yyyy-MMdd-NNN`), `ApplicationSetting` (key/value).
 Roles are an enum on `User`. Daily reports are computed on demand rather than stored, so they can never go stale.
 
 ### Not in version 1

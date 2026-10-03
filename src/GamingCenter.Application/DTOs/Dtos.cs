@@ -127,6 +127,10 @@ public sealed record CreditBalanceDto(int CustomerId, string Name, string? Phone
 
 public sealed record CreditEntryDto(int Id, DateTime At, CreditKind Kind, decimal Amount, decimal BalanceAfter, string? ReceiptNumber, int? SessionId, PaymentMethod? Method, string? Note, string? User);
 
+public sealed record ExpenseDto(int Id, DateTime Date, string Description, ExpenseCategory Category, decimal Amount, string? Note, string? User);
+
+public sealed record SaveExpenseRequest(int? Id, DateTime Date, string Description, ExpenseCategory Category, decimal Amount, string? Note);
+
 public sealed record HistoryRow(
     int SessionId,
     string? ReceiptNumber,
@@ -219,9 +223,12 @@ public sealed record RepaymentRow(DateTime At, string CustomerName, decimal Amou
 /// <summary>
 /// One day (or month) of income. Money left on credit is not income yet; it counts on the day the customer pays it back.
 /// </summary>
-public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products, decimal Discounts = 0, decimal Credit = 0, decimal Repaid = 0)
+public sealed record DayRevenue(DateTime Day, string Label, decimal Gaming, decimal Products, decimal Discounts = 0, decimal Credit = 0, decimal Repaid = 0,
+    decimal Expenses = 0)
 {
     public decimal Total => Gaming + Products - Discounts - Credit + Repaid;
+    /// <summary>Money received minus what the owner spent.</summary>
+    public decimal Net => Total - Expenses;
 }
 
 public sealed record StationRevenue(string Name, decimal Revenue, TimeSpan PlayTime, int Sessions);
@@ -248,7 +255,13 @@ public sealed record ReportData(
     decimal CreditCollected = 0,
     decimal Discounts = 0,
     ReportExtras? Extras = null,
-    decimal Sales = 0);
+    decimal Sales = 0,
+    decimal Expenses = 0,
+    IReadOnlyList<NamedAmount>? ExpensesByCategory = null)
+{
+    /// <summary>Money received minus expenses (new equipment, rent, bills…).</summary>
+    public decimal NetProfit => TotalRevenue - Expenses;
+}
 
 /// <summary>A labelled total for report breakdowns (room, console type, category, payment method…).</summary>
 public sealed record NamedAmount(string Name, decimal Amount, int Count = 0, decimal Extra = 0);
