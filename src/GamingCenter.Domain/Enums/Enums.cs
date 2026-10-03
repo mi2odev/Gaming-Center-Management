@@ -55,6 +55,20 @@ public enum CreditKind
     Manual = 2,
 }
 
+public enum ExpenseCategory
+{
+    /// <summary>TVs, consoles, PCs, controllers, furniture…</summary>
+    Equipment = 0,
+    Rent = 1,
+    Electricity = 2,
+    Internet = 3,
+    Repairs = 4,
+    Salaries = 5,
+    /// <summary>Cleaning products, paper, small things for the center.</summary>
+    Supplies = 6,
+    Other = 7,
+}
+
 public enum UserRole
 {
     Operator = 0,

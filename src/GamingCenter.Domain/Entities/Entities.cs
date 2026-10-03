@@ -223,6 +223,22 @@ public sealed class CreditTransaction : Entity
     public User? User { get; set; }
 }
 
+/// <summary>
+/// Money the owner spent on the center: a new TV, a console, rent, electricity, repairs…
+/// Subtracted from the money received to get the net profit in reports.
+/// </summary>
+public sealed class Expense : Entity
+{
+    public DateTime Date { get; set; }
+    public string Description { get; set; } = "";
+    public ExpenseCategory Category { get; set; }
+    public decimal Amount { get; set; }
+    public string? Note { get; set; }
+    public int? UserId { get; set; }
+    public User? User { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
 public sealed class ApplicationSetting
 {
     public string Key { get; set; } = "";
