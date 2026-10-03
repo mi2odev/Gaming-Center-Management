@@ -22,8 +22,17 @@ public sealed record ExpenseRow(ExpenseDto Dto)
     public string Description => Dto.Description;
     public string Note => Dto.Note ?? "";
     public string Category => L.T(Dto.Category.ToString());
+    public ExpenseCategory CategoryValue => Dto.Category;
     public string User => Dto.User ?? "—";
+    /// <summary>"Added by Karim · Shop name, warranty until 2028"</summary>
+    public string Meta => L.F("Added by {0}", User) + (string.IsNullOrWhiteSpace(Dto.Note) ? "" : " · " + Dto.Note);
     public string Amount => "−" + Money.Format(Dto.Amount);
+}
+
+/// <summary>One category in the breakdown: its total, share of all spending and number of expenses.</summary>
+public sealed record ExpenseCategoryShare(ExpenseCategory Category, string Value, double Fraction, string Sub)
+{
+    public string Name => L.T(Category.ToString());
 }
 
 /// <summary>Expenses page: what the owner spent on the center (a new TV, rent, bills…) and the profit left after it.</summary>
@@ -46,7 +55,7 @@ public sealed partial class ExpensesViewModel : PageViewModel
     public override string Title => L.T("Expenses");
 
     public ObservableCollection<ExpenseRow> Rows { get; } = [];
-    public ObservableCollection<StationBar> Categories { get; } = [];
+    public ObservableCollection<ExpenseCategoryShare> Categories { get; } = [];
 
     [ObservableProperty] private string _period = UiState.Get("Expenses.Period", "Month");
     [ObservableProperty] private DateTime? _customFrom = DateTime.Today.AddDays(-30);
@@ -57,6 +66,8 @@ public sealed partial class ExpensesViewModel : PageViewModel
     [ObservableProperty] private string _incomeText = "";
     [ObservableProperty] private string _netText = "";
     [ObservableProperty] private bool _netNegative;
+    [ObservableProperty] private double _spentShare;
+    [ObservableProperty] private string _spentShareText = "";
     [ObservableProperty] private bool _isEmpty;
 
     public bool IsCustom => Period == "Custom";
@@ -84,13 +95,15 @@ public sealed partial class ExpensesViewModel : PageViewModel
         IncomeText = Money.Format(income);
         NetText = Money.Format(income - spent);
         NetNegative = income - spent < 0;
+        SpentShare = income > 0 ? (double)Math.Min(1, spent / income) : spent > 0 ? 1 : 0;
+        SpentShareText = income > 0 ? L.F("{0} of money received spent", $"{spent / income:P0}") : spent > 0 ? L.T("No money received yet") : L.T("Nothing spent yet.");
 
         Categories.Clear();
         var groups = _all.GroupBy(e => e.Category).Select(g => (Category: g.Key, Amount: g.Sum(e => e.Amount), Count: g.Count()))
             .OrderByDescending(g => g.Amount).ToList();
         var max = groups.Count == 0 ? 0 : groups.Max(g => g.Amount);
         foreach (var g in groups)
-            Categories.Add(new StationBar(L.T(g.Category.ToString()), Money.Number(g.Amount), max > 0 ? (double)(g.Amount / max) : 0,
+            Categories.Add(new ExpenseCategoryShare(g.Category, Money.Number(g.Amount), max > 0 ? (double)(g.Amount / max) : 0,
                 $"{(spent > 0 ? g.Amount / spent : 0):P0} · " + L.F(g.Count == 1 ? "{0} expense" : "{0} expenses", g.Count)));
         ApplyFilter();
     }

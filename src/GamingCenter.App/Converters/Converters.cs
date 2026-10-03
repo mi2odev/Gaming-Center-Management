@@ -141,3 +141,24 @@ public sealed class ImagePathConverter : IValueConverter
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
+
+/// <summary>Expense category → its icon (TV for equipment, house for rent…).</summary>
+public sealed class ExpenseIconConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is Domain.Enums.ExpenseCategory c
+            ? System.Windows.Application.Current?.TryFindResource(c switch
+            {
+                Domain.Enums.ExpenseCategory.Equipment => "I.Tv",
+                Domain.Enums.ExpenseCategory.Rent => "I.Home",
+                Domain.Enums.ExpenseCategory.Electricity => "I.Zap",
+                Domain.Enums.ExpenseCategory.Internet => "I.Wifi",
+                Domain.Enums.ExpenseCategory.Repairs => "I.Wrench",
+                Domain.Enums.ExpenseCategory.Salaries => "I.Users",
+                Domain.Enums.ExpenseCategory.Supplies => "I.Box",
+                _ => "I.Receipt",
+            })
+            : null;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
+}

@@ -22,6 +22,7 @@
     <conv:ResourceBrushConverter x:Key="StatusBrush"/>
     <conv:MoneyConverter x:Key="Money"/>
     <conv:FractionToStarConverter x:Key="FractionStar"/>
+    <conv:ExpenseIconConverter x:Key="ExpenseIcon"/>
     <conv:ImagePathConverter x:Key="Thumb" DecodeWidth="480"/>
     <conv:ImagePathConverter x:Key="SmallThumb" DecodeWidth="120"/>
 
