@@ -58,7 +58,7 @@
         </Grid.RowDefinitions>
 
         <!-- ===== Today strip ===== -->
-        <UniformGrid Rows="1" Columns="6" Margin="-7,0,-7,22">
+        <UniformGrid Rows="1" Columns="{Binding StripColumns, Mode=OneTime}" Margin="-7,0,-7,22">
             <UniformGrid.Resources>
                 <Style TargetType="Border" BasedOn="{StaticResource Card}">
                     <Setter Property="Margin" Value="7,0"/>
@@ -95,6 +95,21 @@
                     <TextBlock Text="Products" Style="{StaticResource StatLabel}"/>
                     <TextBlock Style="{StaticResource T.StatValue}"><Run Text="{Binding ProductsText, Mode=OneWay}"/> <Run Text="{Binding Currency, Mode=OneWay}" Style="{StaticResource StatUnit}"/></TextBlock>
                     <TextBlock Text="{Binding ProductsSub}" Style="{StaticResource StatSub}"/>
+                </StackPanel>
+            </Border>
+            <Border c:Ui.ClickCommand="{Binding GoExpensesCommand}" Cursor="Hand" ToolTip="What you spent today (new equipment, bills…). Click to open Expenses."
+                    Visibility="{Binding ShowExpenses, Mode=OneTime, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="Expenses today" Style="{StaticResource StatLabel}"/>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource T.StatValue}">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasExpenses}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Danger}"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                        <Run Text="{Binding ExpensesText, Mode=OneWay}"/> <Run Text="{Binding Currency, Mode=OneWay}" Style="{StaticResource StatUnit}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ExpensesSub}" Style="{StaticResource StatSub}" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
             <Border>

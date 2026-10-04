@@ -215,7 +215,9 @@ public sealed record DashboardStats(
     IReadOnlyList<ProductDto> LowStock,
     decimal Discounts = 0,
     decimal CreditRepaid = 0,
-    decimal CreditLeft = 0);
+    decimal CreditLeft = 0,
+    decimal Expenses = 0,
+    int ExpenseCount = 0);
 
 /// <summary>A customer paying back what they owed (counts as income on the day it is paid).</summary>
 public sealed record RepaymentRow(DateTime At, string CustomerName, decimal Amount, PaymentMethod Method, string? Operator);
