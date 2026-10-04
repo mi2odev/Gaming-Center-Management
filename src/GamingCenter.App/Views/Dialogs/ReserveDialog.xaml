@@ -15,7 +15,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Time" Style="{StaticResource T.Label}"/>
-                    <TextBox Text="{Binding Time, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="20:00"/>
+                    <TextBox Text="{Binding Time, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input.Mono}" c:Ui.Placeholder="20:00" c:Ui.TimeInput="True" MaxLength="5"/>
                 </StackPanel>
             </Grid>
             <TextBlock Text="{Binding Error}" Style="{StaticResource T.Error}" Margin="0,10,0,0"/>

@@ -52,7 +52,7 @@ public sealed partial class ReserveViewModel(string stationName) : DialogViewMod
         DateTime? at = null;
         if (!string.IsNullOrWhiteSpace(Time))
         {
-            if (!TimeSpan.TryParse(Time, out var t) || t < TimeSpan.Zero || t >= TimeSpan.FromDays(1)) { Error = L.T("Enter a time like 20:00."); return; }
+            if (!Controls.Ui.TryParseTime(Time, out var t)) { Error = L.T("Enter a time like 20:00."); return; }
             at = DateTime.Today + t;
             if (at < DateTime.Now.AddMinutes(-5)) at = at.Value.AddDays(1);
         }

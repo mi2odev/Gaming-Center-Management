@@ -206,6 +206,45 @@ public static class Ui
     public static bool GetSelectAllOnFocus(DependencyObject d) => (bool)d.GetValue(SelectAllOnFocusProperty);
     public static void SetSelectAllOnFocus(DependencyObject d, bool value) => d.SetValue(SelectAllOnFocusProperty, value);
 
+    /// <summary>
+    /// Time-of-day box: typing four digits completes the colon ("1700" → "17:00"), and leaving the box
+    /// tidies shorter forms ("17" → "17:00", "930" → "09:30").
+    /// </summary>
+    public static readonly DependencyProperty TimeInputProperty = DependencyProperty.RegisterAttached(
+        "TimeInput", typeof(bool), typeof(Ui), new PropertyMetadata(false, (d, e) =>
+        {
+            if (d is not TextBox tb || !(bool)e.NewValue) return;
+            void Complete()
+            {
+                if (!TryParseTime(tb.Text, out var t)) return;
+                var text = t.ToString(@"hh\:mm");
+                if (text == tb.Text) return;
+                tb.SetCurrentValue(TextBox.TextProperty, text);
+                tb.CaretIndex = text.Length;
+            }
+            tb.TextChanged += (_, _) => { if (tb.Text.Length == 4 && tb.Text.All(char.IsAsciiDigit)) Complete(); };
+            tb.LostKeyboardFocus += (_, _) => Complete();
+        }));
+    public static bool GetTimeInput(DependencyObject d) => (bool)d.GetValue(TimeInputProperty);
+    public static void SetTimeInput(DependencyObject d, bool value) => d.SetValue(TimeInputProperty, value);
+
+    /// <summary>Reads a time of day typed as "17:00", "17h30", "17.30", "1700", "930" or just "17".</summary>
+    public static bool TryParseTime(string? text, out TimeSpan time)
+    {
+        time = default;
+        var s = (text ?? "").Trim().Replace(" ", "").Replace('h', ':').Replace('H', ':').Replace('.', ':');
+        if (s.Length == 0 || !s.All(c => char.IsAsciiDigit(c) || c == ':')) return false;
+        string hours, minutes;
+        var parts = s.Split(':');
+        if (parts.Length == 2) (hours, minutes) = (parts[0], parts[1].Length == 0 ? "0" : parts[1]);
+        else if (parts.Length == 1 && s.Length <= 2) (hours, minutes) = (s, "0");
+        else if (parts.Length == 1 && s.Length <= 4) (hours, minutes) = (s[..^2], s[^2..]);
+        else return false;
+        if (hours.Length is 0 or > 2 || minutes.Length > 2 || !int.TryParse(hours, out var h) || !int.TryParse(minutes, out var m) || h > 23 || m > 59) return false;
+        time = new TimeSpan(h, m, 0);
+        return true;
+    }
+
     /// <summary>Focuses the element when it is loaded (first field of a dialog).</summary>
     public static readonly DependencyProperty FocusOnLoadProperty = DependencyProperty.RegisterAttached(
         "FocusOnLoad", typeof(bool), typeof(Ui), new PropertyMetadata(false, (d, e) =>
