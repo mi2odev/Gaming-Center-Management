@@ -24,6 +24,10 @@ public class ExpenseServiceTests : IDisposable
         await _t.Expenses.SaveAsync(new SaveExpenseRequest(null, _t.Clock.Now.Date.AddDays(-1), "Electricity bill", ExpenseCategory.Electricity, 100m, null));
 
         var day = _t.Clock.Now.Date;
+        var stats = await _t.Reports.GetDashboardStatsAsync(day);
+        Assert.Equal(450m, stats.Expenses);
+        Assert.Equal(1, stats.ExpenseCount);
+
         var report = await _t.Reports.GetReportAsync(day, day.AddDays(1), false);
         Assert.Equal(600m, report.TotalRevenue);
         Assert.Equal(450m, report.Expenses);

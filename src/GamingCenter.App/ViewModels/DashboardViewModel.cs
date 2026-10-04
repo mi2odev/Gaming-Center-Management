@@ -21,12 +21,14 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
     private readonly SessionWorkflow _workflow;
     private readonly DialogService _dialogs;
     private readonly ShellNavigator _nav;
+    private readonly CurrentUserService _user;
     private readonly List<StationCardViewModel> _all = [];
     private DateTime _lastStats;
 
     public DashboardViewModel(IStationService stations, IReportService reports, ISettingsService settings, LiveSessionStore store,
-        TickService ticks, SessionWorkflow workflow, DialogService dialogs, ShellNavigator nav, ToastService toasts) : base(toasts)
+        TickService ticks, SessionWorkflow workflow, DialogService dialogs, ShellNavigator nav, CurrentUserService user, ToastService toasts) : base(toasts)
     {
+        _user = user;
         _stations = stations;
         _reports = reports;
         _settings = settings;
@@ -66,6 +68,13 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
     [ObservableProperty] private int _lowStockCount;
     [ObservableProperty] private string _lowStockSub = "";
     [ObservableProperty] private bool _isEmpty;
+    [ObservableProperty] private string _expensesText = "0";
+    [ObservableProperty] private string _expensesSub = "";
+    [ObservableProperty] private bool _hasExpenses;
+
+    /// <summary>Expenses are the owner's figures, so only admins see the card (one more column in the strip).</summary>
+    public bool ShowExpenses => _user.IsAdmin;
+    public int StripColumns => ShowExpenses ? 7 : 6;
 
     public string Currency => Money.CurrencySymbol;
 
@@ -136,6 +145,10 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
         MostUsed = s.MostUsedStation ?? "—";
         MostUsedSub = s.MostUsedStation is null ? L.T("No completed sessions") :
             $"{Durations.Short(s.MostUsedStationTime)}" + (s.MostSoldProduct is null ? "" : " · " + L.F("{0} top seller", s.MostSoldProduct));
+        ExpensesText = Money.Number(s.Expenses);
+        HasExpenses = s.Expenses > 0;
+        ExpensesSub = s.ExpenseCount == 0 ? L.T("Nothing spent today")
+            : L.F(s.ExpenseCount == 1 ? "{0} expense" : "{0} expenses", s.ExpenseCount) + " · " + L.F("net {0}", Money.Format(s.Revenue - s.Expenses));
         LowStockCount = s.LowStock.Count;
         LowStockSub = s.LowStock.Count == 0 ? L.T("All products stocked") : string.Join(" · ", s.LowStock.Take(3).Select(p => $"{p.Name} {p.Stock}"));
     }
@@ -251,6 +264,9 @@ public sealed partial class DashboardViewModel : PageViewModel, IRecipient<DataC
 
     [RelayCommand]
     private void GoLowStock() => _nav.Navigate(Page.Products, "lowstock");
+
+    [RelayCommand]
+    private void GoExpenses() => _nav.Navigate(Page.Expenses);
 
     [RelayCommand]
     private void GoStations() => _nav.Navigate(Page.Stations);

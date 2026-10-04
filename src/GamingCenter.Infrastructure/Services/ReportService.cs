@@ -69,6 +69,7 @@ public sealed class ReportService(
         var today = await LoadPaymentsAsync(db, from, from.AddDays(1), ct);
         var repaid = (await LoadRepaymentsAsync(db, from, from.AddDays(1), ct)).Sum(r => r.Amount);
         var yesterday = await IncomeAsync(db, from.AddDays(-1), from, ct);
+        var spent = await db.Expenses.AsNoTracking().Where(e => e.Date >= from && e.Date < from.AddDays(1)).Select(e => e.Amount).ToListAsync(ct);
 
         var gamingSessions = today.Where(p => p.Session!.Mode != SessionMode.CounterSale).Select(p => p.Session!).ToList();
         var lines = today.SelectMany(p => p.Session!.Products).ToList();
@@ -95,7 +96,9 @@ public sealed class ReportService(
             LowStock: await products.GetLowStockAsync(ct),
             Discounts: today.Sum(p => p.DiscountAmount),
             CreditRepaid: repaid,
-            CreditLeft: today.Sum(p => p.CreditAmount));
+            CreditLeft: today.Sum(p => p.CreditAmount),
+            Expenses: spent.Sum(),
+            ExpenseCount: spent.Count);
     }
 
     public async Task<IReadOnlyList<HistoryRow>> GetHistoryAsync(DateTime from, DateTime to, string? search = null, CancellationToken ct = default)
