@@ -50,12 +50,14 @@ public static class Periods
     {
         today = today.Date;
         int dow = ((int)today.DayOfWeek + 6) % 7; // Monday = 0
+        // A custom range picked backwards (from after to) still means the days between the two dates.
+        DateTime a = (customFrom ?? today).Date, b = (customTo ?? today).Date;
         return period switch
         {
             "Yesterday" => (today.AddDays(-1), today),
             "Week" => (today.AddDays(-dow), today.AddDays(1)),
             "Month" => (new DateTime(today.Year, today.Month, 1), today.AddDays(1)),
-            "Custom" => ((customFrom ?? today).Date, (customTo ?? today).Date.AddDays(1)),
+            "Custom" => (a <= b ? a : b, (a <= b ? b : a).AddDays(1)),
             _ => (today, today.AddDays(1)),
         };
     }

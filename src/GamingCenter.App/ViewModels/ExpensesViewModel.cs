@@ -18,7 +18,8 @@ public sealed record ExpenseCategoryOption(ExpenseCategory Value)
 
 public sealed record ExpenseRow(ExpenseDto Dto)
 {
-    public string Date => Dto.Date.ToString("dd/MM/yyyy");
+    // Fixed digits and separators, whatever the language (Arabic would otherwise change the separator).
+    public string Date => Dto.Date.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
     public string Description => Dto.Description;
     public string Note => Dto.Note ?? "";
     public string Category => L.T(Dto.Category.ToString());
@@ -43,6 +44,10 @@ public sealed partial class ExpensesViewModel : PageViewModel
     private readonly DialogService _dialogs;
     private readonly FileDialogService _files;
     private List<ExpenseDto> _all = [];
+    /// <summary>Counts reloads, so a slow older one cannot overwrite the result of a newer one.</summary>
+    private int _reloadVersion;
+    /// <summary>True while the two custom dates are being changed together, to reload once at the end.</summary>
+    private bool _settingRange;
 
     public ExpensesViewModel(IExpenseService expenses, IReportService reports, DialogService dialogs, FileDialogService files, ToastService toasts) : base(toasts)
     {
@@ -68,9 +73,13 @@ public sealed partial class ExpensesViewModel : PageViewModel
     [ObservableProperty] private bool _netNegative;
     [ObservableProperty] private double _spentShare;
     [ObservableProperty] private string _spentShareText = "";
+    /// <summary>No expense at all in the period.</summary>
     [ObservableProperty] private bool _isEmpty;
+    /// <summary>The period has expenses, but none matches the search box.</summary>
+    [ObservableProperty] private bool _noMatches;
 
     public bool IsCustom => Period == "Custom";
+    public DateTime Today => DateTime.Today;
 
     public override Task OnNavigatedToAsync() => LoadAsync(ReloadAsync);
 
@@ -80,15 +89,55 @@ public sealed partial class ExpensesViewModel : PageViewModel
         OnPropertyChanged(nameof(IsCustom));
         _ = LoadAsync(ReloadAsync);
     }
-    partial void OnCustomFromChanged(DateTime? value) { if (IsCustom) _ = LoadAsync(ReloadAsync); }
-    partial void OnCustomToChanged(DateTime? value) { if (IsCustom) _ = LoadAsync(ReloadAsync); }
+    // Picking a start after the end (or an end before the start) moves the other date along, so the range is never backwards.
+    partial void OnCustomFromChanged(DateTime? value)
+    {
+        if (_settingRange) return;
+        if (value is { } from && CustomTo is { } to && from.Date > to.Date) { SetCustomRange(from, from); return; }
+        if (IsCustom) _ = LoadAsync(ReloadAsync);
+    }
+    partial void OnCustomToChanged(DateTime? value)
+    {
+        if (_settingRange) return;
+        if (value is { } to && CustomFrom is { } from && to.Date < from.Date) { SetCustomRange(to, to); return; }
+        if (IsCustom) _ = LoadAsync(ReloadAsync);
+    }
     partial void OnSearchChanged(string value) => ApplyFilter();
+
+    private void SetCustomRange(DateTime from, DateTime to)
+    {
+        _settingRange = true;
+        try { CustomFrom = from.Date; CustomTo = to.Date; }
+        finally { _settingRange = false; }
+        if (IsCustom) _ = LoadAsync(ReloadAsync);
+    }
+
+    /// <summary>
+    /// Widens the period when needed so the given day is listed (an expense saved with last week's date
+    /// while "Today" is shown would otherwise seem to vanish). Returns true when this started a reload.
+    /// </summary>
+    private bool ShowDay(DateTime day)
+    {
+        var (from, to) = Periods.Range(Period, DateTime.Today, CustomFrom, CustomTo);
+        if (day >= from && day < to) return false;
+        var first = day.Date < from ? day.Date : from;
+        var last = day.Date >= to ? day.Date : to.AddDays(-1);
+        if (IsCustom) { SetCustomRange(first, last); return true; }
+        _settingRange = true;
+        try { CustomFrom = first; CustomTo = last; }
+        finally { _settingRange = false; }
+        Period = "Custom";
+        return true;
+    }
 
     private async Task ReloadAsync()
     {
+        var version = ++_reloadVersion;
         var (from, to) = Periods.Range(Period, DateTime.Today, CustomFrom, CustomTo);
-        _all = (await _expenses.GetAsync(from, to)).ToList();
+        var all = (await _expenses.GetAsync(from, to)).ToList();
         var income = await _reports.GetIncomeAsync(from, to);
+        if (version != _reloadVersion) return; // the period changed again while loading
+        _all = all;
         var spent = _all.Sum(e => e.Amount);
         TotalText = Money.Format(spent);
         CountText = L.F(_all.Count == 1 ? "{0} expense" : "{0} expenses", _all.Count);
@@ -116,27 +165,32 @@ public sealed partial class ExpensesViewModel : PageViewModel
                                           || (e.Note?.Contains(t, StringComparison.CurrentCultureIgnoreCase) ?? false)
                                           || L.T(e.Category.ToString()).Contains(t, StringComparison.CurrentCultureIgnoreCase)))
             Rows.Add(new ExpenseRow(e));
-        IsEmpty = Rows.Count == 0;
+        IsEmpty = _all.Count == 0;
+        NoMatches = _all.Count > 0 && Rows.Count == 0;
     }
 
     [RelayCommand]
     private Task Add() => EditorAsync(null);
 
     [RelayCommand]
-    private Task Edit(ExpenseRow row) => EditorAsync(row.Dto);
+    private Task Edit(ExpenseRow? row) => row is null ? Task.CompletedTask : EditorAsync(row.Dto);
+
+    [RelayCommand]
+    private void ClearSearch() => Search = "";
 
     private async Task EditorAsync(ExpenseDto? existing)
     {
         if (await _dialogs.ShowAsync<ExpenseDto>(new ExpenseEditorViewModel(existing, _expenses)) is { } saved)
         {
             Toasts.Success(existing is null ? L.T("Expense added") : L.T("Expense updated"), $"{saved.Description} · {Money.Format(saved.Amount)}");
-            await LoadAsync(ReloadAsync);
+            if (!ShowDay(saved.Date)) await LoadAsync(ReloadAsync);
         }
     }
 
     [RelayCommand]
-    private async Task Delete(ExpenseRow row)
+    private async Task Delete(ExpenseRow? row)
     {
+        if (row is null) return;
         if (!await _dialogs.ConfirmAsync(L.F("Delete {0}?", row.Description),
                 L.F("{0} will no longer be subtracted from your profit.", Money.Format(row.Dto.Amount)), L.T("Delete"), true)) return;
         if (await TryAsync(() => _expenses.DeleteAsync(row.Dto.Id), L.T("Expense deleted"))) await LoadAsync(ReloadAsync);
@@ -145,10 +199,13 @@ public sealed partial class ExpensesViewModel : PageViewModel
     [RelayCommand]
     private async Task Export()
     {
+        // Export what the list shows: the chosen period, narrowed by the search box.
+        var rows = Rows.Select(r => r.Dto).ToList();
+        if (rows.Count == 0) { Toasts.Info(L.T("Nothing to export"), L.T("No expenses in this period.")); return; }
         var path = _files.SaveCsv($"expenses-{DateTime.Today:yyyyMMdd}.csv");
         if (path is null) return;
-        await TryAsync(() => CsvWriter.WriteAsync(path, _all, [
-            new("Date", e => e.Date), new("Description", e => e.Description), new("Category", e => e.Category.ToString()),
+        await TryAsync(() => CsvWriter.WriteAsync(path, rows, [
+            new("Date", e => e.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)), new("Description", e => e.Description), new("Category", e => e.Category.ToString()),
             new("Amount", e => e.Amount), new("Note", e => e.Note), new("Added by", e => e.User),
         ]), "Export complete", path);
     }
@@ -165,7 +222,7 @@ public sealed partial class ExpenseEditorViewModel : DialogViewModel
         _existing = existing;
         _expenses = expenses;
         _description = existing?.Description ?? "";
-        _amountText = existing is null ? "" : Money.Number(existing.Amount).Replace(",", "");
+        _amountText = existing is null ? "" : existing.Amount.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         _category = ExpenseCategoryOption.All.First(c => c.Value == (existing?.Category ?? ExpenseCategory.Equipment));
         _date = existing?.Date.Date ?? DateTime.Today;
         _note = existing?.Note ?? "";
@@ -187,11 +244,12 @@ public sealed partial class ExpenseEditorViewModel : DialogViewModel
         if (string.IsNullOrWhiteSpace(Description)) { Error = L.T("Write what you bought, e.g. \"New TV for PS5 #02\"."); return; }
         if (!Money.TryParse(AmountText, out var amount) || amount <= 0) { Error = L.T("Enter the price paid."); return; }
         if (Date is not { } day) { Error = L.T("Choose the day of the expense."); return; }
+        if (day.Date > DateTime.Today) { Error = L.T("The date cannot be in the future."); return; }
         // Keep the original time when the day did not change, so the list order stays the same.
         var date = _existing is not null && _existing.Date.Date == day.Date ? _existing.Date : day.Date;
         ExpenseDto? saved = null;
         if (await RunAsync(async () => saved = await _expenses.SaveAsync(
-                new SaveExpenseRequest(_existing?.Id, date, Description, Category.Value, amount, Note))))
+                new SaveExpenseRequest(_existing?.Id, date, Description.Trim(), Category.Value, amount, Note))))
             Close(saved);
     }
 }

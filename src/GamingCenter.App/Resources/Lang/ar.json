@@ -1,4 +1,8 @@
 {
+  "Nothing to export": "لا شيء للتصدير",
+  "Clear search": "مسح البحث",
+  "No expenses match your search.": "لا توجد مصاريف تطابق بحثك.",
+  "The date cannot be in the future.": "لا يمكن أن يكون التاريخ في المستقبل.",
   "(already owes {0}, new total {1})": "(عليه دين {0}، المجموع الجديد {1})",
   "(discount {0})": "(تخفيض {0})",
   "(optional)": "(اختياري)",

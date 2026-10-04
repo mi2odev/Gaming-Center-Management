@@ -1,4 +1,8 @@
 {
+  "Nothing to export": "Rien à exporter",
+  "Clear search": "Effacer la recherche",
+  "No expenses match your search.": "Aucune dépense ne correspond à votre recherche.",
+  "The date cannot be in the future.": "La date ne peut pas être dans le futur.",
   "(already owes {0}, new total {1})": "(doit déjà {0}, nouveau total {1})",
   "(discount {0})": "(remise {0})",
   "(optional)": "(facultatif)",

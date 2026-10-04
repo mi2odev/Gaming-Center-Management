@@ -108,19 +108,7 @@
                     <TextBlock Grid.Column="4" Text="AMOUNT" Style="{StaticResource T.ColumnHeader}" HorizontalAlignment="Right"/>
                 </Grid>
                 <Grid>
-                    <!-- Empty state -->
-                    <StackPanel HorizontalAlignment="Center" Margin="0,48,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
-                        <Border Width="64" Height="64" CornerRadius="18" Background="{DynamicResource Pill.Bg}" HorizontalAlignment="Center">
-                            <c:Icon Data="{StaticResource I.Banknote}" Width="28" Height="28" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="No expenses in this period." Style="{StaticResource T.Section}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
-                        <TextBlock Text="When you buy something for the center, like a new TV or a controller, or pay rent or a bill, add it here. Its price is taken off your profit in Reports."
-                                   Style="{StaticResource T.Muted}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Margin="0,6,0,0"/>
-                        <Button Content="Add expense" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Plus}" HorizontalAlignment="Center" Margin="0,18,0,0"
-                                Command="{Binding AddCommand}"/>
-                    </StackPanel>
-
-                    <ListBox Style="{StaticResource RowList}" ItemsSource="{Binding Rows}">
+                    <ListBox x:Name="List" Style="{StaticResource RowList}" ItemsSource="{Binding Rows}" MouseDoubleClick="OnRowDoubleClick">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid MinHeight="60">
@@ -135,13 +123,16 @@
                                     </Border>
                                     <TextBlock Grid.Column="3" Text="{Binding Date}" Style="{StaticResource T.Mono}" FontSize="12" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="4" Text="{Binding Amount}" Style="{StaticResource T.MonoStrong}" FontSize="14" Foreground="{DynamicResource Danger}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <!-- Actions appear when the row is hovered, to keep the list calm -->
+                                    <!-- Actions appear when the row is hovered or selected, to keep the list calm -->
                                     <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <StackPanel.Style>
                                             <Style TargetType="StackPanel">
                                                 <Setter Property="Opacity" Value="0"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                                                         <Setter Property="Opacity" Value="1"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -156,6 +147,25 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+
+                    <!-- Empty states come after the list, so they sit above it and their buttons can be clicked -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,48,0,0" Visibility="{Binding NoMatches, Converter={StaticResource BoolToVis}}">
+                        <Border Width="64" Height="64" CornerRadius="18" Background="{DynamicResource Pill.Bg}" HorizontalAlignment="Center">
+                            <c:Icon Data="{StaticResource I.Search}" Width="28" Height="28" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="No expenses match your search." Style="{StaticResource T.Section}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                        <Button Content="Clear search" Style="{StaticResource Btn.Secondary}" HorizontalAlignment="Center" Margin="0,18,0,0" Command="{Binding ClearSearchCommand}"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,48,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+                        <Border Width="64" Height="64" CornerRadius="18" Background="{DynamicResource Pill.Bg}" HorizontalAlignment="Center">
+                            <c:Icon Data="{StaticResource I.Banknote}" Width="28" Height="28" Foreground="{DynamicResource Text.Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="No expenses in this period." Style="{StaticResource T.Section}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                        <TextBlock Text="When you buy something for the center, like a new TV or a controller, or pay rent or a bill, add it here. Its price is taken off your profit in Reports."
+                                   Style="{StaticResource T.Muted}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Margin="0,6,0,0"/>
+                        <Button Content="Add expense" Style="{StaticResource Btn.Primary}" c:Ui.Icon="{StaticResource I.Plus}" HorizontalAlignment="Center" Margin="0,18,0,0"
+                                Command="{Binding AddCommand}"/>
+                    </StackPanel>
                 </Grid>
             </DockPanel>
 
