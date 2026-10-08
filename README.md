@@ -4,7 +4,7 @@ A Windows desktop app for running a gaming café: PS4, PS5, PCs, Xbox, Switch, s
 
 **Stack:** C# · .NET 10 · WPF · MVVM (CommunityToolkit.Mvvm) · Entity Framework Core 10 · SQLite · Microsoft.Extensions.Hosting (DI, configuration, logging)
 
-The UI follows the design handoff in [`design/`](design/): a dark theme, mint as the single action color, Sora for UI text and JetBrains Mono for timers and money. The dashboard is design **1a** (card grid) with **1c** available as a List view. At 1366×768 the sidebar collapses to icons (**1d**). The other screens follow 1e–1m.
+The UI follows the design prototypes in [`design/`](design/): a dark theme, mint as the single action color, Sora for UI text and JetBrains Mono for timers and money. The dashboard is design **1a** (card grid) with **1c** available as a List view. At 1366×768 the sidebar collapses to icons (**1d**). The other screens follow 1e–1m.
 
 ---
 
@@ -169,7 +169,7 @@ GamingCenter.sln
 │   └── GamingCenter.App/             WPF: Views (XAML), ViewModels, theme, app services (timer, dialogs, toasts, printing, images)
 ├── tests/GamingCenter.Tests/         xUnit tests (billing + services on SQLite)
 ├── scripts/                          publish.ps1, add-migration.ps1
-└── design/                           design handoff (HTML mockups + chat)
+└── design/                           design prototypes (HTML mockups)
 ```
 
 - **Business logic stays out of the views.** Session maths lives on `GamingSession` and in `BillingCalculator` (Domain). Rules and transactions live in `SessionService`, `StationService` and the other services (Infrastructure). View models only call services.
