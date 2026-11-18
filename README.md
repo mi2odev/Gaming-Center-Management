@@ -87,6 +87,36 @@ dotnet publish src\GamingCenter.App -c Release -r win-x64 --self-contained true 
 
 Only one copy of the app runs at a time on a machine, so timers and alerts never run twice on the same database.
 
+## Installer & licenses (selling the app)
+
+### 1. One time: create your seller key
+```powershell
+dotnet run --project tools\LicenseTool -- init
+```
+This creates `%USERPROFILE%\mi2o-license\private.key` and writes the matching **public** key into `src\GamingCenter.App\Licensing\LicensePublicKey.cs`. Commit that file.
+**Back up the `mi2o-license` folder** (USB key, cloud drive) and never share it: without it you can't make keys for copies you have already sold, and anyone who has it can make keys. Running `init` again keeps the existing key.
+
+### 2. Build the installer
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1
+```
+Needs [Inno Setup 6](https://jrsoftware.org/isdl.php) (`winget install JRSoftware.InnoSetup`). Output: `publish\installer\mi2oGamingCenter-Setup-<version>.exe`, a normal Windows setup (Program Files, Start menu and desktop shortcuts, uninstaller). Updating = running a newer setup; the data and license are kept.
+Without Windows: GitHub → **Actions → Build installer → Run workflow**, then download the setup from *Artifacts*. Pushing a tag `v1.2.0` also creates a GitHub Release with the setup attached. Bump `<Version>` in `Directory.Build.props` for each release.
+
+### 3. Activate a customer's PC
+1. The customer installs and starts the app. The activation screen shows a **PC code** (`XXXX-XXXX-XXXX-XXXX`), which they send you.
+2. You make their key:
+   ```powershell
+   dotnet run --project tools\LicenseTool -- issue XXXX-XXXX-XXXX-XXXX "Café Name"
+   dotnet run --project tools\LicenseTool -- issue XXXX-XXXX-XXXX-XXXX "Café Name" --expires 2027-12-31   # rental / trial
+   ```
+3. They paste the key and click **Activate**. It is saved as `license.key` in the data folder; later starts don't ask again.
+
+Every key issued is logged in `mi2o-license\licenses.csv` (`... -- list`).
+
+**How it works:** the key is signed (ECDSA P-256) with your private key; the app only has the public key, so it can check keys but nobody can forge one. The PC code comes from the motherboard, BIOS and CPU serials and the Windows installation ID, so the same key, a copied install folder or a cloned disk does not work on another PC. Reinstalling Windows or changing the motherboard gives a new PC code: issue that customer a new key.
+Debug builds (`dotnet run`) skip the check; Release builds (the installer) always check.
+
 ---
 
 ## Using the app

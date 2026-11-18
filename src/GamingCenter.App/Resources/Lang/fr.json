@@ -705,5 +705,19 @@
   "{0}% of total": "{0}% du total",
   "{0}% vs previous period": "{0}% par rapport à la période précédente",
   "{0}% vs yesterday": "{0}% par rapport à hier",
-  "· extra controllers add to the hourly price": "· les manettes supplémentaires s'ajoutent au prix horaire"
+  "· extra controllers add to the hourly price": "· les manettes supplémentaires s'ajoutent au prix horaire",
+  "Activate mi2o Gaming Center": "Activer mi2o Gaming Center",
+  "Send the PC code below to the seller. You will receive a license key that works on this PC only.": "Envoyez le code PC ci-dessous au vendeur. Vous recevrez une clé de licence qui fonctionne uniquement sur ce PC.",
+  "PC code": "Code PC",
+  "Copy": "Copier",
+  "Copied": "Copié",
+  "License key": "Clé de licence",
+  "Activate": "Activer",
+  "Quit": "Quitter",
+  "License activated.": "Licence activée.",
+  "Paste the license key you received.": "Collez la clé de licence que vous avez reçue.",
+  "This key was made for another PC. Send the PC code shown above to get a key for this PC.": "Cette clé a été faite pour un autre PC. Envoyez le code PC affiché ci-dessus pour obtenir une clé pour ce PC.",
+  "This license expired on {0}. Contact the seller to renew it.": "Cette licence a expiré le {0}. Contactez le vendeur pour la renouveler.",
+  "This license key is not valid. Check that it was copied completely.": "Cette clé de licence n'est pas valide. Vérifiez qu'elle a été copiée en entier.",
+  "The license could not be saved: {0}": "La licence n'a pas pu être enregistrée : {0}"
 }

@@ -1,0 +1,43 @@
+# Builds the Windows installer on GitHub.
+# - Run it by hand: Actions → "Build installer" → Run workflow. The setup .exe is under "Artifacts".
+# - Push a tag (git tag v1.0.0 && git push origin v1.0.0): it also creates a Release with the .exe to download.
+# The private license key is never needed here: only the public key, which is in the code.
+name: Build installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Build installer
+        shell: pwsh
+        run: ./scripts/build-installer.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mi2oGamingCenter-Setup
+          path: publish/installer/*.exe
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: publish/installer/*.exe

@@ -706,5 +706,19 @@
   "{0}% of total": "{0}% من المجموع",
   "{0}% vs previous period": "{0}% مقارنة بالفترة السابقة",
   "{0}% vs yesterday": "{0}% مقارنة بالأمس",
-  "· extra controllers add to the hourly price": "· أيدي التحكم الإضافية تزيد سعر الساعة"
+  "· extra controllers add to the hourly price": "· أيدي التحكم الإضافية تزيد سعر الساعة",
+  "Activate mi2o Gaming Center": "تفعيل mi2o Gaming Center",
+  "Send the PC code below to the seller. You will receive a license key that works on this PC only.": "أرسل رمز الجهاز أدناه إلى البائع. ستتلقى مفتاح ترخيص يعمل على هذا الجهاز فقط.",
+  "PC code": "رمز الجهاز",
+  "Copy": "نسخ",
+  "Copied": "تم النسخ",
+  "License key": "مفتاح الترخيص",
+  "Activate": "تفعيل",
+  "Quit": "خروج",
+  "License activated.": "تم تفعيل الترخيص.",
+  "Paste the license key you received.": "الصق مفتاح الترخيص الذي استلمته.",
+  "This key was made for another PC. Send the PC code shown above to get a key for this PC.": "هذا المفتاح مخصص لجهاز آخر. أرسل رمز الجهاز الظاهر أعلاه للحصول على مفتاح لهذا الجهاز.",
+  "This license expired on {0}. Contact the seller to renew it.": "انتهى هذا الترخيص في {0}. اتصل بالبائع لتجديده.",
+  "This license key is not valid. Check that it was copied completely.": "مفتاح الترخيص هذا غير صالح. تأكد من نسخه بالكامل.",
+  "The license could not be saved: {0}": "تعذر حفظ الترخيص: {0}"
 }

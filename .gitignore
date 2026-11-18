@@ -8,3 +8,6 @@ TestResults/
 *.db
 *.db-shm
 *.db-wal
+# Seller license keys must never be committed
+private.key
+mi2o-license/

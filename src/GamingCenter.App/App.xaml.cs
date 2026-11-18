@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using GamingCenter.App.Licensing;
 using GamingCenter.App.Localization;
 using GamingCenter.App.Services;
 using GamingCenter.App.ViewModels;
@@ -64,6 +65,7 @@ public partial class App : System.Windows.Application
             Services.GetRequiredService<MaintenanceService>().Start();
             _logger.LogInformation("Started. Data folder: {Folder}", Services.GetRequiredService<IDataPaths>().DataFolder);
 
+            if (!EnsureLicensed()) { Shutdown(); return; }
             ShowLogin();
         }
         catch (Exception ex)
@@ -94,6 +96,7 @@ public partial class App : System.Windows.Application
 
         var s = builder.Services;
         s.AddGamingCenterInfrastructure(dataFolder);
+        s.AddSingleton(new LicenseService(dataFolder));
         s.AddSingleton<CurrentUserService>();
         s.AddSingleton<ICurrentUser>(sp => sp.GetRequiredService<CurrentUserService>());
         s.AddSingleton<IImageStore, WpfImageStore>();
@@ -123,6 +126,28 @@ public partial class App : System.Windows.Application
         s.AddTransient<UsersViewModel>();
         s.AddTransient<SettingsViewModel>();
         return builder.Build();
+    }
+
+    /// <summary>
+    /// Release builds only open on a PC whose license key was made for it. Without a valid key the
+    /// activation window shows the PC code to send to the seller and asks for the key.
+    /// </summary>
+    private bool EnsureLicensed()
+    {
+        var license = Services.GetRequiredService<LicenseService>();
+        if (!LicenseService.Enforced) return true;
+
+        var saved = license.CheckSaved();
+        if (saved.IsValid)
+        {
+            _logger?.LogInformation("Licensed to {Customer}", saved.Info!.Customer);
+            return true;
+        }
+
+        _logger?.LogWarning("No valid license ({Status}). PC code {Code}", saved.Status, license.MachineCode);
+        var message = saved.Status == Application.Licensing.LicenseStatus.Empty ? null : LicenseService.Explain(saved);
+        var window = new ActivationWindow(license, message) { FlowDirection = L.Direction };
+        return window.ShowDialog() == true;
     }
 
     /// <summary>Starts a fresh copy of the app and closes this one (used after changing language or restoring a backup).</summary>
