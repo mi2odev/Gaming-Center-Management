@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 
 # A release build without the seller's public key would refuse every license key.
-$pubFile = Join-Path $root "src\GamingCenter.App\Licensing\LicensePublicKey.cs"
+$pubFile = Join-Path $root "src\GamingCenter.Application\Licensing\LicensePublicKey.cs"
 if ((Get-Content $pubFile -Raw) -match 'Value = "";') {
     throw "No license public key in the app yet. Run once:  dotnet run --project tools\LicenseTool -- init"
 }

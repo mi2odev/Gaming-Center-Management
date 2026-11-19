@@ -117,6 +117,13 @@ Every key issued is logged in `mi2o-license\licenses.csv` (`... -- list`).
 **How it works:** the key is signed (ECDSA P-256) with your private key; the app only has the public key, so it can check keys but nobody can forge one. The PC code comes from the motherboard, BIOS and CPU serials and the Windows installation ID, so the same key, a copied install folder or a cloned disk does not work on another PC. Reinstalling Windows or changing the motherboard gives a new PC code: issue that customer a new key.
 Debug builds (`dotnet run`) skip the check; Release builds (the installer) always check.
 
+**Anti-piracy layers (all free):**
+- **Checked everywhere, not just at start:** starting a session, a counter sale, building a report and printing a receipt each re-verify `license.key`, and a timer re-checks every 7–18 minutes and restarts the app if the license is gone. Removing the activation window alone does not unlock anything.
+- **Obfuscation:** `publish.ps1` runs [Obfuscar](https://github.com/obfuscar/obfuscar) on `GamingCenter.Application.dll` (where all license code lives): private names are scrambled and every string, including the public key, is hidden. The test suite then runs again on the obfuscated DLL before anything ships. The rename map stays in `publish\obfuscar-win-x64\Mapping.txt` (needed to read stack traces; never ship it).
+- **Licensed name everywhere:** "Licensed to …" is on the login screen, in *Settings → License*, and printed on every receipt, so any leaked copy points to the shop that leaked it. A copy that fails the check prints `*** UNLICENSED COPY ***` on receipts.
+- **Clock guard:** for keys with an end date, the latest date seen is kept in the data folder and the registry, so moving the Windows clock back does not extend the license.
+- **Contract:** sell with a short license agreement (1 license = 1 PC, no resale). The name on the receipts is your proof.
+
 ---
 
 ## Using the app

@@ -80,11 +80,11 @@ void WritePublicKeyIntoApp(string pub)
     var root = FindRepoRoot();
     if (root is null)
     {
-        Console.WriteLine("Repository not found. Put this public key in src/GamingCenter.App/Licensing/LicensePublicKey.cs:");
+        Console.WriteLine("Repository not found. Put this public key in src/GamingCenter.Application/Licensing/LicensePublicKey.cs:");
         Console.WriteLine(pub);
         return;
     }
-    var file = Path.Combine(root, "src", "GamingCenter.App", "Licensing", "LicensePublicKey.cs");
+    var file = Path.Combine(root, "src", "GamingCenter.Application", "Licensing", "LicensePublicKey.cs");
     var text = File.ReadAllText(file);
     var start = text.IndexOf("Value = \"", StringComparison.Ordinal) + "Value = \"".Length;
     var end = text.IndexOf('"', start);

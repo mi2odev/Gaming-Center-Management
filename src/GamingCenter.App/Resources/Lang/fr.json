@@ -719,5 +719,14 @@
   "This key was made for another PC. Send the PC code shown above to get a key for this PC.": "Cette clé a été faite pour un autre PC. Envoyez le code PC affiché ci-dessus pour obtenir une clé pour ce PC.",
   "This license expired on {0}. Contact the seller to renew it.": "Cette licence a expiré le {0}. Contactez le vendeur pour la renouveler.",
   "This license key is not valid. Check that it was copied completely.": "Cette clé de licence n'est pas valide. Vérifiez qu'elle a été copiée en entier.",
-  "The license could not be saved: {0}": "La licence n'a pas pu être enregistrée : {0}"
+  "The license could not be saved: {0}": "La licence n'a pas pu être enregistrée : {0}",
+  "Licensed to {0}": "Licence : {0}",
+  "License": "Licence",
+  "This copy is activated for this PC only. It is printed on every receipt.": "Cette copie est activée pour ce PC uniquement. Son nom est imprimé sur chaque ticket.",
+  "Licensed to": "Licence accordée à",
+  "Activated on": "Activée le",
+  "Valid until": "Valable jusqu'au",
+  "Lifetime": "À vie",
+  "Not activated (development build)": "Non activée (version de développement)",
+  "This copy of mi2o Gaming Center is not activated for this PC.": "Cette copie de mi2o Gaming Center n'est pas activée pour ce PC."
 }

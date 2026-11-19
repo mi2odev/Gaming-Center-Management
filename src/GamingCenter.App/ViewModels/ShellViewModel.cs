@@ -266,6 +266,7 @@ public sealed partial class LoginViewModel(IAuthService auth, CurrentUserService
     public string CenterName => settings.Current.CenterName;
     public string? LogoPath => settings.Current.LogoPath;
     public string Footer => $"v{typeof(LoginViewModel).Assembly.GetName().Version?.ToString(2)} · {DateTime.Today:dd MMM yyyy}";
+    public string LicensedTo => Licensing.LicenseService.LicensedToText;
 
     public event EventHandler? SignedIn;
 

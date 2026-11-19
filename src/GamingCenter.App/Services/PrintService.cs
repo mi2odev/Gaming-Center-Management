@@ -6,6 +6,7 @@ using System.Windows.Media;
 using GamingCenter.Application.Common;
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
+using GamingCenter.Application.Licensing;
 using GamingCenter.Domain.Enums;
 
 namespace GamingCenter.App.Services;
@@ -109,6 +110,9 @@ public sealed class PrintService(ISettingsService settings)
         if (r.CreditAmount > 0 && r.CustomerBalance > 0) doc.Blocks.Add(Row("Total owed now", Money.Format(r.CustomerBalance)));
         if (!string.IsNullOrWhiteSpace(r.CustomerName)) doc.Blocks.Add(Row("Customer", r.CustomerName));
         if (!string.IsNullOrWhiteSpace(r.Footer)) doc.Blocks.Add(Center(r.Footer, 10, margin: 10));
+        // Every receipt names the licensed shop, so a copied install is traceable to whoever leaked it.
+        if (!LicenseRuntime.IsAllowed()) doc.Blocks.Add(Center("*** UNLICENSED COPY ***", 12, FontWeights.Bold, margin: 6));
+        else if (LicenseRuntime.Current is { } lic) doc.Blocks.Add(Center($"mi2o Gaming Center · {lic.Customer}", 8, margin: 6));
         return doc;
     }
 

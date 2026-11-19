@@ -1,4 +1,4 @@
-namespace GamingCenter.App.Licensing;
+namespace GamingCenter.Application.Licensing;
 
 /// <summary>
 /// The seller's PUBLIC key. It can only check license keys, never make them, so it is safe in the program.
@@ -7,5 +7,6 @@ namespace GamingCenter.App.Licensing;
 /// </summary>
 internal static class LicensePublicKey
 {
-    public const string Value = "";
+    // Not a const: a const would be copied as plain text into metadata, where the obfuscator cannot hide it.
+    public static readonly string Value = "";
 }

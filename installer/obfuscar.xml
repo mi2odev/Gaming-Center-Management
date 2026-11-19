@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+  Obfuscar settings (free, https://github.com/obfuscar/obfuscar), run by scripts/publish.ps1.
+  Only GamingCenter.Application.dll is obfuscated: it holds the license checks and has no XAML,
+  so renaming cannot break WPF bindings. Public names are kept because the other assemblies use them;
+  everything private is renamed and every string (including the public key) is hidden.
+  $(InPath) / $(OutPath) are filled in by the script.
+-->
+<Obfuscator>
+  <Var name="InPath" value="{IN}" />
+  <Var name="OutPath" value="{OUT}" />
+  <Var name="KeepPublicApi" value="true" />
+  <Var name="HidePrivateApi" value="true" />
+  <Var name="RenameProperties" value="true" />
+  <Var name="RenameEvents" value="true" />
+  <Var name="RenameFields" value="true" />
+  <Var name="HideStrings" value="true" />
+  <Var name="OptimizeMethods" value="true" />
+  <Var name="SuppressIldasm" value="true" />
+  <Var name="UseUnicodeNames" value="true" />
+  <Var name="XmlMapping" value="false" />
+  <AssemblySearchPath path="$(InPath)" />
+  <Module file="$(InPath)/GamingCenter.Application.dll" />
+</Obfuscator>

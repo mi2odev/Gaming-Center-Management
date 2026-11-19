@@ -66,6 +66,7 @@ public partial class App : System.Windows.Application
             _logger.LogInformation("Started. Data folder: {Folder}", Services.GetRequiredService<IDataPaths>().DataFolder);
 
             if (!EnsureLicensed()) { Shutdown(); return; }
+            StartLicenseWatch();
             ShowLogin();
         }
         catch (Exception ex)
@@ -148,6 +149,29 @@ public partial class App : System.Windows.Application
         var message = saved.Status == Application.Licensing.LicenseStatus.Empty ? null : LicenseService.Explain(saved);
         var window = new ActivationWindow(license, message) { FlowDirection = L.Direction };
         return window.ShowDialog() == true;
+    }
+
+    private DispatcherTimer? _licenseWatch;
+
+    /// <summary>
+    /// Checks the license again at random intervals while the app runs, so a copy whose start-up
+    /// check was removed still stops after a while.
+    /// </summary>
+    private void StartLicenseWatch()
+    {
+        if (!LicenseService.Enforced) return;
+        _licenseWatch = new DispatcherTimer { Interval = TimeSpan.FromMinutes(Random.Shared.Next(7, 19)) };
+        _licenseWatch.Tick += (_, _) =>
+        {
+            _licenseWatch.Interval = TimeSpan.FromMinutes(Random.Shared.Next(7, 19));
+            var check = Application.Licensing.LicenseRuntime.Check(fresh: true);
+            if (check.IsValid) return;
+            _licenseWatch.Stop();
+            _logger?.LogWarning("License check failed while running: {Status}", check.Status);
+            MessageBox.Show(LicenseService.Explain(check), "mi2o Gaming Center", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Restart();
+        };
+        _licenseWatch.Start();
     }
 
     /// <summary>Starts a fresh copy of the app and closes this one (used after changing language or restoring a backup).</summary>

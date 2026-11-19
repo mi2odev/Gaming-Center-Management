@@ -73,6 +73,7 @@
                 <RadioButton Style="{StaticResource SettingsNav}" Content="Warnings" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Warnings}"/>
                 <RadioButton Style="{StaticResource SettingsNav}" Content="Appearance &amp; language" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Appearance}"/>
                 <RadioButton Style="{StaticResource SettingsNav}" Content="Backup" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=Backup}"/>
+                <RadioButton Style="{StaticResource SettingsNav}" Content="License" IsChecked="{Binding Section, Converter={StaticResource Equals}, ConverterParameter=License}"/>
                 <Button Content="Users &amp; roles →" Style="{StaticResource Btn.Link}" FontSize="13" Padding="12,9" HorizontalAlignment="Left" Command="{Binding GoUsersCommand}"/>
             </StackPanel>
         </Border>
@@ -234,6 +235,24 @@
                         <Button Content="Open data folder" Style="{StaticResource Btn.Link}" Margin="6,0,0,10" Command="{Binding OpenDataFolderCommand}"/>
                     </WrapPanel>
                     <TextBlock Style="{StaticResource T.Faint}" TextWrapping="Wrap" Margin="0,6,0,0"><Run Text="Database: "/><Run Text="{Binding DataFolder, Mode=OneWay}" FontFamily="{DynamicResource Font.Mono}"/></TextBlock>
+                </StackPanel>
+
+                <!-- License -->
+                <StackPanel Visibility="{Binding Section, Converter={StaticResource EqualsToVis}, ConverterParameter=License}">
+                    <TextBlock Text="License" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="This copy is activated for this PC only. It is printed on every receipt." Style="{StaticResource SectionSub}"/>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding LicenseCustomer}" FontWeight="SemiBold"/><TextBlock Text="Licensed to" Style="{StaticResource RowTitle}"/></DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding LicenseMachineCode}" Style="{StaticResource T.Mono}"/><TextBlock Text="PC code" Style="{StaticResource RowTitle}"/></DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding LicenseIssued}" Style="{StaticResource T.Mono}"/><TextBlock Text="Activated on" Style="{StaticResource RowTitle}"/></DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Row}">
+                        <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding LicenseExpires}" Style="{StaticResource T.Mono}"/><TextBlock Text="Valid until" Style="{StaticResource RowTitle}"/></DockPanel>
+                    </Border>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

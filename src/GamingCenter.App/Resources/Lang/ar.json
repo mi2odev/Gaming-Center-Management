@@ -720,5 +720,14 @@
   "This key was made for another PC. Send the PC code shown above to get a key for this PC.": "هذا المفتاح مخصص لجهاز آخر. أرسل رمز الجهاز الظاهر أعلاه للحصول على مفتاح لهذا الجهاز.",
   "This license expired on {0}. Contact the seller to renew it.": "انتهى هذا الترخيص في {0}. اتصل بالبائع لتجديده.",
   "This license key is not valid. Check that it was copied completely.": "مفتاح الترخيص هذا غير صالح. تأكد من نسخه بالكامل.",
-  "The license could not be saved: {0}": "تعذر حفظ الترخيص: {0}"
+  "The license could not be saved: {0}": "تعذر حفظ الترخيص: {0}",
+  "Licensed to {0}": "مرخص لـ {0}",
+  "License": "الترخيص",
+  "This copy is activated for this PC only. It is printed on every receipt.": "هذه النسخة مفعلة لهذا الجهاز فقط، ويُطبع اسمها على كل وصل.",
+  "Licensed to": "مرخص لـ",
+  "Activated on": "تاريخ التفعيل",
+  "Valid until": "صالح حتى",
+  "Lifetime": "مدى الحياة",
+  "Not activated (development build)": "غير مفعل (نسخة تطوير)",
+  "This copy of mi2o Gaming Center is not activated for this PC.": "هذه النسخة من mi2o Gaming Center غير مفعلة لهذا الجهاز."
 }

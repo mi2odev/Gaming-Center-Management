@@ -14,7 +14,6 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-    <PackageReference Include="System.Management" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,5 +28,9 @@
     <Resource Include="Resources\Images\app.ico" />
     <EmbeddedResource Include="Resources\Lang\*.json" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Kept as plain IL so scripts/publish.ps1 can obfuscate it (it holds the license checks). -->
+    <PublishReadyToRunExclude Include="GamingCenter.Application.dll" />
   </ItemGroup>
 </Project>

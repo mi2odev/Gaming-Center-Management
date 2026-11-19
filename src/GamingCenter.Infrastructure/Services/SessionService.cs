@@ -1,5 +1,6 @@
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
+using GamingCenter.Application.Licensing;
 using GamingCenter.Domain.Billing;
 using GamingCenter.Domain.Entities;
 using GamingCenter.Domain.Enums;
@@ -42,6 +43,7 @@ public sealed class SessionService(
 
     public async Task<GamingSession> StartAsync(StartSessionRequest request, CancellationToken ct = default)
     {
+        LicenseRuntime.Require();
         await using var db = await OpenAsync(ct);
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
@@ -335,6 +337,7 @@ public sealed class SessionService(
 
     public async Task<Payment> CounterSaleAsync(CounterSaleRequest request, CancellationToken ct = default)
     {
+        LicenseRuntime.Require();
         var lines = request.Lines.Where(l => l.Quantity > 0).GroupBy(l => l.ProductId)
             .Select(g => new CartLine(g.Key, g.Sum(x => x.Quantity))).ToList();
         if (lines.Count == 0) throw new BusinessException("Add at least one product.");

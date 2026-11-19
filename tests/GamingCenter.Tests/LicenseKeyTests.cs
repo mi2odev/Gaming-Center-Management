@@ -78,3 +78,15 @@ public class LicenseKeyTests
         Assert.Equal(19, LicenseKey.FormatMachineCode(a).Length);
     }
 }
+
+public class LicenseRuntimeTests
+{
+    [Fact]
+    public void Checks_are_off_outside_the_shipped_app()
+    {
+        // The test host is not mi2oGamingCenter.exe, so services keep working without a license here.
+        Assert.False(LicenseRuntime.Enforced);
+        Assert.True(LicenseRuntime.IsAllowed());
+        LicenseRuntime.Require();
+    }
+}

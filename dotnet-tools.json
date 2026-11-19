@@ -8,6 +8,13 @@
         "dotnet-ef"
       ],
       "rollForward": false
+    },
+    "obfuscar.globaltool": {
+      "version": "2.2.50",
+      "commands": [
+        "obfuscar.console"
+      ],
+      "rollForward": false
     }
   }
 }

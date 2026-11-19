@@ -1,8 +1,7 @@
 using System.Management;
-using GamingCenter.Application.Licensing;
 using Microsoft.Win32;
 
-namespace GamingCenter.App.Licensing;
+namespace GamingCenter.Application.Licensing;
 
 /// <summary>
 /// The PC code shown on the activation screen. It is built from the motherboard, BIOS and CPU
@@ -26,6 +25,7 @@ public static class MachineFingerprint
 
     private static string WindowsMachineGuid()
     {
+        if (!OperatingSystem.IsWindows()) return "";
         try
         {
             using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
@@ -37,6 +37,7 @@ public static class MachineFingerprint
 
     private static string Wmi(string cls, string property)
     {
+        if (!OperatingSystem.IsWindows()) return "";
         try
         {
             using var searcher = new ManagementObjectSearcher($"SELECT {property} FROM {cls}");

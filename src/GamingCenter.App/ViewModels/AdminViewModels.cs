@@ -656,6 +656,13 @@ public sealed record BillingUnitOption(int Seconds, string Title, string Example
 /// <summary>Settings (design 1l). Edits a copy; nothing changes until Save.</summary>
 public sealed partial class SettingsViewModel : PageViewModel
 {
+    public string LicenseCustomer => Application.Licensing.LicenseRuntime.Current?.Customer ?? L.T("Not activated (development build)");
+    public string LicenseMachineCode => Application.Licensing.LicenseKey.FormatMachineCode(Application.Licensing.MachineFingerprint.Code);
+    public string LicenseIssued => Application.Licensing.LicenseRuntime.Current?.IssuedOn.ToString("dd/MM/yyyy") ?? "—";
+    public string LicenseExpires => Application.Licensing.LicenseRuntime.Current is { } lic
+        ? lic.ExpiresOn?.ToString("dd/MM/yyyy") ?? L.T("Lifetime")
+        : "—";
+
     private readonly ISettingsService _settings;
     private readonly IBackupService _backup;
     private readonly FileDialogService _files;

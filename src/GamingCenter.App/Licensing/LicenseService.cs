@@ -1,51 +1,25 @@
-using System.IO;
 using GamingCenter.App.Localization;
 using GamingCenter.Application.Licensing;
 
 namespace GamingCenter.App.Licensing;
 
-/// <summary>Reads, checks and saves the license key of this PC (license.key in the data folder).</summary>
-public sealed class LicenseService(string dataFolder)
+/// <summary>UI side of the license: the PC code, activation and messages. The checks live in <see cref="LicenseRuntime"/>.</summary>
+public sealed class LicenseService
 {
-    private string FilePath => Path.Combine(dataFolder, "license.key");
+    public LicenseService(string dataFolder) => LicenseRuntime.UseDataFolder(dataFolder);
 
     public string MachineCode => LicenseKey.FormatMachineCode(MachineFingerprint.Code);
 
-    /// <summary>The license currently in use, once checked.</summary>
-    public LicenseInfo? Current { get; private set; }
+    public LicenseInfo? Current => LicenseRuntime.Current;
 
-    /// <summary>Debug builds run without a license so development is not blocked; release builds always check.</summary>
-    public static bool Enforced =>
-#if DEBUG
-        false;
-#else
-        true;
-#endif
+    public static bool Enforced => LicenseRuntime.Enforced;
 
-    public LicenseCheck CheckSaved()
-    {
-        string? key = null;
-        try { if (File.Exists(FilePath)) key = File.ReadAllText(FilePath); }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
-        var result = Check(key);
-        if (result.IsValid) Current = result.Info;
-        return result;
-    }
+    public LicenseCheck CheckSaved() => LicenseRuntime.Check(fresh: true);
 
-    public LicenseCheck Check(string? key) =>
-        LicenseKey.Verify(key, LicensePublicKey.Value, MachineFingerprint.Code, DateOnly.FromDateTime(DateTime.Today));
+    public LicenseCheck Activate(string key) => LicenseRuntime.Activate(key);
 
-    /// <summary>Checks the key and, if it is valid for this PC, saves it so the next start skips activation.</summary>
-    public LicenseCheck Activate(string key)
-    {
-        var result = Check(key);
-        if (!result.IsValid) return result;
-        Directory.CreateDirectory(dataFolder);
-        File.WriteAllText(FilePath, key.Trim());
-        Current = result.Info;
-        return result;
-    }
+    /// <summary>"Licensed to Café X" for the login screen, settings and receipts; empty when not licensed.</summary>
+    public static string LicensedToText => LicenseRuntime.Current is { } info ? L.F("Licensed to {0}", info.Customer) : "";
 
     public static string Explain(LicenseCheck check) => check.Status switch
     {

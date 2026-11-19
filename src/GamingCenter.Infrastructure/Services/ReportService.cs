@@ -2,6 +2,7 @@ using GamingCenter.Application.Common;
 using System.Globalization;
 using GamingCenter.Application.DTOs;
 using GamingCenter.Application.Interfaces;
+using GamingCenter.Application.Licensing;
 using GamingCenter.Domain.Entities;
 using GamingCenter.Domain.Enums;
 using GamingCenter.Infrastructure.Data;
@@ -196,6 +197,7 @@ public sealed class ReportService(
 
     public async Task<ReportData> GetReportAsync(DateTime from, DateTime to, bool groupByMonth, CancellationToken ct = default)
     {
+        LicenseRuntime.Require();
         await using var db = await OpenAsync(ct);
         var payments = await LoadPaymentsAsync(db, from, to, ct);
         var span = to - from;
